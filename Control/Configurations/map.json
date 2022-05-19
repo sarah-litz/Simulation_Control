@@ -1,0 +1,59 @@
+{ 
+    "chambers": [ 
+        {
+            "id": 1, 
+            "descriptive_name": "Main Chamber", 
+            "components": [
+                { "interactable_name":"lever1", "type":"lever"},
+                { "interactable_name":"lever2", "type":"lever"}
+            ] 
+        }, 
+
+        {
+            "id": 2, 
+            "descriptive_name": "Chamber 2", 
+            "components": [
+                
+            ]
+        }, 
+
+        {
+            "id": 3, 
+            "descriptive_name": "Chamber 3",
+            "components": []
+        }
+    
+    ], 
+
+    "edges": [
+        {
+            "start_chamber_id":1, 
+            "target_chamber_id":2, 
+            "id":12, 
+            "type":"shared", 
+            "components":[
+                { "chamber_interactable": "lever1"},
+                { "chamber_interactable": "lever2"},
+
+                { "interactable_name":"rfid1", "type":"rfid" }, 
+                { "interactable_name":"door1", "type":"door" },
+
+
+                { "interactable_name":"door2", "type":"door" },
+                { "interactable_name":"rfid2", "type":"rfid" }
+
+            ]
+        }, 
+
+        { 
+            "start_chamber_id":1, 
+            "target_chamber_id":3, 
+            "id": 13, 
+            "type":"shared", 
+            "components":[
+                {"interactable_name":"rfid3", "type":"rfid"}, 
+                {"interactable_name":"rfid4", "type":"rfid"}
+            ]
+        }
+    ]
+}

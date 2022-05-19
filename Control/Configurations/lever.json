@@ -1,0 +1,30 @@
+{ 
+    "lever1": 
+    {
+        "id":1,
+        "hardware_specs": {
+            "signalPin":19, 
+            "numPresses":2, 
+            "extended_angle":30, 
+            "retracted_angle":105, 
+            "pullup_pulldown":"pullup", 
+            "servo_type":"positional"
+        },  
+        "threshold_condition": 
+        { "attribute": "pressed", "initial_value":0, "goal_value": 4, "reset_value": true }    
+    },
+    
+    "lever2": 
+    {
+        "id":2,
+        "hardware_specs": {
+            "signalPin":19, 
+            "numPresses":2, 
+            "extended_angle":30, 
+            "retracted_angle":105, 
+            "pullup_pulldown":"pullup", 
+            "servo_type":"positional"
+        },  
+        "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value": 4, "reset_value": true }    
+    }
+}
