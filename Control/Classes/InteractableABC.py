@@ -110,6 +110,10 @@ class interactableABC:
 
             
             def set_servo(): 
+                if SERVO_KIT is None: 
+                    # simulating servo kit
+                    return None 
+                
                 try: 
                     if servo_type == 'positional':
                         return SERVO_KIT.servo[ID]
