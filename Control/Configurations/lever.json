@@ -3,12 +3,13 @@
     {
         "id":1,
         "hardware_specs": {
-            "signalPin":19, 
+            "signalPin":27, 
             "numPresses":2, 
             "extended_angle":30, 
             "retracted_angle":105, 
             "pullup_pulldown":"pullup", 
-            "servo_type":"positional"
+            "servo_type":"positional", 
+            "servo_id":14
         },  
         "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value": 4, "reset_value": true }
     },
@@ -22,7 +23,8 @@
             "extended_angle":30, 
             "retracted_angle":105, 
             "pullup_pulldown":"pullup", 
-            "servo_type":"positional"
+            "servo_type":"positional", 
+            "servo_id":1
         },  
         "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value": 4, "reset_value": true }    
     }

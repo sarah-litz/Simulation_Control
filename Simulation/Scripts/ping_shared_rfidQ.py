@@ -50,6 +50,12 @@ class SimulatePings(SimulationABC):
         vole2 = self.get_vole(2) # vole 2 is sending the ping 
         vole1 = self.get_vole(1)
 
+        print(lever1.servoObj.servo)
+        print("extending")
+        lever1.extend()
+        print("done extending")
+        time.sleep(1)
+        print("retracting")
 
         try:        
             vole1.simulate_vole_interactable_interaction(lever1)

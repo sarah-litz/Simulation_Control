@@ -18,7 +18,7 @@ import queue
 from Logging.logging_specs import control_log, sim_log
 
 try: 
-    import Rpi.GPIO as GPIO 
+    import RPi.GPIO as GPIO 
 except ModuleNotFoundError as e: 
     print(e)
     GPIO = None
@@ -79,25 +79,24 @@ class interactableABC:
             self.pin = pin 
             self.pullup_pulldown = pullup_pulldown 
             self.num_pressed = 0 # number of times that button has been pressed 
-
-            def set_gpio(): 
-                try: 
-                    if pullup_pulldown == 'pullup':
-                        GPIO.setup(self.pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-                        return 0
-                    elif pullup_pulldown == 'pulldown': 
-                        GPIO.setup(self.pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
-                        return 1 
-                    else: 
-                        raise KeyError(f'(InteractableABC.py, Button) Configuration file error when instantiating Button {self.name}, must be "pullup" or "pulldown", but was passed {pullup_pulldown}')
-                        return -1
-                
-                except: 
-                    print('(InteractableABC.py, Button) simulating gpio connection')
-                    return None
             
-            self.pressed_val = set_gpio() # denotes what value we should look for (0 or 1) that denotes a lever press
-    
+            # self.pressed_val denotes what value we should look for (0 or 1) that denotes a lever press
+            self.pressed_val = -1 # defaults to -1 in scenario that gpio setup fails 
+            self._setup_gpio()
+
+        def _setup_gpio(self): 
+            try: 
+                if self.pullup_pulldown == 'pullup':
+                    GPIO.setup(self.pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+                elif self.pullup_pulldown == 'pulldown': 
+                    GPIO.setup(self.pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+                else: 
+                    raise KeyError(f'(InteractableABC.py, Button) Configuration file error when instantiating Button {self.name}, must be "pullup" or "pulldown", but was passed {pullup_pulldown}')
+            except: 
+                print('(InteractableABC.py, Button) simulating gpio connection')
+            
+            
+
     class Servo: 
         # class for managing servos 
         '''subclass of interactableABC, as servos will never be a standalone object, they are always created in order to control a piece of hardware. 
@@ -111,9 +110,9 @@ class interactableABC:
 
             
             def set_servo(): 
-                if SERVO_KIT is None: 
-                    # simulating servo kit
-                    return None 
+                #if SERVO_KIT is None: 
+                #    # simulating servo kit
+                #    return None 
                 
                 try: 
                     if servo_type == 'positional':
@@ -124,6 +123,9 @@ class interactableABC:
                         raise KeyError(f'(InteractableABC.py, Servo) servo type was passed as {servo_type}, must be either "positional" or "continuous"')
 
                 except ModuleNotFoundError as e: 
+                    print(e)
+                    return None
+                except KeyError as e: 
                     print(e)
                     return None
             
@@ -291,8 +293,8 @@ class lever(interactableABC):
         self.retracted_angle = hardware_specs['retracted_angle']
 
         # Movement Controls # 
-        self.servo = self.PosServo(ID = self.ID, servo_type = hardware_specs['servo_type']) # positional servo to control extending/retracting lever 
-        self.switch = self.Button(pin = self.signalPin, pullup_pulldown = hardware_specs['pullup_pulldown']) # button to recieve press signals thru changes in the gpio val
+        self.servoObj = self.PosServo(ID = hardware_specs['servo_id'], servo_type = hardware_specs['servo_type']) # positional servo to control extending/retracting lever 
+        self.switch = self.Button(pin = hardware_specs['signalPin'], pullup_pulldown = hardware_specs['pullup_pulldown']) # button to recieve press signals thru changes in the gpio val
 
         ## Threshold Condition Tracking ## 
         self.pressed = self.switch.num_pressed # counts current num of presses 
@@ -323,9 +325,9 @@ class lever(interactableABC):
             return 
 
         #  This Function Accesses Hardware => Perform Sim Check First
-        if self.isSimulation: 
+        if self.isSimulation(): 
             self.isExtended = True 
-            self.activate() 
+            # self.activate() 
             return 
         
 
@@ -334,13 +336,25 @@ class lever(interactableABC):
         #
         else: 
 
-            self.servo.angle = self.extended_angle # set to extended angle 
+            print('SERVO INERACTION')
+
+            self.servoObj.servo.angle = self.extended_angle # set to extended angle 
             
+            print(time.sleep(3))
             self.isExtended = True 
 
-            self.activate() # begin tracking for a press event 
+            #we will wiggle the lever a bit to try and reduce binding and buzzing
+            modifier = 15
+            if self.extended_angle > self.retracted_angle: extend_start = self.extended_angle + modifier
+            else: extend_start = self.extended_angle - modifier
+            
+            # Extend Lever
+            self.servoObj.servo.angle = extend_start 
+            event_timestamp = time.time()
+            time.sleep(0.1)
+            self.servoObj.servo.angle = self.extended_angle 
 
-
+            
 
 
     #@threader
@@ -355,9 +369,9 @@ class lever(interactableABC):
             return 
 
         #  This Function Accesses Hardware => Perform Sim Check First
-        if self.isSimulation: 
+        if self.isSimulation(): 
             self.isExtended = False 
-            self.deactivate() 
+            # self.deactivate() 
             return 
         
 
