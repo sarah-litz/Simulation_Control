@@ -18,7 +18,7 @@ import queue
 from Logging.logging_specs import control_log, sim_log
 
 try: 
-    import Rpi.GPIO as GPIO 
+    import RPi.GPIO as GPIO 
 except ModuleNotFoundError as e: 
     print(e)
     GPIO = None

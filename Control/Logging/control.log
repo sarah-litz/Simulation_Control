@@ -21521,3 +21521,15 @@ NEW MODE: Mode 2
  (InteractableABC,py, watch_for_threshold_event) resetting the threshold for lever1  
 (InteractableABC.py, watch_for_threshold_event) Threshold Event for door1. Event queue: ['door1 isOpen:True']
 (InteractableABC.py, watch_for_threshold_event) Threshold Event for rfid2. Event queue: [(2, 2)]
+(InteractableABC.py, activate) lever1 has been activated. starting contents of the threshold_event_queue are: []
+(InteractableABC.py, activate) lever2 has been activated. starting contents of the threshold_event_queue are: []
+(InteractableABC.py, activate) rfid1 has been activated. starting contents of the threshold_event_queue are: []
+(InteractableABC.py, activate) door1 has been activated. starting contents of the threshold_event_queue are: []
+(InteractableABC.py, activate) door2 has been activated. starting contents of the threshold_event_queue are: []
+(InteractableABC.py, activate) rfid2 has been activated. starting contents of the threshold_event_queue are: []
+(InteractableABC.py, activate) rfid3 has been activated. starting contents of the threshold_event_queue are: []
+(InteractableABC.py, activate) rfid4 has been activated. starting contents of the threshold_event_queue are: []
+(InteractableABC.py, watch_for_threshold_event) Threshold Event for lever1. Event queue: ['lever1 pressed 4 times!']
+ (InteractableABC,py, watch_for_threshold_event) resetting the threshold for lever1  
+(InteractableABC.py, watch_for_threshold_event) Threshold Event for door1. Event queue: ['door1 isOpen:True']
+(InteractableABC.py, watch_for_threshold_event) Threshold Event for rfid2. Event queue: [(2, 2)]
