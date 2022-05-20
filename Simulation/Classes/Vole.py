@@ -185,7 +185,7 @@ class Vole:
         self.prev_component = self.curr_component 
         self.curr_component = newcomponent 
 
-        print(f'\nUpdated Vole Interactable Location from {self.prev_component} to {self.curr_component}\n')
+        print(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
             
     
     def move_to_interactable(self, goal_interactable): 
