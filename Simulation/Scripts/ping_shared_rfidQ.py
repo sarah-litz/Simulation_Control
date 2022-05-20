@@ -49,6 +49,15 @@ class SimulatePings(SimulationABC):
         
         vole2 = self.get_vole(2) # vole 2 is sending the ping 
         vole1 = self.get_vole(1)
+
+
+        try:        
+            vole1.simulate_vole_interactable_interaction(lever1)
+        except TypeError as e: 
+            print(e)
+            return
+
+        time.sleep(2)
         rfid_tag = 1 # this will notify the rfid object with id=1
 
         # vole2.get_next_component()

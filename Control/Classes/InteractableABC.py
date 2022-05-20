@@ -78,6 +78,7 @@ class interactableABC:
 
             self.pin = pin 
             self.pullup_pulldown = pullup_pulldown 
+            self.num_pressed = 0 # number of times that button has been pressed 
 
             def set_gpio(): 
                 try: 
@@ -95,7 +96,7 @@ class interactableABC:
                     print('(InteractableABC.py, Button) simulating gpio connection')
                     return None
             
-            self.pressed_val = set_gpio()
+            self.pressed_val = set_gpio() # denotes what value we should look for (0 or 1) that denotes a lever press
     
     class Servo: 
         # class for managing servos 
@@ -106,7 +107,7 @@ class interactableABC:
         def __init__(self, ID, servo_type): 
             '''takes a positional ID on the adafruit board and the servo type, and returns a servo_kit object'''
             
-            self.ID = ID
+            self.ID = ID            
 
             
             def set_servo(): 
@@ -127,6 +128,19 @@ class interactableABC:
                     return None
             
             self.servo = set_servo()
+
+    class PosServo(Servo): 
+        ''' positional servo '''
+        def __init__(self, ID, servo_type): 
+            super().__init__(ID, servo_type)
+            self.angle = 0 # positional servo tracks current angle of the servo 
+    
+    class ContServo(Servo): 
+        ''' continuous servo '''
+        def __init__(self, ID, servo_type): 
+            super().__init__(ID, servo_type)
+            self.throttle = 0 # continuous servo tracks speed that wheel turns at 
+
             
 
 
@@ -277,18 +291,13 @@ class lever(interactableABC):
         self.retracted_angle = hardware_specs['retracted_angle']
 
         # Movement Controls # 
-        self.servo = self.Servo(ID = self.ID, servo_type = hardware_specs['servo_type']) # positional servo to control extending/retracting lever 
+        self.servo = self.PosServo(ID = self.ID, servo_type = hardware_specs['servo_type']) # positional servo to control extending/retracting lever 
         self.switch = self.Button(pin = self.signalPin, pullup_pulldown = hardware_specs['pullup_pulldown']) # button to recieve press signals thru changes in the gpio val
 
         ## Threshold Condition Tracking ## 
-        self.pressed = self.threshold_condition["initial_value"] # counts current num of presses 
+        self.pressed = self.switch.num_pressed # counts current num of presses 
         #self.required_presses = self.threshold_condition["goal_value"] # Threshold Goal Value specifies the threshold goal, i.e. required_presses to meet the threshold
         #self.threshold_attribute = self.threshold_condition["attribute"] # points to the attribute we should check to see if we have reached goal. For lever, this is simply a pointer to the self.pressed attribute. 
-
-        # Initialize the retrieved variables
-        self.angleExtend  = None
-        self.angleRetract = None
-
 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
@@ -321,8 +330,16 @@ class lever(interactableABC):
         
 
         #
-        # HARDWARE THINGS
+        # HARDWARE THINGS -- use the Servo object to extend 
         #
+        else: 
+
+            self.servo.angle = self.extended_angle # set to extended angle 
+            
+            self.isExtended = True 
+
+            self.activate() # begin tracking for a press event 
+
 
 
 
