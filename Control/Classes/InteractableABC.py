@@ -34,6 +34,9 @@ except ModuleNotFoundError as e:
     print(e)
     SERVO_KIT = None
 
+# Globals 
+TIMEOUT = 10 # wait 10 seconds for a certain action to complete before bailing 
+
 
 class interactableABC:
 
@@ -422,12 +425,19 @@ class door(interactableABC):
 
 
         # Current Position Tracking # 
+        self.stop_speed = hardware_specs['servo_specs']['servo_stop_speed']
         self.open_speed = hardware_specs['servo_specs']['servo_open_speed']
         self.close_speed = hardware_specs['servo_specs']['servo_close_speed']
 
         # Movement Controls # 
         self.servoObj = self.ContServo(hardware_specs['servo_specs']) # continuous servo to control speed of opening and closing door
         self.switch = self.Button(hardware_specs['button_specs'])
+
+        if self.switch != threshold_condition['initial_value']: 
+            if threshold_condition['initial_value'] == True: 
+                self.open() 
+            else: 
+                self.close() 
 
 
         ## Threshold Condition Tracking ## 
@@ -521,15 +531,6 @@ class door(interactableABC):
     def close(self):
         """This function closes the doors fully"""
 
-        # check if the door is already closed 
-        if self.state is False: 
-
-            # door is already closed 
-            control_log('(Door(InteractableABC)) {self.name} was already Closed')
-            print(f'(Door(InteractableABC)) {self.name} was already Closed')
-            return 
-
-
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation(): 
             # If door is being simulated, then rather than actually closing a door we can just set the state to False (representing a Closed state)
@@ -537,10 +538,29 @@ class door(interactableABC):
             self.state = False 
             return 
 
+        # check if the door is already closed 
+        if self.switch is False: 
+
+            # door is already closed 
+            control_log('(Door(InteractableABC)) {self.name} was already Closed')
+            print(f'(Door(InteractableABC)) {self.name} was already Closed')
+            return 
+
         # 
         # Direct Rpi to Close Door
         # 
-        raise Exception(f'(Door(InteractableABC), close() ) Hardware Accessed Stuff Here to Close {self.name}')
+        self.servoObj.servo.throttle = self.close_speed 
+
+        start = time.time() 
+        while time.time() < ( start + TIMEOUT ): 
+            # wait for door to close or bail if we timeout 
+            if self.switch is False: 
+                # door successfully closed 
+                return 
+            else:
+                time.sleep(0.005)
+
+        raise Exception(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
 
 
 
@@ -548,14 +568,6 @@ class door(interactableABC):
     def open(self):
         """This function opens the doors fully
         """
-
-
-        # check if door is already open
-        if self.state is True: 
-
-            control_log('(Door(InteractableABC)) {self.name} is Open')
-            print(f'(Door(InteractableABC)) {self.name} is Open')
-            return 
         
 
         #  This Function Accesses Hardware => Perform Sim Check First
@@ -564,12 +576,33 @@ class door(interactableABC):
             print(f'(Door(InteractableABC), open()) {self.name} is being simulated. Setting state to Open and returning.')
             self.state = True 
             return 
+        
+        # check if door is already open
+        if self.state is True: 
+
+            control_log('(Door(InteractableABC)) {self.name} is Open')
+            print(f'(Door(InteractableABC)) {self.name} is Open')
+            return 
   
 
         # 
         # Direct RPI to Open Door 
         #
-        raise Exception(f'(Door(InteractableABC), open() ) Hardware Accessed Stuff Here to Open {self.name}')
+        self.servoObj.servo.throttle = self.open_speed 
+
+        start = time.time() 
+        while time.time() < ( start + self.open_time ): 
+            #wait for the door to open -- we just have to assume this will take the exact same time of <open_time> each time, since we don't have a switch to monitor for if it opens all the way or not. 
+            time.sleep(0.005) 
+        
+        self.servoObj.servo.throttle = self.stop_speed
+
+        # check if successful by checking the switch (button) val 
+        if self.switch: 
+            # successful 
+            return 
+        else: 
+            raise Exception(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
 
 
     def check_state(self):

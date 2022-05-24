@@ -101,6 +101,14 @@ class DoorTests(modeABC):
         door2 = self.map.instantiated_interactables['door2']
 
 
+        # Door 1 Tests
+        print("opening door1")
+        door1.open() 
+        
+        
+        return 
+
+
 
 
 

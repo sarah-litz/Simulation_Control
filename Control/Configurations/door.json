@@ -13,6 +13,7 @@
             "servo_specs": { 
                 "servo_pin":0, 
                 "servo_type":"continuous",
+                "servo_stop_speed":0.13, 
                 "servo_open_speed":0.8, 
                 "servo_close_speed":-0.1 
             }, 
@@ -33,6 +34,7 @@
             "servo_specs": { 
                 "servo_pin":13,
                 "servo_type":"continuous", 
+                "servo_stop_speed":0.13, 
                 "servo_open_speed":0.8, 
                 "servo_close_speed":-0.1
             }, 
