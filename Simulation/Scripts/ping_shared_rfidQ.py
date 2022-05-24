@@ -33,7 +33,7 @@ class SimulatePings(SimulationABC):
         self.map.instantiated_interactables['rfid1'].simulate = True # we don't want to simulate rfid1 in this one in order to test the functionality of modeABC.py shared_rfidQ and rfidListener() functionality
         rfid1 = self.map.instantiated_interactables['rfid1']
         
-        lever1 = self.map.instantiated_interactables['lever1']
+        lever1 = self.map.instantiated_interactables['lever_food']
         lever1loc = self.map.get_location_object(lever1)
         lever1component = lever1loc.get_component_from_interactable(lever1)
 
@@ -54,15 +54,23 @@ class SimulatePings(SimulationABC):
         print("extending")
         lever1.extend()
         print("done extending")
-        time.sleep(1)
+        time.sleep(3)
         print("retracting")
+        lever1.retract() 
+        print("done retracting")
 
+
+        time.sleep(3)
+        print("simulating vole interactable interaction with lever1")
         try:        
             vole1.simulate_vole_interactable_interaction(lever1)
         except TypeError as e: 
             print(e)
             return
 
+
+        print("finished interaction ==> returning from ping_shared_rfidQ.py Mode 1 Simulation!")
+        return 
         time.sleep(2)
         rfid_tag = 1 # this will notify the rfid object with id=1
 

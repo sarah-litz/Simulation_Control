@@ -3,23 +3,48 @@
     "door1": 
     {
         "id":1, 
-        "servoPin":4,
         "threshold_condition": { "attribute":"state", "initial_value": false, "goal_value": true }, 
-        "dependents": ["lever1"]
+        "dependents": ["lever_door1"], 
+        "hardware_specs": {
+            "button_specs": { 
+                "button_pin": 4, 
+                "pullup_pulldown":"pullup"
+            }, 
+            "servo_specs": { 
+                "servo_pin":0, 
+                "servo_type":"continuous",
+                "servo_open_speed":0.8, 
+                "servo_close_speed":-0.1 
+            }, 
+            "open_time": 1.6
+            
+        }
     },
     "door2": 
     {
         "id":2, 
-        "servoPin":3, 
         "threshold_condition": { "attribute":"state", "initial_value": false, "goal_value":true }, 
-        "dependents": []
+        "dependents": ["lever_door2"],
+        "hardware_specs": { 
+            "button_specs": { 
+                "button_pin":17, 
+                "pullup_pulldown":"pullup"
+            }, 
+            "servo_specs": { 
+                "servo_pin":13,
+                "servo_type":"continuous", 
+                "servo_open_speed":0.8, 
+                "servo_close_speed":-0.1
+            }, 
+            "open_time": 1.6
+        }
     }, 
     "door3":
     {
         "id":3,
-        "servoPin":5, 
         "threshold_condition": {"attribute":"state", "initial_value":false, "goal_value":true}, 
-        "dependents": []
+        "dependents": [], 
+        "hardware_specs": { }
     }
 }
 
