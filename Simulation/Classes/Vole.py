@@ -133,7 +133,7 @@ class Vole:
                 setattr(interactable, threshold_attr_name, interactable.threshold_condition['goal_value'])
                 
                 newattrval = getattr(interactable, threshold_attr_name)
-                # sim_log(f'{interactable.name}, manual attribute check: {interactable.state}')
+                # sim_log(f'{interactable.name}, manual attribute check: {interactable.switch}')
                 sim_log(f"(Vole.py, attempt_move) {interactable.name}, attribute result: {newattrval}")
             
             # countdown(5, f'simulating vole{self.tag} interaction with {interactable.name}')

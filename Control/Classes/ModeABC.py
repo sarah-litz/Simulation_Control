@@ -16,6 +16,9 @@ import threading
 import queue 
 from .InteractableABC import rfid
 from ..Classes.Timer import countdown
+import signal
+import sys
+
 
 
 
@@ -26,6 +29,7 @@ class modeABC:
 
     def __init__(self, timeout = None, map = None, enterFuncs = None, exitFuncs = None, bypass = False, **kwargs):
         
+
         # Set the givens
         self.map     = map
         self.threads = None
@@ -46,11 +50,20 @@ class modeABC:
         # Simulation only 
         self.simulation_lock = threading.Lock() # locked while a simulation is actively running
 
+        # Set Interrupt Handler for Clean Exit
+        signal.signal(signal.SIGINT, self._interrupt_handler) # Ctrl-C
+        signal.signal(signal.SIGTSTP, self._interrupt_handler) # Ctrl-Z
 
 
     def __str__(self): 
         return __name__
 
+    def _interrupt_handler(self, signal, frame): 
+        ''' catches interrupt, notifies threads, attempts a clean exit '''
+        print(f'(ModeABC, interrupt_handler) Deactivating Interactables')
+        self.map.deactivate_interactables() # shuts off all of the hardware interactables
+        sys.exit(0)
+        
 
     def threader(func):
         ''' decorator function to run function on its own daemon thread '''

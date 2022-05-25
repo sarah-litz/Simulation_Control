@@ -30,7 +30,7 @@ class LeverTests(modeABC):
         super().__init__(timeout, map)
 
     def __str__(self): 
-        return 'Mode 1'
+        return 'Lever Tests'
     
     def setup(self): 
         ''' any tasks to setup before run() gets called '''
@@ -83,7 +83,7 @@ class DoorTests(modeABC):
         super().__init__(timeout, map)
 
     def __str__(self): 
-        return 'Mode 2'
+        return 'Door Tests'
 
 
     def setup(self): 
@@ -97,13 +97,14 @@ class DoorTests(modeABC):
 
         control_log('NEW MODE: Door Tests ')
 
-        door1 = self.map.instantiated_interactables['door1']
         door2 = self.map.instantiated_interactables['door2']
+        door1 = self.map.instantiated_interactables['door1']
+
 
 
         # Door 1 Tests
-        print("opening door1")
-        door1.open() 
+        print("opening door2 // current switch value: ", door2.isPressed)
+        door2.open() 
         
         
         return 

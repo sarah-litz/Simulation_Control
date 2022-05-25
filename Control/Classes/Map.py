@@ -152,7 +152,7 @@ class Map:
             i.deactivate()
         if clear_threshold_queue: 
             self.reset_interactables() # empties the interactables threshold queue
-
+    
                 
         
             

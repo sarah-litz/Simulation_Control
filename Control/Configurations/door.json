@@ -3,7 +3,7 @@
     "door1": 
     {
         "id":1, 
-        "threshold_condition": { "attribute":"state", "initial_value": false, "goal_value": true }, 
+        "threshold_condition": { "attribute":"isPressed", "initial_value": false, "goal_value": true }, 
         "dependents": ["lever_door1"], 
         "hardware_specs": {
             "button_specs": { 
@@ -17,14 +17,15 @@
                 "servo_open_speed":0.8, 
                 "servo_close_speed":-0.1 
             }, 
-            "open_time": 1.6
+            "open_time": 5, 
+            "close_timeout":8
             
         }
     },
     "door2": 
     {
         "id":2, 
-        "threshold_condition": { "attribute":"state", "initial_value": false, "goal_value":true }, 
+        "threshold_condition": { "attribute":"isPressed", "initial_value": true, "goal_value":true }, 
         "dependents": ["lever_door2"],
         "hardware_specs": { 
             "button_specs": { 
@@ -38,15 +39,17 @@
                 "servo_open_speed":0.8, 
                 "servo_close_speed":-0.1
             }, 
-            "open_time": 1.6
+            "open_time": 5, 
+            "close_timeout": 8
         }
     }, 
     "door3":
     {
         "id":3,
-        "threshold_condition": {"attribute":"state", "initial_value":false, "goal_value":true}, 
+        "threshold_condition": {"attribute":"isPressed", "initial_value":false, "goal_value":true}, 
         "dependents": [], 
         "hardware_specs": { }
+        
     }
 }
 
