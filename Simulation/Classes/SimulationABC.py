@@ -386,9 +386,9 @@ class SimulationABC:
                     break 
             
             if not hasattr(i, 'simulate'): 
-                print(f'simulation.json did not contain the interactable {name}. sim defaults to False, so this interactable will not be simulated as the simulation runs.')
-                sim_log(f'simulation.json did not contain the interactable {name}. sim defaults to False, so this interactable will not be simulated as the simulation runs.')
-                setattr(i, 'simulate', False) 
+                print(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
+                sim_log(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
+                setattr(i, 'simulate', True) 
         
 
         ## add Voles ## 
