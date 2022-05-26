@@ -1,31 +1,65 @@
+
 { 
-    "lever1": 
+
+
+    "lever_food": 
     {
         "id":1,
         "hardware_specs": {
-            "signalPin":27, 
-            "numPresses":2, 
-            "extended_angle":30, 
-            "retracted_angle":105, 
-            "pullup_pulldown":"pullup", 
-            "servo_type":"positional", 
-            "servo_id":14
+            "button_specs": {             
+                "button_pin":27, 
+                "pullup_pulldown":"pullup" 
+            }, 
+            "servo_specs": { 
+                "servo_type":"positional", 
+                "servo_pin":14,
+                "extended_angle":40, 
+                "retracted_angle":123
+            }
         },  
         "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value": 4, "reset_value": true }
     },
+
     
-    "lever2": 
+
+    "lever_door1": 
     {
         "id":2,
         "hardware_specs": {
-            "signalPin":19, 
-            "numPresses":2, 
-            "extended_angle":30, 
-            "retracted_angle":105, 
-            "pullup_pulldown":"pullup", 
-            "servo_type":"positional", 
-            "servo_id":1
+            "button_specs": { 
+                "button_pin":18, 
+                "pullup_pulldown":"pullup"
+            }, 
+            "servo_specs": { 
+                "servo_type":"positional", 
+                "servo_pin":2,
+                "extended_angle":15, 
+                "retracted_angle":98
+            }
         },  
         "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value": 4, "reset_value": true }    
+    }, 
+
+
+
+    "lever_door2": 
+    { 
+        "id":3, 
+        "hardware_specs": { 
+
+            "button_specs": {
+                "button_pin":22, 
+                "pullup_pulldown":"pullup"
+            }, 
+            "servo_specs": { 
+                "servo_type":"positional", 
+                "servo_pin":12,
+                "extended_angle":15, 
+                "retracted_angle":98 
+            }
+        }, 
+        "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value":2 }
     }
+
+
 }

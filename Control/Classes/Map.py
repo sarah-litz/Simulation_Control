@@ -98,17 +98,17 @@ class Map:
         if type == 'door': 
             
             # get door w/ <id> from the door config file 
-            try: new_obj = door(ID=objspec['id'], servoPin = objspec['servoPin'], threshold_condition = objspec['threshold_condition']) # instantiate door 
+            try: new_obj = door(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name) # instantiate door 
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
         elif type == 'rfid': 
 
-            try: new_obj = rfid(ID=objspec['id'], threshold_condition = objspec['threshold_condition']) # ASK: also need to pass in rfidQ?? confused on where this comes from though. 
+            try: new_obj = rfid(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], name = name) # ASK: also need to pass in rfidQ?? confused on where this comes from though. 
             except Exception as e: raise Exception(f'there was a problem instantiating the object: {name}: {e}')
 
         elif type == 'lever': 
             
-            try: new_obj = lever(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'])
+            try: new_obj = lever(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name)
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
 
@@ -152,7 +152,7 @@ class Map:
             i.deactivate()
         if clear_threshold_queue: 
             self.reset_interactables() # empties the interactables threshold queue
-
+    
                 
         
             

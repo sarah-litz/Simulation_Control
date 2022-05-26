@@ -13,6 +13,7 @@ from cgitb import reset
 import time
 import threading
 import queue
+import signal
 
 # Local Imports 
 from Logging.logging_specs import control_log, sim_log
@@ -35,14 +36,16 @@ except ModuleNotFoundError as e:
     SERVO_KIT = None
 
 
+
+
 class interactableABC:
 
-    def __init__(self, threshold_condition):
+    def __init__(self, threshold_condition, name):
 
         ## Object Information ## 
         self.ID = None
         self.active = False # must activate an interactable to startup threads for tracking any vole interactions with the interactable
-        self.name = 'OVERRIDE!'
+        self.name = name # name used is the one specified in the configuration files 
 
         ## Location Information ## 
         self.edge_or_chamber = None # string to represent if this interactable sits along an edge or in a chamber
@@ -74,80 +77,108 @@ class interactableABC:
         '''subclass of interactableABC, as buttons will never be a standalone object, they are always created to control a piece of hardware
         attempts importing GPIO library. If simulation, this will fail, in which case we return and don't have a real button. 
         '''
-        def __init__(self, pin, pullup_pulldown):
+        def __init__(self, button_specs):
 
-            self.pin = pin 
-            self.pullup_pulldown = pullup_pulldown 
+            self.pin_num = button_specs['button_pin'] 
+            self.pullup_pulldown = button_specs['pullup_pulldown'] 
             self.num_pressed = 0 # number of times that button has been pressed 
             
             # self.pressed_val denotes what value we should look for (0 or 1) that denotes a lever press
-            self.pressed_val = -1 # defaults to -1 in scenario that gpio setup fails 
-            self._setup_gpio()
-
+            self.pressed_val = -1 # defaults to -1 in scenario that gpio setup fails (including if isSimulation)
+            try: 
+                self._setup_gpio()
+            except:
+                print(f'(InteractableABC, Button.__init__) simulating gpio connection')
         def _setup_gpio(self): 
             try: 
                 if self.pullup_pulldown == 'pullup':
-                    GPIO.setup(self.pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+                    GPIO.setup(self.pin_num, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+                    self.pressed_val = 0 
                 elif self.pullup_pulldown == 'pulldown': 
-                    GPIO.setup(self.pin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+                    GPIO.setup(self.pin_num, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+                    self.pressed_val = 1
                 else: 
-                    raise KeyError(f'(InteractableABC.py, Button) Configuration file error when instantiating Button {self.name}, must be "pullup" or "pulldown", but was passed {pullup_pulldown}')
+                    raise KeyError(f'(InteractableABC.py, Button) Configuration file error when instantiating Button {self.name}, must be "pullup" or "pulldown", but was passed {self.pullup_pulldown}')
             except: 
-                print('(InteractableABC.py, Button) simulating gpio connection')
-            
-            
+                raise Exception('(InteractableABC.py, Button) simulating gpio connection')
+        
 
+
+        @property
+        def isPressed(self): 
+            ''' 
+            returns the current boolean value of the button. If the button is being simulated 
+            (denoted by the pressed_val < 0, raise an exception because this function should not be getting accessed by a simulated button. ) 
+            '''
+            # print(f'(InteratableABC, isPressed start value: {self.isPressed}')
+            if self.pressed_val < 0: 
+                raise Exception('(InteractableABC.py, Button.isPressed) cannot access gpio input value for a Button that is being simulated.')  
+
+            ''' if not a simulation, each time isPressed gets accessed, we want to recheck the GPIO input value. set isPressed as a method that gets called each time ''' 
+            
+            print(f'(InteractableABC, Button.isPressed property call)')
+            if GPIO.input(self.pin_num) == self.pressed_val: 
+                return True 
+            else: 
+                return False   
+    
+        
+    #
+    # InteractableABC Subclasses: Servo, PosServo(Servo), ContServo(Servo), and Button
+    #
     class Servo: 
         # class for managing servos 
         '''subclass of interactableABC, as servos will never be a standalone object, they are always created in order to control a piece of hardware. 
         attempts importing of adafruit library. If simulation, this will fail, in which case we return and don't have a real servo. 
         '''
 
-        def __init__(self, ID, servo_type): 
+        def __init__(self, servo_specs): 
             '''takes a positional ID on the adafruit board and the servo type, and returns a servo_kit object'''
             
-            self.ID = ID            
-
+            self.pin_num = servo_specs['servo_pin']
+            self.servo_type = servo_specs['servo_type']  
+            self.servo = self.__set_servo()   
             
-            def set_servo(): 
-                #if SERVO_KIT is None: 
-                #    # simulating servo kit
-                #    return None 
-                
-                try: 
-                    if servo_type == 'positional':
-                        return SERVO_KIT.servo[ID]
-                    elif servo_type == 'continuous':
-                        return SERVO_KIT.continuous_servo[ID]
-                    else: 
-                        raise KeyError(f'(InteractableABC.py, Servo) servo type was passed as {servo_type}, must be either "positional" or "continuous"')
-
-                except ModuleNotFoundError as e: 
-                    print(e)
-                    return None
-                except KeyError as e: 
-                    print(e)
-                    return None
+        def __set_servo(self): 
+            #if SERVO_KIT is None: 
+            #    # simulating servo kit
+            #    return None 
             
-            self.servo = set_servo()
+            try: 
+                if self.servo_type == 'positional':
+                    return SERVO_KIT.servo[self.pin_num]
+                elif self.servo_type == 'continuous':
+                    return SERVO_KIT.continuous_servo[self.pin_num]
+                else: 
+                    raise KeyError(f'(InteractableABC.py, Servo) servo type was passed as {self.servo_type}, must be either "positional" or "continuous"')
+
+            except ModuleNotFoundError as e: 
+                print(e)
+                return None
+            except KeyError as e: 
+                print(e)
+                return None
+            
+
 
     class PosServo(Servo): 
         ''' positional servo '''
-        def __init__(self, ID, servo_type): 
-            super().__init__(ID, servo_type)
+        def __init__(self, servo_specs): 
+            super().__init__(servo_specs)
             self.angle = 0 # positional servo tracks current angle of the servo 
     
     class ContServo(Servo): 
         ''' continuous servo '''
-        def __init__(self, ID, servo_type): 
-            super().__init__(ID, servo_type)
+        def __init__(self, servo_specs): 
+            super().__init__(servo_specs)
             self.throttle = 0 # continuous servo tracks speed that wheel turns at 
 
-            
+        
 
 
-
-
+    #
+    # InteractableABC methods
+    #
     def activate(self):
 
         print(f"(InteractableABC.py, activate) {self.name} has been activated. starting contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
@@ -164,6 +195,9 @@ class interactableABC:
         
         self.threshold = False # "resets" the threshold value so it'll only check for a new threshold occurence in anything following its deactivation
         self.active = False 
+
+        if hasattr(self, 'stop'): 
+            self.stop() # stops things that could be left running
 
     def reset(self): 
         self.threshold_event_queue.queue.clear() # empty the threshold_event_queue
@@ -278,28 +312,35 @@ class interactableABC:
 
          
 class lever(interactableABC):
-    def __init__(self, ID, threshold_condition, hardware_specs ):
+    def __init__(self, ID, threshold_condition, hardware_specs, name):
         # Initialize the parent class
-        super().__init__(threshold_condition)
+        super().__init__(threshold_condition, name)
 
         # Initialize the given properties
-        self.name = 'lever'+str(ID) 
         self.ID        = ID 
-        self.signalPin = hardware_specs['signalPin']
 
         # Current Position Tracking # 
         self.isExtended = False 
-        self.extended_angle = hardware_specs['extended_angle']
-        self.retracted_angle = hardware_specs['retracted_angle']
+        self.extended_angle = hardware_specs['servo_specs']['extended_angle']
+        self.retracted_angle = hardware_specs['servo_specs']['retracted_angle']
 
         # Movement Controls # 
-        self.servoObj = self.PosServo(ID = hardware_specs['servo_id'], servo_type = hardware_specs['servo_type']) # positional servo to control extending/retracting lever 
-        self.switch = self.Button(pin = hardware_specs['signalPin'], pullup_pulldown = hardware_specs['pullup_pulldown']) # button to recieve press signals thru changes in the gpio val
+        self.servoObj = self.PosServo(servo_specs = hardware_specs['servo_specs']) # positional servo to control extending/retracting lever; we can control by setting angles rather than speeds
+        self.switch = self.Button(button_specs = hardware_specs['button_specs']) # button to recieve press signals thru changes in the gpio val
 
         ## Threshold Condition Tracking ## 
         self.pressed = self.switch.num_pressed # counts current num of presses 
+        if self.switch.pressed_val < 0: # simulating gpio connection
+            self.isPressed = None 
+        else: 
+            self.isPressed = self.switch.isPressed # True if button is in a pressed state, false otherwise 
+
         #self.required_presses = self.threshold_condition["goal_value"] # Threshold Goal Value specifies the threshold goal, i.e. required_presses to meet the threshold
         #self.threshold_attribute = self.threshold_condition["attribute"] # points to the attribute we should check to see if we have reached goal. For lever, this is simply a pointer to the self.pressed attribute. 
+
+        ## Dependency Chain values can stay as the default ones set by InteractableABC ## 
+        # self.barrier = False 
+        # self.autonomous = False
 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
@@ -335,28 +376,22 @@ class lever(interactableABC):
         # HARDWARE THINGS -- use the Servo object to extend 
         #
         else: 
-
-            print('SERVO INERACTION')
-
-            self.servoObj.servo.angle = self.extended_angle # set to extended angle 
+            # wiggle lever to reduce binding and buzzing 
+            modifier = 15 
+            if self.extended_angle > self.retracted_angle: extend_start = self.extended_angle + modifier
+            else: extend_start = self.extended_angle - modifier 
+            self.servoObj.servo.angle = extend_start # change angle to wiggle 
             
-            print(time.sleep(3))
+            time.sleep(0.1)
+            
+            # set to the fully extended angle 
+            self.servoObj.servo.angle = self.extended_angle
+            
             self.isExtended = True 
 
-            #we will wiggle the lever a bit to try and reduce binding and buzzing
-            modifier = 15
-            if self.extended_angle > self.retracted_angle: extend_start = self.extended_angle + modifier
-            else: extend_start = self.extended_angle - modifier
-            
-            # Extend Lever
-            self.servoObj.servo.angle = extend_start 
-            event_timestamp = time.time()
-            time.sleep(0.1)
-            self.servoObj.servo.angle = self.extended_angle 
+            return 
 
             
-
-
     #@threader
     def retract(self):
         """Retracts lever to the property value
@@ -378,6 +413,16 @@ class lever(interactableABC):
         #
         # HARDWARE THINGS
         #
+        else: 
+
+            # set to the fully retracted angle 
+
+            self.servoObj.servo.angle = self.retracted_angle
+
+            self.isExtended = False 
+
+            return 
+
 
     def __move(self, angle):
         """This moves the lever to the specified angle. This can be any angle in the correct range, and the function will produce an error if the angle is out of range of the motor. 
@@ -403,35 +448,47 @@ class door(interactableABC):
         interactableABC ([type]): [description]
     """
 
-    def __init__(self, ID, servoPin, threshold_condition):
-        # Initialize the abstract class stuff
-        super().__init__(threshold_condition)
+    def __init__(self, ID, threshold_condition, hardware_specs, name):
         
-        # Set the input variables
-        self.name = 'door'+str(ID)
-        self.ID       = ID 
-        self.servoPin = servoPin
-
-        # in order for a threshold event to occur, there must have also been a threshold_event for its dependent interactable
+        super().__init__(threshold_condition, name) # init the parent class 
         
-        # Set the state variable, default to False (closed). (open, closed) = (True, False)
-        # (NOTE) need to initialize the door's state in more accurate way 
-        self.state = threshold_condition['initial_value']
-        '''if threshold_condition['initial_value'] is True: # ensure that the physical door refelcts the initial state specified by the config file
-            self.open() 
-        else: self.close() '''
+        self.ID = ID  # init the given properties 
+        
 
-        # Set properties that will later be set
-        self.currentAngle = None
-        self.openAngle = None
-        self.closeAngle = None
+        # Speed Tracking # 
+        self.stop_speed = hardware_specs['servo_specs']['servo_stop_speed']
+        self.open_speed = hardware_specs['servo_specs']['servo_open_speed']
+        self.close_speed = hardware_specs['servo_specs']['servo_close_speed']
+        self.open_time = hardware_specs['open_time'] # time it takes for a door to open 
+        self.close_timeout = hardware_specs['close_timeout'] # max time we will wait for a door to close before timing out
 
-        self.barrier = True 
-        self.autonomous = False 
+
+        # Door Controls: Requires Continuous Servo and Button (aka switch) # 
+        self.servoObj = self.ContServo(hardware_specs['servo_specs']) # continuous servo to control speed of opening and closing door
+        self.switch = self.Button(hardware_specs['button_specs']) 
+        
+        ## Threshold Condition Tracking ## 
+        if self.switch.pressed_val < 0: 
+            self.isOpen = threshold_condition['initial_value'] # if simulating gpio connection, then we want to leave isPressed as an attribute value that we can manually set
+        else: # if not simulating gpio connection, then isPressed should be a function call that checks the GPIO input/output value each call
+            self.isOpen = self.switch.isPressed # True if button is in a pressed state, false otherwise 
+        
+            # Set Doors Starting state to its Initial Open/Close Position
+        if self.isOpen != threshold_condition['initial_value']: 
+            if threshold_condition['initial_value'] == True: 
+                self.open() 
+            else: 
+                self.close()
+
+
+        ## Dependency Chain Information ## 
+        self.barrier = True # set to True if the interactable acts like a barrier to a vole, meaning we require a vole interaction of somesort everytime a vole passes by this interactable. 
+        self.autonomous = False # False because doors are dependent on other interactables or on vole interactions ( i.e. doors are dependent on lever press )
 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
     
     
+
     def run_in_thread(func): 
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
@@ -485,7 +542,7 @@ class door(interactableABC):
 
     def add_new_threshold_event(self): 
         # appends to the threshold event queue 
-        self.threshold_event_queue.put(f'{self.name} isOpen:{self.state}')
+        self.threshold_event_queue.put(f'{self.name} isOpen:{self.switch}')
         print("Door Threshold: ", self.threshold, "  Door Threshold Condition: ", self.threshold_condition)
         print(f'(Door(InteractableABC.py, add_new_threshold_event) {self.name} event queue: {list(self.threshold_event_queue.queue)}')
            
@@ -506,26 +563,41 @@ class door(interactableABC):
     def close(self):
         """This function closes the doors fully"""
 
+        #  This Function Accesses Hardware => Perform Sim Check First
+        if self.isSimulation(): 
+            # If door is being simulated, then rather than actually closing a door we can just set the state to False (representing a Closed state)
+            print(f'(Door(InteractableABC), close()) {self.name} is being simulated. Setting state to Closed and returning.')
+            self.isOpen = False 
+            return 
+
         # check if the door is already closed 
-        if self.state is False: 
+        if self.isOpen is False: 
 
             # door is already closed 
             control_log('(Door(InteractableABC)) {self.name} was already Closed')
             print(f'(Door(InteractableABC)) {self.name} was already Closed')
             return 
 
-
-        #  This Function Accesses Hardware => Perform Sim Check First
-        if self.isSimulation(): 
-            # If door is being simulated, then rather than actually closing a door we can just set the state to False (representing a Closed state)
-            print(f'(Door(InteractableABC), close()) {self.name} is being simulated. Setting state to Closed and returning.')
-            self.state = False 
-            return 
-
         # 
         # Direct Rpi to Close Door
         # 
-        raise Exception(f'(Door(InteractableABC), close() ) Hardware Accessed Stuff Here to Close {self.name}')
+        self.servoObj.servo.throttle = self.close_speed 
+
+        start = time.time() 
+        while time.time() < ( start + self.close_timeout ): 
+            # wait for door to close or bail if we timeout 
+            if self.isOpen is False: 
+                # door successfully closed 
+                self.stop() # stop door movement 
+                return 
+            else:
+                time.sleep(0.005)
+        
+        # Close Unsuccessful 
+        self.stop() # stop door movement 
+        control_log(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
+        print(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
+        # raise Exception(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
 
 
 
@@ -533,29 +605,48 @@ class door(interactableABC):
     def open(self):
         """This function opens the doors fully
         """
-
-
-        # check if door is already open
-        if self.state is True: 
-
-            control_log('(Door(InteractableABC)) {self.name} is Open')
-            print(f'(Door(InteractableABC)) {self.name} is Open')
-            return 
         
 
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation(): 
             # If door is being simulated, then rather than actually opening a door we can just set the state to True (representing an Open state)
-            print(f'(Door(InteractableABC), open()) {self.name} is being simulated. Setting state to Open and returning.')
-            self.state = True 
+            print(f'(Door(InteractableABC), open()) {self.name} is being simulated. Setting switch val to Open (True) and returning.')
+            self.isOpen = True 
+            return 
+        
+        # check if door is already open
+        if self.isOpen is True: 
+
+            control_log('(Door(InteractableABC)) {self.name} is Open')
+            print(f'(Door(InteractableABC)) {self.name} is Open')
             return 
   
 
         # 
         # Direct RPI to Open Door 
         #
-        raise Exception(f'(Door(InteractableABC), open() ) Hardware Accessed Stuff Here to Open {self.name}')
+        self.servoObj.servo.throttle = self.open_speed 
 
+        start = time.time() 
+        while time.time() < ( start + self.open_time ): 
+            #wait for the door to open -- we just have to assume this will take the exact same time of <open_time> each time, since we don't have a switch to monitor for if it opens all the way or not. 
+            time.sleep(0.005) 
+        
+        self.stop() # stop door movemnt 
+
+        # check if successful by checking the switch (button) val 
+        if self.isOpen: 
+            # successful 
+            return 
+        else: 
+            control_log(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
+            print(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
+            # raise Exception(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
+
+    def stop(self): 
+        ''' sets servo speed to stop speed '''
+        self.servoObj.servo.throttle = self.stop_speed 
+        return 
 
     def check_state(self):
         """This returns the state of whether the doors are open or closed, and also sets the state variable to the returned value
@@ -585,11 +676,9 @@ class rfid(interactableABC):
         interactableABC ([type]): [description]
     """
 
-    def __init__(self, ID, threshold_condition):
+    def __init__(self, ID, threshold_condition, name):
         # Initialize the parent 
-        super().__init__(threshold_condition)
-
-        self.name = 'rfid'+str(ID)
+        super().__init__(threshold_condition, name)
         self.ID = ID 
         self.rfidQ = queue.Queue()
 

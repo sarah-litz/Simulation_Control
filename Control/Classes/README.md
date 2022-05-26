@@ -13,8 +13,8 @@ These "simulation checks" should be called in any method that accesses hardware 
 For example, within a door's open() function we write:
 
     if door.isSimulation() is True: 
-        # simulation is running, set new state and return 
-        door.state = True 
+        # simulation is running, set new switch state and return 
+        door.switch = True 
         return 
     else: 
         # door hardware is present, continue with normal execution...

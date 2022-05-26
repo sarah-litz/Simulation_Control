@@ -10,7 +10,7 @@ formatter = logging.Formatter('%(asctime)s %(message)s') # To Display Level Name
 
 ## the basicConfig is currently set to filepath specific to my own file tree. 
 ## This is for testing purposes only. If causing errors, comment the following line out and run again. ##  
-logging.basicConfig(filename='/Users/sarahlitz/Projects/Donaldson Lab/Vole Simulator Version 1/Box_Vole_Simulation/Logging/eventlogging.log' , level=logging.DEBUG )
+logging.basicConfig(filename='/home/pi/Litz/Litz_Simulation/Logging/eventlogging.log' , level=logging.DEBUG )
 ## -- ## 
 
 # Location of the Logging File the Control Software should write to
