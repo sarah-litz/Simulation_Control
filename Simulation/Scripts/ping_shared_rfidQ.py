@@ -30,14 +30,14 @@ class SimulatePings(SimulationABC):
         # Simulation Goal: Test the shared RFID queue functionality where control's Mode class listens for things to get added to shared q, and then notifies the corresponding rfid object if there is a ping. 
         # 
 
-        self.map.instantiated_interactables['rfid1'].simulate = True # we don't want to simulate rfid1 in this one in order to test the functionality of modeABC.py shared_rfidQ and rfidListener() functionality
+        self.map.instantiated_interactables['rfid1'].isSimulation = True # we don't want to simulate rfid1 in this one in order to test the functionality of modeABC.py shared_rfidQ and rfidListener() functionality
         rfid1 = self.map.instantiated_interactables['rfid1']
         
         lever1 = self.map.instantiated_interactables['lever_food']
         lever1loc = self.map.get_location_object(lever1)
         lever1component = lever1loc.get_component_from_interactable(lever1)
 
-        lever2 = self.map.instantiated_interactables['lever2']
+        lever2 = self.map.instantiated_interactables['lever_door1']
         lever2loc = self.map.get_location_object(lever2)
         lever2component = lever2loc.get_component_from_interactable(lever2)
 

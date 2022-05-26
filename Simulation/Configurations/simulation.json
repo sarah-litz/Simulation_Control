@@ -8,14 +8,16 @@
             "simulate_with_fn": "lambda self, vole: self.shared_rfidQ.put( (vole, self.ID, time.time()) )" 
         }, 
         {"name":"door1", 
-            "simulate":true
+            "simulate":true, 
+            "simulate_button":false, 
+            "simulate_servo":true 
         }, 
         {"name":"rfid2", 
             "simulate":true, 
             "simulate_with_fn": "lambda self, vole: self.rfidQ.put( (vole, self.ID) )"  
         }, 
         {"name":"lever_food", 
-            "simulate":false
+            "simulate":true
         }, 
         {"name":"lever_door1", 
             "simulate":true

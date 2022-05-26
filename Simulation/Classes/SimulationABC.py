@@ -373,22 +373,25 @@ class SimulationABC:
         for (name, i) in self.map.instantiated_interactables.items(): # loop thru interactable names 
 
             # check if name was specified in the config file 
-            for interactable_specs in data['interactables']:
+            set = False 
+            for interactable_specs in data['interactables']: # find the instantiated interactables in the list of interactable specs
 
                 if interactable_specs['name'] == name:  
-                    # give obj new attribute to represent if we should simulate the interactable or not  
-                    setattr(i, 'simulate', interactable_specs['simulate']) 
+                    # set isSimulation value based on true/false val set in the config file
+                    i.isSimulation = interactable_specs['simulate']
+                    set = True 
 
                     # if provided, set the optional function to call for simulation process
                     if 'simulate_with_fn' in interactable_specs: 
                         setattr(i, 'simulate_with_fn', eval(interactable_specs['simulate_with_fn']))
             
                     break 
-            
-            if not hasattr(i, 'simulate'): 
+                
+            if not set: # Simulation.json missing a config specification
+                # no configurations for interactable i in simulation.json. Default isSimulation to True and print to screen to let user know.
                 print(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
                 sim_log(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
-                setattr(i, 'simulate', True) 
+                i.isSimulation = True 
         
 
         ## add Voles ## 

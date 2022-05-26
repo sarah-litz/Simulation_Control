@@ -14,7 +14,7 @@ For example, within a door's open() function we write:
 
     if door.isSimulation() is True: 
         # simulation is running, set new switch state and return 
-        door.switch = True 
+        door.buttonObj = True 
         return 
     else: 
         # door hardware is present, continue with normal execution...

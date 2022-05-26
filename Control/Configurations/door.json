@@ -3,7 +3,8 @@
     "door1": 
     {
         "id":1, 
-        "threshold_condition": { "attribute":"isPressed", "initial_value": false, "goal_value": true }, 
+        "threshold_condition": { "attribute":"isOpen", "initial_value": null, "goal_value": true },
+
         "dependents": ["lever_door1"], 
         "hardware_specs": {
             "button_specs": { 
@@ -25,7 +26,7 @@
     "door2": 
     {
         "id":2, 
-        "threshold_condition": { "attribute":"isPressed", "initial_value": true, "goal_value":true }, 
+        "threshold_condition": { "attribute":"isOpen", "initial_value": false, "goal_value":true }, 
         "dependents": ["lever_door2"],
         "hardware_specs": { 
             "button_specs": { 
@@ -46,7 +47,7 @@
     "door3":
     {
         "id":3,
-        "threshold_condition": {"attribute":"isPressed", "initial_value":false, "goal_value":true}, 
+        "threshold_condition": {"attribute":"isOpen", "initial_value":false, "goal_value":true}, 
         "dependents": [], 
         "hardware_specs": { }
         
