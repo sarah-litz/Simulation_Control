@@ -9,8 +9,8 @@
         }, 
         {"name":"door1", 
             "simulate":true, 
-            "simulate_button":false, 
-            "simulate_servo":true 
+            "simulate_button_notUsingRightNowId":false, 
+            "simulate_servo_notUsingRightNow":true 
         }, 
         {"name":"rfid2", 
             "simulate":true, 

@@ -370,10 +370,10 @@ class lever(interactableABC):
                 if self.servoObj.servo is None: 
                     errorMsg.append('servoObj')
                 
-                raise Exception(f'(Lever, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly.')
+                raise Exception(f'(Lever, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead.')
 
             return 
-            
+
     def add_new_threshold_event(self): 
 
         # appends to the lever's threshold event queue 
@@ -536,7 +536,7 @@ class door(interactableABC):
                 if self.servoObj.servo is None: 
                     errorMsg.append('servoObj')
                 
-                raise Exception(f'(Door, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly.')
+                raise Exception(f'(Door, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead.')
 
             return 
 
