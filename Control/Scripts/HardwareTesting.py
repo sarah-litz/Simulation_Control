@@ -17,6 +17,37 @@ from Logging.logging_specs import control_log
 
 #---------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------
+class ButtonTests(modeABC): 
+
+    '''
+    Description: 
+        BUTTON TESTING 
+        directly sets up a button and then calls listen_for_event() on the button at which point the hardware functionality can be tested. 
+        Then, attempts setting up a lever which will in turn set up a button. Try to mimic the listen_for_event() from the lever. 
+    '''
+
+    def __init__(self, timeout, map):
+        super().__init__(timeout, map)
+
+    def __str__(self): 
+        return 'Lever Tests'
+    
+    def setup(self): 
+        ''' any tasks to setup before run() gets called '''
+    
+    def run(self): 
+        
+        #
+        # LEAVING OFF HERE! 
+        # 
+
+        # using 'door1_override_open_button' @ gpio pin #25 ( referenced LITZ_RPIOPERANT, operant_cage_settings_default.py)
+        
+        # directly setup a button 
+        # call listen_for_event() on the button 
+        
+        pass 
+
 class LeverTests(modeABC):
     
     """

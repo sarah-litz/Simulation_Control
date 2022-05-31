@@ -94,6 +94,7 @@ class interactableABC:
             if self.pressed_val < 0: self.isSimulation = True 
             else: self.isSimulation = False 
 
+
         def _setup_gpio(self): 
             try: 
                 if self.pullup_pulldown == 'pullup':
@@ -110,8 +111,15 @@ class interactableABC:
                 print(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
                 return -1
 
+
+
         def listen_for_event(self, timeout=None, edge=None): # detects the current pin for the occurence of some event
             ''' if buttons GPIO port reaches its pressed_val '''
+
+            def increment_presses(): 
+                print(f'(InteractableABC, Button.listen_for_event) Callback Function increment_presses was called! Meaning an event was detected!')
+                self.num_pressed += 1 
+
 
             #
             # Sim Check; this function accesses gpio library. If button is being simulated, return immediately to avoid errors. 
@@ -125,12 +133,49 @@ class interactableABC:
             #
             if edge is None: 
                 # default to the falling edge 
-                GPIO.add_event_detect(self.pin_num, GPIO.FALLING, bouncetime = 200)
+                GPIO.add_event_detect( self.pin_num, GPIO.FALLING, bouncetime = 200, callback = increment_presses )
             else: 
-                GPIO.add_event_detect(self.pin_num, edge, bouncetime = 200)
+                GPIO.add_event_detect(self.pin_num, edge, bouncetime = 200, callback = increment_presses )
             
 
+            if timeout is None: # monitor pin all while its parent interactable is active 
+                
+                while self.parentObj.active: 
 
+                    if GPIO.event_detected(self.pin_num): 
+
+                        # Button Press ! 
+                        self.num_pressed += 1 # increment number of presses detected 
+                    
+                    time.sleep(0.025)
+                
+                GPIO.remove_event_detect(self.number)
+                return # return from func when parent object is deactivated
+                
+            else: 
+
+                # timeout interval specified 
+                start = time.time() 
+                while self.parentObj.active and (time.time() - start > timeout): 
+
+                    if GPIO.event_detected(self.number): 
+
+                        # Button Press ! 
+                        self.num_pressed += 1 # increment number of presses 
+                    
+                    time.sleep(0.025) 
+                
+                GPIO.remove_event_detect(self.number)
+                return # return from func whne parent object is deactivated or timeout interval is up
+
+            #
+            # While GPIO.input is in its pressed_val state, set isPressed to True 
+            # 
+
+
+            
+
+        
         @property
         def isPressed(self): 
             ''' 
@@ -361,12 +406,15 @@ class lever(interactableABC):
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
 
         ## Threshold Condition Tracking ## 
-        # @property self.pressed returns total number of presses that the buttonObj has counted
+        self.pressed = self.buttonObj.num_pressed # returns total number of presses that the buttonObj has counted
+
+        # we want Button to be updating the num_pressed value. notify 
+
         if self.buttonObj.pressed_val < 0: # simulating gpio connection
             self.isPressed = None 
         else: 
             self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
-
+            
         #self.required_presses = self.threshold_condition["goal_value"] # Threshold Goal Value specifies the threshold goal, i.e. required_presses to meet the threshold
         #self.threshold_attribute = self.threshold_condition["attribute"] # points to the attribute we should check to see if we have reached goal. For lever, this is simply a pointer to the self.pressed attribute. 
 
@@ -377,11 +425,6 @@ class lever(interactableABC):
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
     
-    @property 
-    def pressed(self): 
-        ''' returns the current number of presses that have been detected by the buttonObj '''
-        return self.buttonObj.num_pressed 
-
     def validate_hardware_setup(self):
         
         if self.isSimulation: 
@@ -403,6 +446,7 @@ class lever(interactableABC):
                 raise Exception(f'(Lever, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead.')
 
             return 
+
 
     def add_new_threshold_event(self): 
 
@@ -491,14 +535,9 @@ class lever(interactableABC):
         """
 
         #  This Function Accesses Hardware => Perform Sim Check First
-
-
         pass
 
-    def __check_state(self):
-        """Instantaneously returns the state of the lever
-        """
-        pass
+
 
     def stop(self): 
         if self.isSimulation: return 
@@ -506,6 +545,17 @@ class lever(interactableABC):
             '''Logic here for shutting down hardware'''
             return 
 
+
+
+
+
+
+
+
+
+# # # # # # # # # # # # 
+#      doors          # 
+# # # # # # # # # # # #
 class door(interactableABC):
     """This class is the unique door type class for interactable objects to be added to the Map configuration.
 
