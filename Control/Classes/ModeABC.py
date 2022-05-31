@@ -58,12 +58,6 @@ class modeABC:
     def __str__(self): 
         return __name__
 
-    def _interrupt_handler(self, signal, frame): 
-        ''' catches interrupt, notifies threads, attempts a clean exit '''
-        print(f'(ModeABC, interrupt_handler) Deactivating Interactables')
-        self.map.deactivate_interactables() # shuts off all of the hardware interactables
-        sys.exit(0)
-        
 
     def threader(func):
         ''' decorator function to run function on its own daemon thread '''
@@ -74,39 +68,50 @@ class modeABC:
         return run 
 
 
-
-
+    #
+    # Called prior to running a Mode to ensure everything gets setup properly before a script starts running
+    #
     def enter(self):
-        """This method runs when the mode is entered from another mode. Essentially it is the startup method. This differs from the __init__ method because it should not run when the object is created, rather it should run every time this mode of operation is started. 
-        """
-        print(f'\nnew mode entered: {self}') # print to console 
+        try: 
+            """This method runs when the mode is entered from another mode. Essentially it is the startup method. This differs from the __init__ method because it should not run when the object is created, rather it should run every time this mode of operation is started. 
+            """
+            print(f'\nnew mode entered: {self}') # print to console 
 
-        time.sleep(2) # pause before activating interactables 
+            time.sleep(2) # pause before activating interactables 
 
-        self.map.activate_interactables() # ensure that interactables are running for the new mode 
+            self.map.activate_interactables() # ensure that interactables are running for the new mode 
 
-        self.setup() # prep for run() function call ( this is where calls to deactivate() specific interactables should be made )
+            self.setup() # prep for run() function call ( this is where calls to deactivate() specific interactables should be made )
 
-        time.sleep(3) # Pause Before Starting
+            time.sleep(3) # Pause Before Starting
 
-        self.startTime = time.time() 
-        self.active = True # mark this mode as being active, triggering a simulation to start running, if a simulation exists
+            self.startTime = time.time() 
+            self.active = True # mark this mode as being active, triggering a simulation to start running, if a simulation exists
 
-        self.rfidListener() # starts up listener that checks the shared_rfidQ
+            self.rfidListener() # starts up listener that checks the shared_rfidQ
 
-        self.inTimeout = True 
-        mode_thread = threading.Thread(target = self.run, daemon = True) # start running the run() funciton in its own thread as a daemon thread
-        mode_thread.start() 
+            self.inTimeout = True 
+            mode_thread = threading.Thread(target = self.run, daemon = True) # start running the run() funciton in its own thread as a daemon thread
+            mode_thread.start() 
 
-        # countdown for the specified timeout interval 
-        countdown( timeinterval = self.timeout, message = f"remaining in {self}'s timeout interval" )
+            # countdown for the specified timeout interval 
+            countdown( timeinterval = self.timeout, message = f"remaining in {self}'s timeout interval" )
 
-        # exit when the timeout countdown finishes
-        self.exit()   
+            # exit when the timeout countdown finishes
+            self.exit()   
 
-        mode_thread.join() # ensure that mode thread finishes before returning 
+            mode_thread.join() # ensure that mode thread finishes before returning 
+        
+        except Exception as e: 
+            ''' if any errors/exceptions get raised, code will fall into this except statement where we can ensure nothing gets left running '''
+            print(e)
+            self._except_handler()
 
-     
+
+
+    #
+    # Exiting/Cleanup Functions
+    #
     def exit(self): 
         """This function is run when the mode exits and another mode begins. It closes down all the necessary threads and makes sure the next mode is setup and ready to go. 
         """
@@ -121,8 +126,22 @@ class modeABC:
 
         self.map.deactivate_interactables(clear_threshold_queue = True) # empties the interactable's threshold event queue and sets active = False
 
+    def _interrupt_handler(self, signal, frame): 
+        ''' catches interrupt, notifies threads, attempts a clean exit '''
+        print(f'(ModeABC, _interrupt_handler) Deactivating Interactables')
+        self.map.deactivate_interactables() # shuts off all of the hardware interactables
+        sys.exit(0)
+    def _except_handler(self): 
+        ''' if exception/error occurs, attempts to shutoff any components before exiting '''
+        print(f'(ModeABC, _except_handler) Deactiving Interactables')
+        self.map.deactivate_interactables() # shuts off all the hardware interactables 
+        sys.exit(0)
 
 
+
+    #
+    # rfid listener --> manages the queue that is shared amongst all RFID readers in a box  
+    #
     @threader
     def rfidListener(self):
         """This method listens to the rfid queue and waits until something is added there. (running as daemon thread)
@@ -180,7 +199,10 @@ class modeABC:
 
                 rfid_interactable.rfidQ.put( (ping) ) 
             
-    
+
+   #
+   # Running Modal Scripts 
+   #   
     def setup(self): 
         ''' any tasks for setting up box before run() gets called '''
         raise NameError('this funciton should be overriden')
@@ -193,6 +215,11 @@ class modeABC:
         raise NameError("This function must be overwritten with specific mode logic")
 
 
+
+
+    #
+    # Finding functions & subclasses 
+    # 
     def __find_func(self, functionName):
         """This function takes a given string and returns a function object that has the name of the given string. For example: If there was a class called "car" with a function called "get_miles" that returned the amount of miles the car has drive, this would look like __fund_func('car.get_miles'), and it would return the function object.
 

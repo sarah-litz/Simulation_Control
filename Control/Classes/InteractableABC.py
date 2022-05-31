@@ -90,6 +90,10 @@ class interactableABC:
             # self.pressed_val denotes what value we should look for (0 or 1) that denotes a lever press 
             self.pressed_val = self._setup_gpio()  # defaults to -1 in scenario that gpio setup fails (including if isSimulation)
 
+            # isSimulation is True if we were unable to connect to gpio pin 
+            if self.pressed_val < 0: self.isSimulation = True 
+            else: self.isSimulation = False 
+
         def _setup_gpio(self): 
             try: 
                 if self.pullup_pulldown == 'pullup':
@@ -105,6 +109,26 @@ class interactableABC:
                 control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
                 print(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
                 return -1
+
+        def listen_for_event(self, timeout=None, edge=None): # detects the current pin for the occurence of some event
+            ''' if buttons GPIO port reaches its pressed_val '''
+
+            #
+            # Sim Check; this function accesses gpio library. If button is being simulated, return immediately to avoid errors. 
+            #
+            if self.isSimulation: 
+                raise Exception(f'(InteractableABC, Button, list_for_event) Button for {self.parent} is being simulated.')  
+            
+
+            #
+            # Wait For Event
+            #
+            if edge is None: 
+                # default to the falling edge 
+                GPIO.add_event_detect(self.pin_num, GPIO.FALLING, bouncetime = 200)
+            else: 
+                GPIO.add_event_detect(self.pin_num, edge, bouncetime = 200)
+            
 
 
         @property
@@ -218,6 +242,7 @@ class interactableABC:
 
     def reset(self): 
         self.threshold_event_queue.queue.clear() # empty the threshold_event_queue
+    
 
     def run_in_thread(func): 
         ''' decorator function to run function on its own daemon thread '''
@@ -336,7 +361,7 @@ class lever(interactableABC):
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
 
         ## Threshold Condition Tracking ## 
-        self.pressed = self.buttonObj.num_pressed # counts current num of presses 
+        # @property self.pressed returns total number of presses that the buttonObj has counted
         if self.buttonObj.pressed_val < 0: # simulating gpio connection
             self.isPressed = None 
         else: 
@@ -352,6 +377,11 @@ class lever(interactableABC):
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
     
+    @property 
+    def pressed(self): 
+        ''' returns the current number of presses that have been detected by the buttonObj '''
+        return self.buttonObj.num_pressed 
+
     def validate_hardware_setup(self):
         
         if self.isSimulation: 
@@ -469,6 +499,12 @@ class lever(interactableABC):
         """Instantaneously returns the state of the lever
         """
         pass
+
+    def stop(self): 
+        if self.isSimulation: return 
+        else: 
+            '''Logic here for shutting down hardware'''
+            return 
 
 class door(interactableABC):
     """This class is the unique door type class for interactable objects to be added to the Map configuration.
@@ -752,30 +788,21 @@ class rfid(interactableABC):
         self.threshold_event_queue.put(ping)
 
         # do not deactivate the rfids. always monitoring for pings. 
+    
+    def validate_hardware_setup(self):
+        ''' ensures that hardware was setup correctly '''
+        if self.isSimulation: 
+            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
+            return
+        
+        else: 
+            # not simulating rfid. Check that connections occurred correctly 
+            print('rfid hardware does not yet exist. Cant setup a connection. pls simulate instead.')
 
+    def stop(self): 
+        ''' '''
+        if self.isSimulation: return 
+        else: 
+            '''Logic here for shutting down hardware'''
+            return 
 
-    def from_queue(self, numEntries = 1):
-        """Pulls the given number of entries from the shared rfidQ with the hardware or simulation.
-
-        Args:
-            numEntries (int, optional): Number of queue entries to pull. Defaults to 1.
-        """
-        pass
-
-    def to_queue(self, data):
-        """Puts the given data into the object specific queue that is initialized.
-
-        Args:
-            data (any): Data to be added to the specificQ property
-        """
-        pass
-
-    def is_empty(self, queue):
-        """Determines if a queue is empty or if there is information to grab. Returns a boolean
-
-        Args:
-            queue (queue): queue to query and check for emptiness.
-        """
-        pass
-
-#if __name__ == "__main__":

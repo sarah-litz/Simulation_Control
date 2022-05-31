@@ -7,11 +7,9 @@ import logging
 import os
 formatter = logging.Formatter('%(asctime)s %(message)s') # To Display Level Name (debug vs. info vs. etc): %(levelname)s 
 
-## the basicConfig is currently set to filepath specific to my own file tree. 
-## This is for testing purposes only. If causing errors, comment the following line out and run again. ##  
-logging.basicConfig(filename='/Users/sarahlitz/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/eventlogging.log' , level=logging.DEBUG )
-## -- ## 
+## specify filepaths for logging ## 
 cwd = os.getcwd() 
+logging.basicConfig(filename=f'{cwd}/Logging/eventlogging.log' , level=logging.DEBUG )
 simulation_fp=cwd+'/Simulation/Logging/simulation.log'
 
 

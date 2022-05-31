@@ -103,7 +103,7 @@ class DoorTests(modeABC):
 
 
         # Door 1 Tests
-        print("opening door2 // current switch value: ", door2.isPressed)
+        print("opening door2 // current switch value: ", door2.isOpen)
         door2.open() 
         
         
