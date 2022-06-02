@@ -17,7 +17,11 @@
                 "retracted_angle":123
             }
         },  
-        "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value": 4, "reset_value": true }
+        "threshold_condition": { 
+            "attribute": "pressed", 
+            "initial_value":0, "goal_value": 4, "reset_value": true, 
+            "onThreshold_callback_fn": "DISPENSE FOOD"
+        }
     },
 
     
@@ -37,7 +41,11 @@
                 "retracted_angle":98
             }
         },  
-        "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value": 4, "reset_value": true }    
+        "threshold_condition": { 
+            "attribute": "pressed", 
+            "initial_value":0, "goal_value": 4, "reset_value": true,
+            "onThreshold_callback_fn": "map(lambda self, p: p.open(), self.parents)"
+        }    
     }, 
 
 
@@ -58,7 +66,11 @@
                 "retracted_angle":98 
             }
         }, 
-        "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value":2 }
+        "threshold_condition": { 
+            "attribute": "pressed", 
+            "initial_value":0, "goal_value":2, 
+            "onThreshold_callback_fn": "map(lambda self, p: p.open(), self.parents)"
+        }
     }
 
 

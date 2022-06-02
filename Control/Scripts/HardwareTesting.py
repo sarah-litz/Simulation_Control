@@ -1,14 +1,20 @@
 """ 
 This is an example scenario that someone would run for the home_cage experiment. This is written mostly with pseudocode but includes function names and classes where possible
 """
-import os
+import os, sys
 import time
 import threading 
 import queue
+import importlib
+from tkinter import Button
+
 
 from ..Classes.Timer import countdown
 from ..Classes.Map import Map
 from ..Classes.ModeABC import modeABC
+
+from ..Classes.InteractableABC import interactableABC
+Button = interactableABC.Button # button class (nested w/in interactableABC)
 
 from Logging.logging_specs import control_log 
 
@@ -44,9 +50,37 @@ class ButtonTests(modeABC):
         # using 'door1_override_open_button' @ gpio pin #25 ( referenced LITZ_RPIOPERANT, operant_cage_settings_default.py)
         
         # directly setup a button 
-        # call listen_for_event() on the button 
+        # required specifications: 
+        #   button_specs = dict containing (button_pin) and (pullup_pulldown) 
+        #   parentObj 
+
+        class FakeParent: # Simulated Parent object in order to isolate Button Testing
+            def __init__(self): 
+                self.active = True 
+        fakeParent = FakeParent() 
         
-        pass 
+        button_specs = { 'button_pin': 25, 'pullup_pulldown': 'pullup' }
+        door1_override_open_button = Button(button_specs = button_specs, parentObj = fakeParent) 
+
+        print('button object created:', door1_override_open_button)
+
+        # call listen_for_event() on the button --> run in a daemon thread
+        door1_override_open_button.listen_for_event()
+        print(door1_override_open_button.isPressed)
+        countdown(10, '                                                  button is listening for press')
+        # listen for event for 10 seconds 
+        print(door1_override_open_button.isPressed)
+        fakeParent.active = False # should cause listen_for_event to exit
+        
+        return  
+
+
+
+
+        #
+        # TEST 2 - SIMULATED BUTTON 
+        #
+        # in order to simulate a button, we can set its pressed_val = self.isPressed; this simulates the button currently being in a pressed state. 
 
 class LeverTests(modeABC):
     

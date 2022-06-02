@@ -68,7 +68,7 @@ class interactableABC:
     def __str__(self): 
 
         return self.name
-
+    
 
 
     #
@@ -94,6 +94,13 @@ class interactableABC:
             if self.pressed_val < 0: self.isSimulation = True 
             else: self.isSimulation = False 
 
+            # 
+            # Setup isPressed Variable --> setup depends on if Button is a simulation or not
+            if self.isSimulation: 
+                self.isPressed = False # simulated buttons have a boolean isPressed 
+            else: 
+                self.isPressed = self.isPressedProperty # actual buttons get access to method version which checks GPIO value in order to know if isPressed is True or False
+
 
         def _setup_gpio(self): 
             try: 
@@ -111,22 +118,42 @@ class interactableABC:
                 print(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
                 return -1
 
+        def run_in_thread(func): 
+            ''' decorator function to run function on its own daemon thread '''
+            def run(*k, **kw): 
+                t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+                t.start() 
+                return t
+            return run 
 
+        @run_in_thread
+        def simulated_listen_for_event(self, timeout = None): 
+            ''' listener for a simulated button 
+            '''
 
+        @run_in_thread
         def listen_for_event(self, timeout=None, edge=None): # detects the current pin for the occurence of some event
-            ''' if buttons GPIO port reaches its pressed_val '''
+            ''' 
+            event detection for button. On event, incrememts the buttons num_pressed value 
+            ( note this does not update/check isPressed, as this is handled by the property function isPressed )
+            '''
 
-            def increment_presses(): 
+            def increment_presses(pin): 
                 print(f'(InteractableABC, Button.listen_for_event) Callback Function increment_presses was called! Meaning an event was detected!')
                 self.num_pressed += 1 
+                print(self.num_pressed)
 
 
             #
-            # Sim Check; this function accesses gpio library. If button is being simulated, return immediately to avoid errors. 
+            # Sim Check; this function accesses gpio library. If button is being simulated, call the simulation version of this function and return. 
             #
             if self.isSimulation: 
-                raise Exception(f'(InteractableABC, Button, list_for_event) Button for {self.parent} is being simulated.')  
-            
+
+                # If button is being simulated, then we care about changes to isPressed. If isPressed == True, then increment presses
+
+                print(f'(InteractableABC, Button, list_for_event) Button for {self.parent} is being simulated. Calling simulated_listen_for_event instead.')  
+                control_log(f'(InteractableABC, Button, list_for_event) Button for {self.parent} is being simulated. Calling simulated_listen_for_event instead.')  
+                return             
 
             #
             # Wait For Event
@@ -140,16 +167,11 @@ class interactableABC:
 
             if timeout is None: # monitor pin all while its parent interactable is active 
                 
-                while self.parentObj.active: 
-
-                    if GPIO.event_detected(self.pin_num): 
-
-                        # Button Press ! 
-                        self.num_pressed += 1 # increment number of presses detected 
+                while self.parent.active: 
                     
                     time.sleep(0.025)
                 
-                GPIO.remove_event_detect(self.number)
+                GPIO.remove_event_detect(self.pin_num)
                 return # return from func when parent object is deactivated
                 
             else: 
@@ -157,27 +179,15 @@ class interactableABC:
                 # timeout interval specified 
                 start = time.time() 
                 while self.parentObj.active and (time.time() - start > timeout): 
-
-                    if GPIO.event_detected(self.number): 
-
-                        # Button Press ! 
-                        self.num_pressed += 1 # increment number of presses 
                     
                     time.sleep(0.025) 
                 
                 GPIO.remove_event_detect(self.number)
                 return # return from func whne parent object is deactivated or timeout interval is up
 
-            #
-            # While GPIO.input is in its pressed_val state, set isPressed to True 
-            # 
-
-
-            
-
         
         @property
-        def isPressed(self): 
+        def isPressedProperty(self): 
             ''' 
             returns the current boolean value of the button. If the button is being simulated 
             (denoted by the pressed_val < 0, raise an exception because this function should not be getting accessed by a simulated button. ) 
@@ -349,9 +359,31 @@ class interactableABC:
 
                     # Handle Event 
                     self.threshold = True
+                    
+                    # check for a callback function 
+                    if "onThreshold_callback_fn" in self.threshold_condition: 
+                        # call call back function 
+                        print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}')
+                        eval(self.threshold_condition['onThreshold_callback_fn'])
+
                     self.add_new_threshold_event()
+
                     print(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
                     control_log(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
+
+                    #
+                    # Sleep To Avoid Double Counting Threshold Events!
+                    while event_bool: 
+
+                        # wait for a change in the attribute value before starting to look for an event again
+                        if attribute != self.threshold_condition['goal_value']: 
+                            event_bool = False # reset event bool so we exit loop
+                        
+                        else: 
+
+                            time.sleep(0.1)
+
+
 
 
                     if len(self.dependents) > 0: 
@@ -364,6 +396,7 @@ class interactableABC:
                             time.sleep(1) # wait for change in threshold or a change in the attribute's value to differ away from goal_value 
 
                     
+
                     # Since an event occurred, check if we should reset the attribute value 
                     # (NOTE) Delete This?? 
                     if ('reset_value' in self.threshold_condition.keys() and self.threshold_condition['reset_value'] is True): 
@@ -749,7 +782,7 @@ class door(interactableABC):
         if self.isSimulation: 
             # If door is being simulated, then rather than actually opening a door we can just set the state to True (representing an Open state)
             print(f'(Door(InteractableABC), open()) {self.name} is being simulated. Setting switch val to Open (True) and returning.')
-            # self.isOpen = True 
+            self.isOpen = True 
             return 
         
         # check if door is already open
