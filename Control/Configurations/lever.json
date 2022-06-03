@@ -1,4 +1,3 @@
-
 { 
 
 
@@ -44,7 +43,7 @@
         "threshold_condition": { 
             "attribute": "pressed", 
             "initial_value":0, "goal_value": 4, "reset_value": true,
-            "onThreshold_callback_fn": "map(lambda self, p: p.open(), self.parents)"
+            "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))"
         }    
     }, 
 
@@ -69,7 +68,7 @@
         "threshold_condition": { 
             "attribute": "pressed", 
             "initial_value":0, "goal_value":2, 
-            "onThreshold_callback_fn": "map(lambda self, p: p.open(), self.parents)"
+            "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))"
         }
     }
 

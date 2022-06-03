@@ -22,7 +22,7 @@ import os
 from Logging.logging_specs import control_log
 from .ModeABC import modeABC 
 from . import InteractableABC
-from .InteractableABC import lever, door, rfid
+from .InteractableABC import lever, door, rfid, buttonInteractable
 
 class Map: 
     def __init__(self, config_directory): 
@@ -111,6 +111,10 @@ class Map:
             try: new_obj = lever(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name)
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
+        elif type == 'buttonInteractable': 
+            
+            try: new_obj = buttonInteractable(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name)
+            except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
         else: 
 

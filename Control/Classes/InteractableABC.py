@@ -86,6 +86,8 @@ class interactableABC:
             self.pin_num = button_specs['button_pin'] 
             self.pullup_pulldown = button_specs['pullup_pulldown'] 
             self.num_pressed = 0 # number of times that button has been pressed 
+
+            self.buttonQ = queue.Queue() # queue where we append each time a button press is detected
             
             # self.pressed_val denotes what value we should look for (0 or 1) that denotes a lever press 
             self.pressed_val = self._setup_gpio()  # defaults to -1 in scenario that gpio setup fails (including if isSimulation)
@@ -139,10 +141,11 @@ class interactableABC:
             '''
 
             def increment_presses(pin): 
-                print(f'(InteractableABC, Button.listen_for_event) Callback Function increment_presses was called! Meaning an event was detected!')
                 self.num_pressed += 1 
-                print(self.num_pressed)
-
+                self.buttonQ.put(f'press#{self.num_pressed}') # add press to parents buttonQ
+                print(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}, buttonQ = {list(self.buttonQ.queue)}')
+                control_log(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}')
+                
 
             #
             # Sim Check; this function accesses gpio library. If button is being simulated, call the simulation version of this function and return. 
@@ -310,7 +313,7 @@ class interactableABC:
     def add_new_threshold_event(self): 
         # appends to the threshold event queue 
 
-        raise Exception(f'override add_new_threshold_event')
+        raise Exception(f'must override add_new_threshold_event in class definition for {self.name}')
         self.threshold_event_queue.put()
 
     def isThreshold(self): 
@@ -342,7 +345,7 @@ class interactableABC:
             
             # check for attributes that may have been added dynamically 
             if hasattr(self, 'check_threshold_with_fn'): # the attribute check_threshold_with_fn is pointing to a function that we need to execute 
-                attribute = attribute(self) # sets attribute value to reflect the value returned from the function call
+                attribute = self.check_threshold_with_fn(self) # sets attribute value to reflect the value returned from the function call
             
             
             # Check for a Threshold Event by comparing the current threshold value with the goal value 
@@ -359,30 +362,21 @@ class interactableABC:
 
                     # Handle Event 
                     self.threshold = True
-                    
-                    # check for a callback function 
+
+                    self.add_new_threshold_event() 
+                
+                    #
+                    # Callback Function (OnThresholdEvent)
                     if "onThreshold_callback_fn" in self.threshold_condition: 
                         # call call back function 
                         print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}')
-                        eval(self.threshold_condition['onThreshold_callback_fn'])
+                        callbackfn = self.threshold_condition['onThreshold_callback_fn']
+                        print("parents:", self.parents, "callbackfn: ", callbackfn)
+                        callbackfn = eval(callbackfn)
 
-                    self.add_new_threshold_event()
 
                     print(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
                     control_log(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
-
-                    #
-                    # Sleep To Avoid Double Counting Threshold Events!
-                    while event_bool: 
-
-                        # wait for a change in the attribute value before starting to look for an event again
-                        if attribute != self.threshold_condition['goal_value']: 
-                            event_bool = False # reset event bool so we exit loop
-                        
-                        else: 
-
-                            time.sleep(0.1)
-
 
 
 
@@ -396,19 +390,33 @@ class interactableABC:
                             time.sleep(1) # wait for change in threshold or a change in the attribute's value to differ away from goal_value 
 
                     
-
-                    # Since an event occurred, check if we should reset the attribute value 
-                    # (NOTE) Delete This?? 
+                    # Since an event occurred, check if we should reset the attribute value to its inital value
                     if ('reset_value' in self.threshold_condition.keys() and self.threshold_condition['reset_value'] is True): 
 
                         setattr( self, self.threshold_condition['attribute'], self.threshold_condition['initial_value'] )
-
-                        control_log( f' (InteractableABC,py, watch_for_threshold_event) resetting the threshold for {self.name}  ')
+                        print( f'(InteractableABC,py, watch_for_threshold_event) resetting {self.name} threshold attribute, {self.threshold_condition["attribute"]}, to its initial value for  ')
+                        control_log( f'(InteractableABC,py, watch_for_threshold_event) resetting {self.name} threshold attribute, {self.threshold_condition["attribute"]}, to its initial value for  ')
 
                     else: 
                         # if we are not resetting the value, then to ensure that we don't endlessly count threshold_events
                         # we want to wait for some kind of state change ( a change in its attribute value ) before again tracking a threshold event 
-                        pass 
+                        #
+                        # Sleep To Avoid Double Counting Threshold Events!
+                        #
+                        # LEAVING OFF HERE!!!!!! 
+                        while event_bool: 
+
+                            # check for attributes that may have been added dynamically 
+                            if hasattr(self, 'check_threshold_with_fn'): # the attribute check_threshold_with_fn is pointing to a function that we need to execute 
+                                attribute = self.check_threshold_with_fn(self) # sets attribute value to reflect the value returned from the function call
+                            
+                            # wait for a change in the attribute value before starting to look for an event again
+                            if attribute != self.threshold_condition['goal_value']: 
+                                event_bool = False # reset event bool so we exit loop
+                            
+                            else: 
+
+                                time.sleep(0.1)
 
                 else: 
                     # no threshold event 
@@ -419,6 +427,8 @@ class interactableABC:
                 
             
             time.sleep(0.75)
+            
+
 
          
 class lever(interactableABC):
@@ -457,6 +467,7 @@ class lever(interactableABC):
 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
+    
     
     def validate_hardware_setup(self):
         
@@ -636,7 +647,25 @@ class door(interactableABC):
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
     
     
+    
+    def override(self, open_or_close): 
+        ''' if override button gets pressed we call this function on the door '''
 
+        # immediately stop door movement 
+        self.stop() 
+
+        # reset door to stop execution of current door actions
+        self.deactivate()
+        self.activate() 
+
+        if open_or_close == 'open': 
+
+            self.open() 
+
+        else: 
+
+            self.close() 
+        
     def validate_hardware_setup(self):
         
         if self.isSimulation: 
@@ -696,7 +725,7 @@ class door(interactableABC):
                     dependent.threshold = False # reset now that we have triggered an event occurrence
 
                     # check self's threshold goal 
-                    if self.threshold_condition['goal_value'] == True: 
+                    '''if self.threshold_condition['goal_value'] == True: 
 
                         self.open() 
 
@@ -707,7 +736,7 @@ class door(interactableABC):
                     else: 
 
                         raise Exception(f'(Door, dependents_loop) did not recognize {self.name} threshold_condition[goal_value] of {self.threshold_condition["goal_value"]}')
-
+                    '''
 
 
 
@@ -889,3 +918,63 @@ class rfid(interactableABC):
             '''Logic here for shutting down hardware'''
             return 
 
+
+class buttonInteractable(interactableABC):
+    ''' **should not be confused with the Button class which connects with/operates the GPIO boolean pins 
+        buttonInteractable is used for the buttons that control the open/closing of doors; if a door is in movement, these buttons override that movement immediately 
+    '''
+
+    def __init__(self, ID, threshold_condition, hardware_specs, name ): 
+         # Initialize the parent class
+        super().__init__(threshold_condition, name)
+
+        # Initialize the given properties
+        self.ID = ID 
+
+        # Button # 
+        self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
+
+        ## Threshold Condition Tracking ## 
+        # elf.pressed = self.buttonObj.num_pressed # returns total number of presses that the buttonObj has counted
+        self.buttonQ = queue.Queue()
+        # we want Button to be updating the num_pressed value. notify 
+
+        if self.buttonObj.pressed_val < 0: # simulating gpio connection
+            self.isPressed = None 
+        else: 
+            self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
+    
+    @property
+    def pressed(self): 
+        '''returns the current number of presses that button object has detected'''
+        return self.buttonObj.num_pressed
+
+    def validate_hardware_setup(self):
+        
+        if self.isSimulation: 
+            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
+            return 
+        
+        else: 
+            # not simulating door, check that the doors Movement Controllers (button and servo) have been properly setup 
+            if self.buttonObj.pressed_val < 0: 
+                
+                errorMsg = []
+                # problem with both button and/or servo. figure out which have problems
+                if self.buttonObj.pressed_val < 0: 
+                    errorMsg.append('buttonObj')
+                
+                raise Exception(f'(buttonInteractable, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead.')
+
+            return 
+    
+    def add_new_threshold_event(self):
+        '''New [Press] was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
+        try: 
+            press = self.buttonObj.buttonQ.get() 
+        except queue.Empty as e: 
+            raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the buttonQ for {self.name}')
+
+        # append to event queue 
+        self.threshold_event_queue.put(press)
+        

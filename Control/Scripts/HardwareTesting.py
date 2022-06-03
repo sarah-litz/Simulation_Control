@@ -23,6 +23,38 @@ from Logging.logging_specs import control_log
 
 #---------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------
+class ButtonInteractableTests(modeABC): 
+    '''
+    Description: 
+        OVERRIDE BUTTON TESTING 
+        directly sets up a singular Door (door1) which has an override button declared as one of its dependents
+    '''
+    def __init__(self, timeout, map): 
+        super().__init__(timeout, map)
+    
+    def __str__(self): 
+        return 'button ineractable tests (aka override buttons)'
+    
+    def setup(self): 
+        '''any tasks to setup before run() gets called'''
+    
+    def run(self): 
+
+        # directly call listen for event on the override button's button object 
+
+
+        # get button interactable 
+        door1_override_open_button = self.map.instantiated_interactables['open_door1_button']
+
+        # listen for an override press 
+        door1_override_open_button.buttonObj.listen_for_event() 
+        print(door1_override_open_button.isPressed)
+        countdown(10, '                                                  button is listening for press')
+        # listen for event for 10 seconds 
+        print(door1_override_open_button.isPressed)
+
+
+
 class ButtonTests(modeABC): 
 
     '''
@@ -36,23 +68,19 @@ class ButtonTests(modeABC):
         super().__init__(timeout, map)
 
     def __str__(self): 
-        return 'Lever Tests'
+        return 'Button Tests'
     
     def setup(self): 
         ''' any tasks to setup before run() gets called '''
     
     def run(self): 
-        
-        #
-        # LEAVING OFF HERE! 
-        # 
 
-        # using 'door1_override_open_button' @ gpio pin #25 ( referenced LITZ_RPIOPERANT, operant_cage_settings_default.py)
-        
-        # directly setup a button 
-        # required specifications: 
-        #   button_specs = dict containing (button_pin) and (pullup_pulldown) 
-        #   parentObj 
+        ''' using 'door1_override_open_button' @ gpio pin #25 ( referenced LITZ_RPIOPERANT, operant_cage_settings_default.py)
+        directly setup a button 
+        required specifications: 
+           button_specs = dict containing (button_pin) and (pullup_pulldown) 
+           parentObj 
+        '''
 
         class FakeParent: # Simulated Parent object in order to isolate Button Testing
             def __init__(self): 
@@ -63,7 +91,6 @@ class ButtonTests(modeABC):
         door1_override_open_button = Button(button_specs = button_specs, parentObj = fakeParent) 
 
         print('button object created:', door1_override_open_button)
-
         # call listen_for_event() on the button --> run in a daemon thread
         door1_override_open_button.listen_for_event()
         print(door1_override_open_button.isPressed)

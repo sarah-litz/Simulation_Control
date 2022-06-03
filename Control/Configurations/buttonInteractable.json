@@ -1,0 +1,34 @@
+
+{ 
+    "open_door1_button": 
+    { 
+        "id":1, 
+        "threshold_condition": {
+            "attribute":"check_threshold_with_fn", 
+            "initial_value":true, "goal_value":false, 
+            "onThreshold_callback_fn":"list(map(lambda p: p.override('open'), self.parents))"
+        },
+        "check_threshold_with_fn":"lambda self: self.buttonObj.buttonQ.empty()",
+        "hardware_specs": {
+            "button_specs": { 
+                "button_pin":24, 
+                "pullup_pulldown":"pullup"
+            }
+        }
+    }, 
+    "close_door1_button": 
+    {
+        "threshold_condition": {
+            "attribute": "pressed", 
+            "inital_value":0, "goal_value":1, "reset_value":true, 
+            "onThreshold_callback_fn":"list(map(lambda p: p.override('open'), self.parents))"
+        },
+        "hardware_specs": { 
+            "button_specs": { 
+                "button_pin":25, 
+                "pullup_pulldown":"pullup"
+            }
+        }
+    }
+
+}

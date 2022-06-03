@@ -21,6 +21,14 @@
             "id": 3, 
             "descriptive_name": "Chamber 3",
             "components": []
+        }, 
+
+        { 
+            "id": 0, 
+            "descriptive_name": "Fake Chamber for Storing Override Buttons", 
+            "components": [
+                { "interactable_name":"open_door1_button", "type":"buttonInteractable" }
+            ]
         }
     
     ], 
