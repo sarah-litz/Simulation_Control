@@ -1,3 +1,18 @@
+
+    POTENTIAL CHANGE TO MAKE
+    {
+        "threshold_condition": { 
+            "attribute": "pressed", 
+            "initial_value":0, "goal_value": 4, "reset_value": true,
+            "parents": [{ 
+                "name": "door1", 
+                "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))" 
+            }],
+            "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))"
+        }    
+    }      
+  ________________________________________________________________________-
+
         chamber1 = self.map.get_chamber(1)
         chamber2 = self.map.get_chamber(2)
         chamber3 = self.map.get_chamber(3)

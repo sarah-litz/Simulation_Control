@@ -39,7 +39,7 @@
                 "extended_angle":15, 
                 "retracted_angle":98
             }
-        },  
+        }, 
         "threshold_condition": { 
             "attribute": "pressed", 
             "initial_value":0, "goal_value": 4, "reset_value": true,

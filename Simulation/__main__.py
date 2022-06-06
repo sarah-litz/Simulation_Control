@@ -20,12 +20,13 @@ from Control.Classes.Map import Map
 
 # (TODO) Import Your ModeABC Implementations Here using the following syntax: from Control.Scripts.your_file_name import modeName1, modeName2, etc. 
 from Control.Scripts.ModeScripts_RandomVoles import mode1, mode2, mode3
+from Control.Scripts.StaticBox import ClosedBox, OpenBox
 
 # (TODO) Import your SimulationABC Implementations Here using the following syntax: from .Scripts.your_file_name import SimulationClassName
 from .Scripts.SarahsSimulation import SarahsSimulation
 from .Scripts.RandomVoles import RandomVoles
 from .Scripts.ping_shared_rfidQ import SimulatePings
-from .Scripts.InteractableTests import LeverTests
+from .Scripts.InteractableTests import LeverTests, ButtonTests
 
 
 # Map Instantiation (which will also instantiate the hardware components) 
@@ -34,16 +35,16 @@ map = Map(cwd+'/Control/Configurations')
 
 sim_log('\n\n\n\n-----------------------------New Simulation Running------------------------------------')
 
-
+## Control Modes ## 
 # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-mode1 = mode1( timeout = 60, map = map ) 
-mode2 = mode2( timeout = 60, map = map )
-mode3 = mode3( timeout = 60, map = map )
+mode1 = ClosedBox( timeout = 60, map = map ) 
+mode2 = OpenBox( timeout = 60, map = map )
+# mode3 = mode3( timeout = 60, map = map )
 
 
 # (TODO) instantiate the Simulation, pass in the Mode objects and map -- this should be using the class you imported in the second "todo"
 # (TODO) in the modes argument, pass a list of all of the modes that you instantiated above. These should get passed in in the same order that they will run in.
-sim = LeverTests( modes = [mode1, mode2, mode3], map = map  ) 
+sim = ButtonTests( modes = [mode1, mode2], map = map  ) 
 
 sim_log(f'(sim_attempt_move.py, {__name__}) New Simulation Created: {type(sim).__name__}')
 

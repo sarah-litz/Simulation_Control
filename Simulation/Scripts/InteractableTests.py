@@ -1,3 +1,9 @@
+'''
+
+SIMULATION SCRIPT
+
+'''
+
 # Standard Lib Imports 
 import site 
 import sys
@@ -7,6 +13,30 @@ import time
 # Local Imports
 from ..Logging.logging_specs import sim_log
 from ..Classes.SimulationABC import SimulationABC
+
+
+class ButtonTests(SimulationABC): 
+
+    def __init__(self, modes, map): 
+
+        super().__init__(modes, map)
+
+        self.modes = modes 
+    
+    def __str__(self): 
+
+        return 'Button Tests Simulation'
+
+    def mode1_timeout(self): 
+
+        ''' goal: check if door1_override_open_button is getting created, creating a buttonObj, and listening for an event '''
+
+        door1_override_open_button = self.map.instantiated_interactables['open_door1_button']
+
+        print('hello!')
+        print(door1_override_open_button.active)
+
+
 
 class LeverTests(SimulationABC): 
 

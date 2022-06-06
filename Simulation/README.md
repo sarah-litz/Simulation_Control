@@ -57,9 +57,15 @@ The following code block is an example of what this configuration file could loo
 }
 ~~~
 
+> "interactables" 
+
 In the above  example, the user specifies that they would like to simulate rfid1, rfid2, and lever1, which likely means that these hardware pieces are not physically present in the box. The user specifies that they do not want to simulate door1, however, so we can assume that the user has a functional door in their box.
 
-The user also specified the optional attribute "simulate_with_fn" for rfid1 and rfid2. This field is an anonymous function (or an inline funciton) written in python, which specifies how this interactable should be simulated. This replaces the default simulation behavior of an interactable, in which a specific object attribute is changed to meet its "goal value" to trigger a threshold event (reference the Control README for more information on this).
+The user also specified the optional attribute "simulate_with_fn" for rfid1 and rfid2. This field is an anonymous function (or an inline funciton) written in python, which specifies how this interactable should be simulated. This replaces the default simulation behavior of an interactable, in which a specific object attribute is changed to meet its "goal value" to trigger a threshold event (reference the Control README for more information on this). 
+
+A one-to-one relationship should exist between interactables in Control/Configurations/map.json and interactables in simulation.json. If an interactable gets specified in simulation.json that doesn't exist in map.json, no error will be thrown but this interactable will not exist in the box/experiment, and therefore will never be referenced. If an interactable exists in map.json but not in the simulation.json configurations, the default configuration is to set isSimulation to True for this interactable. A message will be printed to the screen to notify the user that they did not specify an interactable in simulation.json.
+
+> "voles"
 
 Finally, the user specified 3 different voles to instantiate when running the experiment, and also provided what chamber the vole should initially be created in.
 

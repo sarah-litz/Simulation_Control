@@ -181,7 +181,7 @@ class interactableABC:
 
                 # timeout interval specified 
                 start = time.time() 
-                while self.parentObj.active and (time.time() - start > timeout): 
+                while self.parent.active and (time.time() - start > timeout): 
                     
                     time.sleep(0.025) 
                 
@@ -287,6 +287,7 @@ class interactableABC:
         self.active = True 
         self.watch_for_threshold_event() # begins continuous thread for monitoring for a threshold event
         self.dependents_loop() 
+        
 
     def deactivate(self): 
         print(f"(InteractableABC.py, deactivate) {self.name} has been deactivated. Final contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")        
@@ -948,6 +949,11 @@ class buttonInteractable(interactableABC):
     def pressed(self): 
         '''returns the current number of presses that button object has detected'''
         return self.buttonObj.num_pressed
+
+    def activate(self): 
+        ''' activate button as usual, and once it is active we can begin the button object listening '''
+        interactableABC.activate(self)
+        self.buttonObj.listen_for_event()
 
     def validate_hardware_setup(self):
         

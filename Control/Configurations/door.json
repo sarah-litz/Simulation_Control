@@ -27,7 +27,7 @@
     {
         "id":2, 
         "threshold_condition": { "attribute":"isOpen", "initial_value": false, "goal_value":true }, 
-        "dependents": ["lever_door2"],
+        "dependents": [],
         "hardware_specs": { 
             "button_specs": { 
                 "button_pin":17, 

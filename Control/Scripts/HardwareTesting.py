@@ -42,7 +42,6 @@ class ButtonInteractableTests(modeABC):
 
         # directly call listen for event on the override button's button object 
 
-
         # get button interactable 
         door1_override_open_button = self.map.instantiated_interactables['open_door1_button']
 

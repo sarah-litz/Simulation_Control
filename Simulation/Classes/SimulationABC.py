@@ -35,7 +35,10 @@ class SimulationABC:
 
         self.current_mode = None # contains the Mode object that the control software is currently running. 
 
+        print(f'New Simulation Running: {self}')
 
+    def __str__(self): 
+        return __name__
     #
     # Threaded Simulation Runner 
     #
@@ -50,6 +53,7 @@ class SimulationABC:
 
     @run_in_thread
     def run_active_mode_sim(self, current_mode): 
+
         ''' 
         called from run_sim() 
         starts thread to run the simulation function 
