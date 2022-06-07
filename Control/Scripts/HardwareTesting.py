@@ -152,25 +152,25 @@ class LeverTests(modeABC):
         # Food Lever Tests 
         print("extending food lever")
         lever_food.extend() 
-        time.sleep(3)
+        time.sleep(5)
         print("retracting food lever")
         lever_food.retract() 
 
-        time.sleep(3)
+        time.sleep(2)
 
         # Door1 Lever Tests
         print("extending door1 lever")
         lever_door1.extend() 
-        time.sleep(3)
+        time.sleep(5)
         print("retracting door1 lever")
         lever_door1.retract() 
 
-        time.sleep(3)
+        time.sleep(2)
 
         # Door2 Lever Tests
         print("extending door2 lever")
         lever_door2.extend() 
-        time.sleep(3)
+        time.sleep(5)
         print("retracting door2 lever")
         lever_door2.retract() 
 

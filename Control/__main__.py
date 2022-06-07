@@ -24,6 +24,7 @@ leverTests = LeverTests(timeout = 20, map = map)
 
 
 # (TODO) start experiment
+leverTests.enter()
 closedbox.enter()
 openbox.enter()
 

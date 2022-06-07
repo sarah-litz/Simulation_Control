@@ -19,7 +19,7 @@
         "threshold_condition": { 
             "attribute": "pressed", 
             "initial_value":0, "goal_value": 4, "reset_value": true, 
-            "onThreshold_callback_fn": "DISPENSE FOOD"
+            "onThreshold_callback_fn": "lambda: print('DISPENSE FOOD')"
         }
     },
 

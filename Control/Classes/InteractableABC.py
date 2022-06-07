@@ -202,7 +202,7 @@ class interactableABC:
 
             ''' if not a simulation, each time isPressed gets accessed, we want to recheck the GPIO input value. set isPressed as a method that gets called each time ''' 
             
-            print(f'(InteractableABC, Button.isPressed property call)')
+            # print(f'(InteractableABC, Button.isPressed property call)')
             if GPIO.input(self.pin_num) == self.pressed_val: 
                 return True 
             else: 
@@ -472,7 +472,11 @@ class lever(interactableABC):
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
     
-    
+    def activate(self): 
+        ''' activate lever as usual, and once it is active we can begin the button object listening for presses'''
+        interactableABC.activate(self)
+        self.buttonObj.listen_for_event()
+
     def validate_hardware_setup(self):
         
         if self.isSimulation: 
@@ -500,7 +504,6 @@ class lever(interactableABC):
 
         # appends to the lever's threshold event queue 
         self.threshold_event_queue.put(f'lever{self.ID} pressed {self.pressed} times!')
-
         # (NOTE) if you don't want this component to be checking for a threhsold value the entire time, then deactivate here ( will be re-activated when a new mode starts thru call to activate_interactables ) 
         # self.deactivate()
 
@@ -560,30 +563,17 @@ class lever(interactableABC):
             # self.deactivate() 
             return 
         
-
         #
         # HARDWARE THINGS
         #
         else: 
 
             # set to the fully retracted angle 
-
             self.servoObj.servo.angle = self.retracted_angle
-
             self.isExtended = False 
-
             return 
 
 
-    def __move(self, angle):
-        """This moves the lever to the specified angle. This can be any angle in the correct range, and the function will produce an error if the angle is out of range of the motor. 
-
-        Args:
-            angle (int): Servo angle to move to. This should be between 0 and 180 degrees
-        """
-
-        #  This Function Accesses Hardware => Perform Sim Check First
-        pass
 
 
 
@@ -912,7 +902,11 @@ class rfid(interactableABC):
         
         else: 
             # not simulating rfid. Check that connections occurred correctly 
-            print('rfid hardware does not yet exist. Cant setup a connection. pls simulate instead.')
+            # 
+            #  (TODO) setup RFID hardware things here! 
+            #
+            # print('rfid hardware doesnt exist yet!')
+            return 
 
     def stop(self): 
         ''' '''

@@ -4,22 +4,21 @@
             "id": 1, 
             "descriptive_name": "Main Chamber", 
             "components": [
-                { "interactable_name":"lever_food", "type":"lever"},
-                { "interactable_name":"lever_door1", "type":"lever"}
+                { "interactable_name":"lever_food", "type":"lever"}, 
+                { "interactable_name":"lever_door1", "type":"lever"}, 
+                { "interactable_name":"lever_door2", "type":"lever" }
             ] 
         }, 
 
         {
             "id": 2, 
-            "descriptive_name": "Chamber 2", 
-            "components": [
-                
-            ]
+            "descriptive_name": "Chamber 2 (right side)", 
+            "components": []
         }, 
 
         {
             "id": 3, 
-            "descriptive_name": "Chamber 3",
+            "descriptive_name": "Chamber 3 (left side)",
             "components": []
         }, 
 
@@ -43,16 +42,10 @@
             "id":12, 
             "type":"shared", 
             "components":[
-                { "chamber_interactable": "lever_food"},
                 { "chamber_interactable": "lever_door1"},
-
                 { "interactable_name":"rfid1", "type":"rfid" }, 
                 { "interactable_name":"door1", "type":"door" },
-
-                { "interactable_name":"lever_door2", "type":"lever" }, 
-                { "interactable_name":"door2", "type":"door" },
                 { "interactable_name":"rfid2", "type":"rfid" }
-
             ]
         }, 
 
@@ -62,8 +55,10 @@
             "id": 13, 
             "type":"shared", 
             "components":[
-                {"interactable_name":"rfid3", "type":"rfid"}, 
-                {"interactable_name":"rfid4", "type":"rfid"}
+                { "chamber_interactable": "lever_door2"}, 
+                { "interactable_name":"rfid3", "type":"rfid"}, 
+                { "interactable_name":"door2", "type":"door" },
+                { "interactable_name":"rfid4", "type":"rfid"}
             ]
         }
     ]
