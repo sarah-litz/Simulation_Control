@@ -53,7 +53,6 @@
     { 
         "id":3, 
         "hardware_specs": { 
-
             "button_specs": {
                 "button_pin":22, 
                 "pullup_pulldown":"pullup"

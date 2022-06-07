@@ -1,5 +1,7 @@
 """ 
-This is an example scenario that someone would run for the home_cage experiment. This is written mostly with pseudocode but includes function names and classes where possible
+HardwareTesting.py 
+Tests that were used as hardware components were getting built up. Note that many of these test will not work now,
+because they are calling functions that are now automated w/in the interactable. 
 """
 import os, sys
 import time
@@ -23,6 +25,13 @@ from Logging.logging_specs import control_log
 
 #---------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------
+
+
+# # # 
+# Old Test: ButtonInteractableTests; this won't work anymore because now the call for 
+# listen_for_event() for the button is automated, and errors get thrown if we call it twice 
+# since we cant add GPIO.add_event_detect twice for the same pin number
+# # # 
 class ButtonInteractableTests(modeABC): 
     '''
     Description: 
@@ -40,6 +49,9 @@ class ButtonInteractableTests(modeABC):
     
     def run(self): 
 
+        print(f'(HardwareTesting.py, ButtonInteractableTests, run()) Returning immediately because the test ({self}) is an out-of-date test.')
+        return 
+        
         # directly call listen for event on the override button's button object 
 
         # get button interactable 
@@ -48,7 +60,7 @@ class ButtonInteractableTests(modeABC):
         # listen for an override press 
         door1_override_open_button.buttonObj.listen_for_event() 
         print(door1_override_open_button.isPressed)
-        countdown(10, '                                                  button is listening for press')
+        countdown(10, 'button is listening for press')
         # listen for event for 10 seconds 
         print(door1_override_open_button.isPressed)
 
@@ -73,6 +85,9 @@ class ButtonTests(modeABC):
         ''' any tasks to setup before run() gets called '''
     
     def run(self): 
+
+        print(f'(HardwareTesting.py, ButtonTests, run()) Returning immediately because the test ({self}) is an out-of-date test.')
+        return 
 
         ''' using 'door1_override_open_button' @ gpio pin #25 ( referenced LITZ_RPIOPERANT, operant_cage_settings_default.py)
         directly setup a button 
@@ -198,70 +213,4 @@ class DoorTests(modeABC):
         door2.open() 
         
         
-        return 
-
-
-
-
-
-class mode3(modeABC):
-    """
-    Description: 
-        Closed Door -- lever1 requires set number of presses to open door1. Each time the vole presses the required number of times, then the nubmer of required lever presses is increased by 1. 
-    
-    Args:
-        modeABC (class object): Inherited abstract base class
-        timeout (int): amount of time that experiment runs. Begins after setup is completed. 
-        map (class object): Map object that contains the hardware objects and where they are positioned in the layout of the box. 
-        
-    """
-    
-    def __init__(self, timeout, map):
-        super().__init__(timeout, map)
-
-    def __str__(self): 
-        return 'Mode 3'
-
-
-    def setup(self): 
-
-        '''' any tasks to setup before run() gets called '''
-        pass 
-
-    def run(self):
-
-        ## Timeout Logic ## 
-
-        self.inTimeout = True
-
-        control_log('NEW MODE: Mode 3')
-
-        # Logic to change the num presses every time the wheel is run  
-        # if lever was pressed required number of times, open door, reset the tracked num of lever presses to 0  
-        while self.active: 
-
-            ## Timeout Logic ## 
-            door1 = self.map.get_edge(12).get_interactable_from_component('door1') 
-            lever1 = door1.dependents[0] 
-
-
-            ## Wait for Lever Press or Timeout ## 
-
-            event = None 
-            while event is None and self.active: 
-                
-                try: event = lever1.threshold_event_queue.get_nowait() # loops until something is added. If nothing is ever added, then will just exit once timeout ends ( can add a timeout arg to this call if needed )
-                except queue.Empty: pass 
-                time.sleep(.5)
-
-            if event is None:  # timed out before lever threshold event
-
-                return 
-            
-            ## Lever Threshold Met ## 
-            print(f"(mode3, run()) Threshold Event for lever1, event: {event}" )
-            lever1.threshold_condition['goal_value'] += 1 # increase required number of presses by 1
-            print(f"(mode3, run()) New Lever1 Threshold (required presses): {lever1.threshold_condition['goal_value']}")
-
-
-
+        return

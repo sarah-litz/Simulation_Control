@@ -5,7 +5,7 @@
         "id":1, 
         "threshold_condition": { "attribute":"isOpen", "initial_value": null, "goal_value": true },
 
-        "dependents": ["lever_door1", "open_door1_button"], 
+        "dependents": ["lever_door1", "open_door1_button", "close_door1_button"], 
         "hardware_specs": {
             "button_specs": { 
                 "button_pin": 4, 
@@ -27,7 +27,7 @@
     {
         "id":2, 
         "threshold_condition": { "attribute":"isOpen", "initial_value": false, "goal_value":true }, 
-        "dependents": [],
+        "dependents": [ "open_door2_button", "close_door2_button" ],
         "hardware_specs": { 
             "button_specs": { 
                 "button_pin":17, 

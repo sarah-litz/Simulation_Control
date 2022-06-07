@@ -68,11 +68,10 @@ class interactableABC:
     def __str__(self): 
 
         return self.name
+
     
-
-
     #
-    # Hardware Subclasses: Buttons & Servos ( utilizes Rpi.GPIO and adafruit_servokit.ServoKit )
+    # InteractableABC Subclasses: Servo, PosServo(Servo), ContServo(Servo), and Button ( utilizes Rpi.GPIO and adafruit_servokit.ServoKit )
     #
     class Button:
         # Class for tracking Switch States # 
@@ -103,6 +102,8 @@ class interactableABC:
             else: 
                 self.isPressed = self.isPressedProperty # actual buttons get access to method version which checks GPIO value in order to know if isPressed is True or False
 
+        def __str__(self): 
+            return self.isPressed
 
         def _setup_gpio(self): 
             try: 
@@ -207,10 +208,6 @@ class interactableABC:
             else: 
                 return False   
     
-        
-    #
-    # InteractableABC Subclasses: Servo, PosServo(Servo), ContServo(Servo), and Button
-    #
     class Servo: 
         # class for managing servos 
         '''subclass of interactableABC, as servos will never be a standalone object, they are always created in order to control a piece of hardware. 
@@ -271,6 +268,12 @@ class interactableABC:
             # Interactable is not being simulated, but it does not have a function to validate its hardware components. Throw error 
             raise Exception(f'(InteractableABC, validate_hardware_setup) Must override this function with checks that ensure the hardware components are properly connected. Please add this to the class definition for {self.name}')
 
+    def activate_inner_objects(self): 
+        ''' 
+        if interactable contains any inner objects (buttons and servos), this function is called to 
+        ensure that they are activated for each mode 
+        '''
+        pass 
 
     def activate(self):
         ''' 
@@ -372,7 +375,7 @@ class interactableABC:
                         # call call back function 
                         print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}')
                         callbackfn = self.threshold_condition['onThreshold_callback_fn']
-                        print("parents:", self.parents, "callbackfn: ", callbackfn)
+                        print("parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
                         callbackfn = eval(callbackfn)
 
 
@@ -646,7 +649,6 @@ class door(interactableABC):
         self.autonomous = False # False because doors are dependent on other interactables or on vole interactions ( i.e. doors are dependent on lever press )
 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
-    
     
     
     def override(self, open_or_close): 
