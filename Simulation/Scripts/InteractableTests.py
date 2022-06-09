@@ -33,7 +33,7 @@ class ButtonTests(SimulationABC):
 
         door1_override_open_button = self.map.instantiated_interactables['open_door1_button']
 
-        print('hello!')
+        print('(Simulation: InteractableTests, ButtonTest) hello!')
         print(door1_override_open_button.active)
 
 

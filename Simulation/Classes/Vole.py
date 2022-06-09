@@ -203,7 +203,7 @@ class Vole:
         compiles list of components that stand between current component and the goal component. 
         Then takes single steps by calling move_next_component until the goal component is reached.
         If at any point move_next_component cannot successfully be completed, meaning vole wasn't able to reach threshold, then we return from this function. 
-        Voles location gets updated within the move_next_component function as we take each step. rfids are the only component simulated in the move_next_component function. 
+        Voles location gets updated within the move_next_component function as we take each step. 
         '''
         print(f'(Vole{self.tag}, move_to_component) {self.curr_component} -> {goal_component})')
 
@@ -266,6 +266,7 @@ class Vole:
         # Get list of components in between current location and goal location 
         #
         component_lst = self.map.get_component_path(self.curr_component, goal_component) 
+        print( f'(Vole{self.tag}, move_to_component) components between curr_loc and goal_loc:, {[*(c.interactable.name for c in component_lst)]} ')
 
 
         # for each component in component_lst, call move_next_component
@@ -317,7 +318,7 @@ class Vole:
         goal_prev = getInteractable(component.prevval)
 
 
-        print(f'(Vole{self.tag}, move_next_component) {self.curr_component.interactable}->{component.interactable}')
+        print(f'(Vole{self.tag}, move_next_component) New Move: {self.curr_component.interactable}->{component.interactable}')
 
         if curr_interactable == goal: 
             print(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')

@@ -917,7 +917,7 @@ class rfid(interactableABC):
 
 
 class buttonInteractable(interactableABC):
-    ''' **should not be confused with the Button class which connects with/operates the GPIO boolean pins 
+    ''' **this class should not be confused with the Button class which connects with/operates the GPIO boolean pins** 
         buttonInteractable is used for the buttons that control the open/closing of doors; if a door is in movement, these buttons override that movement immediately 
     '''
 

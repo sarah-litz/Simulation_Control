@@ -17,6 +17,7 @@ from collections import deque
 import time
 import json 
 import os
+from tkinter import E
 
 # Local Imports 
 from Logging.logging_specs import control_log
@@ -165,6 +166,114 @@ class Map:
     #
     # Map Configuration 
     #
+    def validate_chmbr_interactable_references(self, new_edge, all_edge_components): 
+        '''argument should be list of the actual interactable objects that are w/in a chamber'''
+        '''loop thru the edges chmbr_interactable_lst and return True if the ordering of the references reflects the ordering provided in the chamber config''' 
+
+        print(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
+        ## Before Adding Edge Components, Perform a One Time Check to Validate the Chamber Interactables That Are Optionally Specified on the Edge:      
+            # argument is entire dictionary of edge components provided in the configuration file 
+            # returns list of only the references to chamber_interactables that are provided w/in the dictionary 
+        chmbr_interactable_names = [] 
+        for i in all_edge_components: 
+            if 'chamber_interactable' in i.keys(): 
+                    chmbr_interactable_names.append(i['chamber_interactable'])
+        
+        if len(chmbr_interactable_names) < 1: return # no chamber_interactables referenced along this edge 
+
+        # edge case: references an interactable that based on the component ordering provided in the initial chamber, skips over an interactable. 
+        # In order to fix this: the chamber interactable ordering should be changed, or the components that stand inbetween the interactable 
+        # trying to get added should also be added as chamber_interactables to preserve ordering.  
+       
+        
+        # for each interactable: if chmbr_interactable is at the first or last index of its own chamber, this is a valid entry 
+        # if chmbr_interactable is NOT at the first or last index of its own chamber, then we must ensure that all 
+        # interactables between itself and the interactable that "bridges" with the edge (will be either the first or last indexed interactable)
+        # are present in the chmbr_interactable_lst 
+        i_obj_lst = [] # convert chmbr_interactable_lst from string interactable names => actual interactable objects
+        for i_name in chmbr_interactable_names: 
+            i = self.instantiated_interactables[i_name]
+            i_obj_lst.append(i)
+        
+        # separate the list by chamber id 
+        chmbr1references = []
+        chmbr2references = [] 
+        chmbr1id = i_obj_lst[0].edge_or_chamber_id # retrieve one of the two chamber ids that could possibly be referenced w/in the list
+        chmbr2id = -1
+        for i in i_obj_lst: 
+            # separate chmbr_interactable_lst into their different chambers. We will perform two diff checks for two diff chambers referenced by the chmbr interactables 
+            if i.edge_or_chamber_id == chmbr1id: 
+                # throw error if there is a chamber 1 chamber_interactable AFTER we have already encountered a chamber 2 interactable, as this is not preserving the order of chmbr1->edge->chmbr2
+                if len(chmbr2references) > 0: 
+                    raise Exception(f'(Map.py, configure_setup, validate_chmbr_interactable_references) configuration for Edge{new_edge.id} Components is invalid because trying to place a chamber{i.edge_or_chamber_id}, {i} after specifying chamber{chmbr2lst[0].edge_or_chamber_id} interactable(s): {chmbr2lst}. Please ensure that map.json configs are correct and run again.')
+                chmbr1references.append(i)
+            else: 
+                chmbr2id = i.edge_or_chamber_id
+                chmbr2references.append(i)
+
+
+
+        # figure out which chamber interactable is the "bridge" interactable for the current edge 
+        # if chmbr1obj.id == new_edge.v1: 
+        #    chmbr1references = [ele for ele in reversed(chmbr1references)]
+        chmbr1obj = self.get_chamber(chmbr1id)
+        chamber1_component_lst = chmbr1obj.get_component_list()
+        chamber1_interactable_lst = [c.interactable for c in chamber1_component_lst]
+        chamber1_bridge_interactable = chmbr1references[0]
+        print(f'chamber {chmbr1id} references:', [ *(ele.name for ele in chmbr1references) ] )
+        # Ensure that the Bridges are on an End of the Chamber Interactables
+        if chamber1_bridge_interactable != chamber1_interactable_lst[0] and chamber1_bridge_interactable != chamber1_interactable_lst[len(chamber1_interactable_lst) -1 ]: 
+                raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) {chamber1_bridge_interactable.name} must be on the edge of the chamber, or edge{new_edge.id} must include the chamber_interactables inbetween {chamber1_bridge_interactable.name} and the edge of the chamber (in the direction of where edge{new_edge.id} exists)')
+
+        if chmbr2id > 0: 
+            chmbr2obj = self.get_chamber(chmbr2id)
+            chamber2_component_lst = chmbr2obj.get_component_list() 
+            chamber2_interactable_lst = [c.interactable for c in chamber2_component_lst]
+            chamber2_bridge_interactable = chmbr2references[len(chmbr2references)-1].interactable
+            print(f'chamber {chmbr2id} references:', [ *(ele.name for ele in chmbr2references) ] )
+            # Ensure that the Bridges are on an End of the Chamber Interactables
+            if chamber2_bridge_interactable != chamber2_interactable_lst[0] and chamber2_bridge_interactable != chamber2_interactable_lst[len(chamber2_interactable_lst)-1]: 
+                raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) {chamber2_bridge_interactable.name} must be on the edge of the chamber, or edge{new_edge.id} must include the chamber_interactables inbetween {chamber2_bridge_interactable.name} and the edge of the chamber (in the direction of where edge{new_edge.id} exists)')
+
+
+        # ensure that the chmbr1references and chmbr2references match the ordering and items of the componentlst 
+        # index into the lst to get the matching lst, and then compare 
+        for counter in range(2):
+            counter += 1
+            if counter == 1: 
+                chmbrRefs = chmbr1references
+                chmbrcomponents = chamber1_component_lst
+                chmbrinteractables = chamber1_interactable_lst
+                chmbrbridge = chamber1_bridge_interactable
+                print(f'----edge{new_edge.id} references to chamber{chmbr1id}------')
+            else: 
+                if len(chmbr2references) > 0: 
+                    chmbrRefs = chmbr2references 
+                    chmbrcomponents = chamber2_component_lst
+                    chmbrinteractables = chamber2_interactable_lst
+                    chmbrbridge = chamber2_bridge_interactable
+                    print(f'-------edge{new_edge.id} references to chamber{chmbr2id}--------')
+                else: 
+                    break 
+
+
+            startidx = chmbrinteractables.index(chmbrRefs[0]) # get indexes of the first and last element in our chmber interactable lst 
+            endidx = chmbrinteractables.index(chmbrRefs[len(chmbrRefs)-1])
+            if (endidx < startidx): 
+                # raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) chamber_interactables on edge{new_edge.id} must match the order given in chamber{chmbrRefs[0].edge_or_chamber_id}. Please reverse/change the order of {[*(c.name for c in chmbrRefs)]} in map.json to align according to the chambers ordering: {[*(ele.name for ele in chmbrinteractables )]} **Note that this ordering should match the physical ordering of the chamber as we move from the chamber into the edge that we are providing chamber_interactables for!**')
+                e = endidx 
+                endidx = startidx 
+                startidx = e
+            interactable_lst = chmbrinteractables[startidx:endidx+1] 
+            
+            print(f'checking for references to: {[*(c.name for c in chmbrRefs)]}' ) 
+            print(f'comparing with: {[*(ele.name for ele in interactable_lst )]}')
+
+            # check that lists are the same 
+            
+            if interactable_lst != chmbrRefs and interactable_lst != [ele for ele in reversed(chmbrRefs)]: 
+                raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) configuration for Edge{new_edge.id} Components are invalid because chamber interactables {[*(c.name for c in chmbrRefs)]} are not an ordered subset to what is specified in chamber{chmbrRefs[0].edge_or_chamber_id} interactables: {[*(ele.name for ele in chmbrinteractables )]}')
+
     def configure_setup(self, config_filepath): 
         ''' function to read/parse configuration file map.py and set up map accordingly '''
 
@@ -205,11 +314,16 @@ class Map:
             if edge['type'] == 'shared': 
                 
                 new_edge = self.new_shared_edge(edge['id'], edge['start_chamber_id'], edge['target_chamber_id'])
-                
-                for i in edge['components']:
 
+
+                self.validate_chmbr_interactable_references(new_edge, all_edge_components=edge['components'])
+
+                
+
+
+                for i in edge['components']:
                     
-                    # (NOTE changes!!!! ) CHECK IF REFERNCE TO AN EXISTING CHAMBER INTERACTABLE 
+                    ## Chamber Interactable Checks ## 
                     # edge components may point to an already instanted interactable that is in a chamber
                     # denoted with the key "chamber_interactable" 
                     ref = False
@@ -228,6 +342,21 @@ class Map:
                         # edge case: reference to a chamber that does not touch the current edge 
                         if old_i.edge_or_chamber_id != new_edge.v1 and old_i.edge_or_chamber_id != new_edge.v2: raise Exception(f'(Map.py, configure_setup) invalid chamber_interactable: {old_i.name} is in chamber{old_i.edge_or_chamber_id} which is not connected to edge{new_edge.id}: {new_edge}') 
                         
+                        
+                        
+                        
+
+                        '''# for each interactable in the chmbr_interactable_lst, it should either be a bridge_interactable, or, if not, 
+                        # then we need to check that the chmbr_interactables included on the edge include all of those between the chmbr_interactable and the bridge_interactable
+                        for idx in range(chmbr_interactable_lst): 
+                            i = chmbr_interactable_lst[idx] 
+                            if i != bridge_interactable: 
+                                # figure out what interactables are in between i and the bridge_interactable 
+                                in_between_components = interactable_lst[:interactable_lst.index(i)]
+                                component_obj = self.get_chamber(i.edge_or_chamber_id).get_component_from_interactable(i)'''
+                                
+
+
                         ref = True 
                         new_i = self.instantiated_interactables[i['chamber_interactable']]
                         component_obj = self.get_chamber(new_i.edge_or_chamber_id).get_component_from_interactable(new_i)
@@ -293,6 +422,12 @@ class Map:
 
     def new_chamber(self, id): 
         ''' new Chamber instantiated and added to graph'''
+        if id < 0: 
+            # NOTE --> TESTME! ensure that this does not cause any problems. 
+            # skip adding this chamber to graph, as it is just for storing override button components 
+            newChamber = self.Chamber(id)
+            return newChamber
+
         if self.get_chamber(id) is not None: 
             raise Exception(f'chamber with id {id} already exists')
         
@@ -349,16 +484,23 @@ class Map:
         else: 
 
             return self.get_edge(interactable.edge_or_chamber_id)
+    
+    
     #
     # Path Finding Methods
     #
-
-
     def get_chamber_path(self, start, goal): 
         '''pass in only the integer ids to specify the start/goal'''
         '''Returns list of sequential chambers to move from start->goal chamber'''
 
         print(f'(Map, get_chamber_path) {start}->{goal}')
+
+        if (start < 0 or goal < 0): 
+            if start == goal: 
+                return [start]
+            else: 
+                print(f'(Map, get_chamber_path) paths do not exist for isolated chambers. No path connecting chamber{start}->chamber{goal}')
+            
 
         def trace_path(previous, s): #helper function for get_path 
             # recursive trace back thru previous dictionary to get path 
@@ -390,6 +532,12 @@ class Map:
         '''basically just a little parent function to get_chamber_path '''
 
         print(f'(Map, get_path) args: start={start}, goal={goal}')
+
+        if(start.id < 0 or goal.id < 0) and start != goal: # check for if either start or goal is an island chamber (and also not the same island chamber)
+            # chambers or edges with an id that is a negative number represents an "island" chamber, where the chamber has no edges that connects it to other chambers, so it is impossible for a vole to reach 
+            print(f'(Map, get_path) no paths exist from {start}->{goal}')
+            return 
+            
 
         def edge_to_chamber_path(start, goal): 
             p1 = self.get_chamber_path(start.v1, goal.id)

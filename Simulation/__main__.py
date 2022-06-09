@@ -24,7 +24,7 @@ from Control.Scripts.StaticBox import ClosedBox, OpenBox
 
 # (TODO) Import your SimulationABC Implementations Here using the following syntax: from .Scripts.your_file_name import SimulationClassName
 from .Scripts.SarahsSimulation import SarahsSimulation
-from .Scripts.RandomVoles import RandomVoles
+from .Scripts.VoleTests import RandomVoles
 from .Scripts.ping_shared_rfidQ import SimulatePings
 from .Scripts.InteractableTests import LeverTests, ButtonTests
 
@@ -35,38 +35,52 @@ map = Map(cwd+'/Control/Configurations')
 
 sim_log('\n\n\n\n-----------------------------New Simulation Running------------------------------------')
 
-## Control Modes ## 
+## Control Classes (Modes) ## 
 # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-mode1 = ClosedBox( timeout = 60, map = map ) 
-mode2 = OpenBox( timeout = 60, map = map )
+mode1 = ClosedBox( timeout = 20, map = map ) 
+mode2 = OpenBox( timeout = 20, map = map )
 # mode3 = mode3( timeout = 60, map = map )
 
 
+
+## Simulation Classes ##
 # (TODO) instantiate the Simulation, pass in the Mode objects and map -- this should be using the class you imported in the second "todo"
 # (TODO) in the modes argument, pass a list of all of the modes that you instantiated above. These should get passed in in the same order that they will run in.
-sim = ButtonTests( modes = [mode1, mode2], map = map  ) 
+sim1 = RandomVoles( modes = [mode1], map = map  ) 
+# sim2 = ButtonTests( modes = [mode2], map = map )
 
-sim_log(f'(sim_attempt_move.py, {__name__}) New Simulation Created: {type(sim).__name__}')
 
 # simulation visualizations
-sim.draw_chambers() 
-sim.draw_edges() 
+sim1.draw_chambers() 
+sim1.draw_edges() 
 
 
 time.sleep(5) # pause before starting up the experiment 
 
 # (TODO)
 # indicate the simulation function to run when the mode enters timeout. Function will only run once, and if the mode ends its timeout period before simulation can end, then the simulation will be forced to exit at this point
-sim.simulation_func[mode1] = (sim.mode1_timeout)
+sim1.simulation_func[mode1] = (sim1.run)
+# sim2.simulation_func[mode2] = (sim2.mode1_timeout)
 # sim.simulation_func[mode2] = (sim.mode2_timeout) 
 # sim.simulation_func[mode3] = (sim.mode3_timeout)
 
-# runs simulation as daemon thread. 
-sim.run_sim() 
 
-# (TODO) calls to start the experiment 
 
-mode1.enter() 
+# (TODO) calls to start the experiment and the Simulations 
+
+sim1.run_sim() # runs simulation as daemon thread. 
+
+mode1.enter() # follow sim start by entering the first mode!
+
+print('Sim1')
+sim1.draw_chambers()
+sim1.draw_edges() 
+
+print(f'\nSim2')
+sim2.draw_chambers() 
+sim2.draw_edges() 
+
+sim2.run_sim()
 
 mode2.enter() 
 

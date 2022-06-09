@@ -19,6 +19,43 @@ class RandomVoles(SimulationABC):
 
         self.modes = modes 
     
+    def __str__(self): 
+        return 'VoleTests.RandomVoles'
+    def run(self): 
+        
+        print('RandomVoles(SimulationABC) This is the run function!')
+
+        vole1 = self.get_vole(1)
+        door1 = self.map.instantiated_interactables['door1']
+        vole1.move_to_interactable(door1)
+
+
+class ErrorCases(SimulationABC): 
+
+    def __init__(self, modes, map):
+        
+        super().__init__(modes, map) 
+
+        self.modes = modes 
+    
+    def run(self): 
+        
+        print('ErrorCases(SimulationABC) This is the run function!')
+
+        # Test: New Vole Placed In the Chamber that is just for containing the Override Buttons 
+        # Goal of Test: Shouldnt be able to place a vole in this chamber. We should get an error that this chamber does not exist. 
+        self.new_vole(4,-1)
+
+
+
+
+class ThreeModes(SimulationABC): 
+
+    def __init__(self, modes, map):
+        
+        super().__init__(modes, map) 
+
+        self.modes = modes 
 
     def mode1_timeout(self): 
 
@@ -31,24 +68,6 @@ class RandomVoles(SimulationABC):
         # 
 
         # (NOTE) need to implement vole function that while in timeout, the vole just makes random moves 
-
-        vole1 = self.get_vole(1)
-        vole2 = self.get_vole(2)
-        vole3 = self.get_vole(1)
-        rfid1 = self.map.instantiated_interactables['rfid1']
-        rfid2 = self.map.instantiated_interactables['rfid2']
-        lever1 = self.map.instantiated_interactables['lever1']
-        lever2 = self.map.instantiated_interactables['lever2']
-        #door1 = self.map.instantiated
-
-
-        # Chamber Traversal # 
-        vole1.attempt_move(2) # success 
-        vole1.attempt_move(1) # ISSUE: should succeed, because we never closed door1 again. 
-
-        # vole2.simulate_vole_interactable_interaction(lever1)
-
-        # vole1.attempt_move(1)
         
 
         # while self.modes[0].inTimeout: 
@@ -58,14 +77,6 @@ class RandomVoles(SimulationABC):
             # if the rfids on an edge have unequal lengths, then we know vole did not complete move 
             # if the rfids on an edge have equal lengths, then vole did complete move 
             # but whole point is that we are abstracting away from any specific interactable types... 
-
-            # maybe to interrupt the simulation we send an interrupt signal that we can catch from the simulation side?? 
-            # then if we catch this signal, we can try to exit more cleanly somehow?? 
-
-
-            # time.sleep(3)
-
-            # vole1.attempt_random_action() # vole 1 makes random actions while in timeout '''
 
 
     def mode2_timeout(self): 

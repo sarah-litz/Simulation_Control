@@ -49,7 +49,7 @@ class SimulationABC:
             t.start() 
             return t
         return run 
-    
+
 
     @run_in_thread
     def run_active_mode_sim(self, current_mode): 
@@ -66,7 +66,7 @@ class SimulationABC:
             # while not in timeout portion of mode, loop 
             time.sleep(0.5)
 
-        sim_log(f'(Simulation.py, run_sim) The current mode ({current_mode}) entered in timeout. Checking for if a simulation should be run. ')
+        sim_log(f'(Simulation.py, run_active_mode_sim) The current mode ({current_mode}) entered in timeout. Checking for if a simulation should be run. ')
 
         #
         # Check for if simulation function exists for the current mode 
@@ -210,7 +210,7 @@ class SimulationABC:
             input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
             if 'y': return 
             if 'n': exit() 
-
+        
         # ensure that start_chamber exists in map
         chmbr = self.map.get_chamber(start_chamber) 
         if chmbr is None: 
