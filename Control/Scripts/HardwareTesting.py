@@ -177,8 +177,6 @@ class LeverTests(modeABC):
         return 
 
 
-
-
 class DoorTests(modeABC):
     """
     Description: 
@@ -214,3 +212,25 @@ class DoorTests(modeABC):
         
         
         return
+
+
+class LeverDoorConnectionTests(modeABC): 
+    """
+    Description: 
+        lever/door relationship testing
+    """
+    
+    def __init__(self, timeout, map):
+        super().__init__(timeout, map)
+
+    def __str__(self): 
+        return 'Lever-Door Tests'
+    
+    def setup(self): 
+        pass 
+
+    def lever1door1(self): 
+        '''goal: everytime that lever1 meets threshold, increment it'''
+
+
+    

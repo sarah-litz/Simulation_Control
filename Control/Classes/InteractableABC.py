@@ -164,9 +164,9 @@ class interactableABC:
             #
             if edge is None: 
                 # default to the falling edge 
-                GPIO.add_event_detect( self.pin_num, GPIO.FALLING, bouncetime = 200, callback = increment_presses )
+                GPIO.add_event_detect( self.pin_num, GPIO.FALLING, bouncetime = 400, callback = increment_presses )
             else: 
-                GPIO.add_event_detect(self.pin_num, edge, bouncetime = 200, callback = increment_presses )
+                GPIO.add_event_detect(self.pin_num, edge, bouncetime = 400, callback = increment_presses )
             
 
             if timeout is None: # monitor pin all while its parent interactable is active 
@@ -453,7 +453,7 @@ class lever(interactableABC):
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
 
         ## Threshold Condition Tracking ## 
-        self.pressed = self.buttonObj.num_pressed # returns total number of presses that the buttonObj has counted
+        # self.pressed is a property method to ensure that num_pressed updates
 
         # we want Button to be updating the num_pressed value. notify 
 
@@ -471,7 +471,12 @@ class lever(interactableABC):
 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
-    
+    @property
+    def pressed(self): 
+        '''returns the current number of presses that button object has detected'''
+        return self.buttonObj.num_pressed
+
+
     def activate(self): 
         ''' activate lever as usual, and once it is active we can begin the button object listening for presses'''
         interactableABC.activate(self)
@@ -932,7 +937,7 @@ class buttonInteractable(interactableABC):
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
 
         ## Threshold Condition Tracking ## 
-        # elf.pressed = self.buttonObj.num_pressed # returns total number of presses that the buttonObj has counted
+        # self.pressed is a property method to ensure that num_pressed updates 
         self.buttonQ = queue.Queue()
         # we want Button to be updating the num_pressed value. notify 
 

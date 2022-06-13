@@ -10,7 +10,7 @@
             "name": "Python: Module",
             "type": "python",
             "request": "launch",
-            "module": "Simulation",
+            "module": "Control",
             "justMyCode": true
         } 
     ]
