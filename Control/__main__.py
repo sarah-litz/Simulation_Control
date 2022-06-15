@@ -7,7 +7,7 @@ from .Classes.Map import Map
 
 # (TODO) Import Your ModeABC Implementations here using the following syntax: from Scripts.your_file_name import mode_name_1, mode_name_2, etc.
 from .Scripts.ModeScripts1 import mode1, mode2 
-from .Scripts.HardwareTesting import LeverTests, DoorTests, ButtonTests, ButtonInteractableTests
+from .Scripts.HardwareTesting import LeverTests, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests
 from .Scripts.StaticBox import ClosedBox, OpenBox
 
 
@@ -21,9 +21,11 @@ closedbox = ClosedBox(timeout = 30, map = map)
 openbox = OpenBox(timeout= 30, map = map)
 doorTests = DoorTests(timeout=30, map=map)
 leverTests = LeverTests(timeout = 20, map = map)
+leverdoorconnectiontests = LeverDoorConnectionTests(timeout = 40, map = map)
 
 
 # (TODO) start experiment
+leverdoorconnectiontests.enter() 
 leverTests.enter()
 closedbox.enter()
 openbox.enter()

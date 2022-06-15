@@ -23,7 +23,7 @@ from tabulate import tabulate
             "pullup_pulldown":"pullup", 
             "servo_type":"positional"
         },  
-        "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value": 4, "reset_value": true }
+        "threshold_condition": { "attribute": "pressed", "initial_value":0, "goal_value": 4 }
     }
 '''
 

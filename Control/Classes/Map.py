@@ -26,7 +26,7 @@ from . import InteractableABC
 from .InteractableABC import lever, door, rfid, buttonInteractable
 
 class Map: 
-    def __init__(self, config_directory): 
+    def __init__(self, config_directory, map_file_name = None ): 
         ''' key is id assigned to vertex: Chamber instance'''
         
         self.graph = {} # { chamberid: chamber instance }
@@ -37,7 +37,9 @@ class Map:
         
         self.config_directory = config_directory # directory containing all of the configuration files 
 
-        self.configure_setup(config_directory + '/map.json')
+        if map_file_name is not None: 
+            self.configure_setup(config_directory + f'/{map_file_name}')
+        else: self.configure_setup(config_directory + '/map.json')
 
     def print_graph_info(self): 
         for chamber in self.graph.values(): 

@@ -355,6 +355,7 @@ class interactableABC:
             # Check for a Threshold Event by comparing the current threshold value with the goal value 
             if attribute == self.threshold_condition['goal_value']: # Threshold Event: interactable has met its threshold condition
                 
+                print(f'({self}, watch_for_threshold_event) Threshold Event Detected!')
                 event_bool = True 
 
 
@@ -373,9 +374,9 @@ class interactableABC:
                     # Callback Function (OnThresholdEvent)
                     if "onThreshold_callback_fn" in self.threshold_condition: 
                         # call call back function 
-                        print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}')
                         callbackfn = self.threshold_condition['onThreshold_callback_fn']
-                        print("parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
+                        print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: ', "parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
+                        # print("parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
                         callbackfn = eval(callbackfn)
 
 
@@ -395,32 +396,41 @@ class interactableABC:
 
                     
                     # Since an event occurred, check if we should reset the attribute value to its inital value
+                    ''' 
+                    NOT SURE THAT reset_value SHOULD EVER BE AN OPTION BECAUSE FOR EVERY INTERACTABLE THAT HAS A THRESHOLD THAT REQUIRES 'check_threshold_with_fn', that means it probs doesnt make much sense to try to directly SET the threshold attribute. 
                     if ('reset_value' in self.threshold_condition.keys() and self.threshold_condition['reset_value'] is True): 
 
                         setattr( self, self.threshold_condition['attribute'], self.threshold_condition['initial_value'] )
                         print( f'(InteractableABC,py, watch_for_threshold_event) resetting {self.name} threshold attribute, {self.threshold_condition["attribute"]}, to its initial value for  ')
                         control_log( f'(InteractableABC,py, watch_for_threshold_event) resetting {self.name} threshold attribute, {self.threshold_condition["attribute"]}, to its initial value for  ')
+                    
+                    else:''' 
+                    # if we are not resetting the value, then to ensure that we don't endlessly count threshold_events
+                    # we want to wait for some kind of state change ( a change in its attribute value ) before again tracking a threshold event 
+                    #
+                    # Sleep To Avoid Double Counting Threshold Events!
+                    #
+                    # LEAVING OFF HERE!!!!!! 
+                    while event_bool: 
 
-                    else: 
-                        # if we are not resetting the value, then to ensure that we don't endlessly count threshold_events
-                        # we want to wait for some kind of state change ( a change in its attribute value ) before again tracking a threshold event 
-                        #
-                        # Sleep To Avoid Double Counting Threshold Events!
-                        #
-                        # LEAVING OFF HERE!!!!!! 
-                        while event_bool: 
+                        # check for attributes that may have been added dynamically 
+                        if hasattr(self, 'check_threshold_with_fn'): # the attribute check_threshold_with_fn is pointing to a function that we need to execute 
+                            attribute = self.check_threshold_with_fn(self) # sets attribute value to reflect the value returned from the function call
+                        
+                        # wait for a change in the attribute value before starting to look for an event again
+                        if attribute != self.threshold_condition['goal_value']: 
+                            # ISSUE 
+                            # when self.threshold = False is uncommented, simulation movement from to pass rfid does not work. 
+                            # When we comment out, then simulation movement from rfid->door does work. 
+                            # INTERACTABLE.THRESHOLD GETS SET TO FALSE IN 2 PLACES: 
+                            #   1. If the interactable is a dependent for another interactable, then the dependents loop resets it 
+                            #   2. Otherwise, the simulation software, Vole.py, resets it to False?? Does this make sense?! 
+                            # self.threshold = False # not in the threshold goal state anymore, so set threshold to False
+                            event_bool = False # reset event bool so we exit loop
+                        
+                        else: 
 
-                            # check for attributes that may have been added dynamically 
-                            if hasattr(self, 'check_threshold_with_fn'): # the attribute check_threshold_with_fn is pointing to a function that we need to execute 
-                                attribute = self.check_threshold_with_fn(self) # sets attribute value to reflect the value returned from the function call
-                            
-                            # wait for a change in the attribute value before starting to look for an event again
-                            if attribute != self.threshold_condition['goal_value']: 
-                                event_bool = False # reset event bool so we exit loop
-                            
-                            else: 
-
-                                time.sleep(0.1)
+                            time.sleep(0.1)
 
                 else: 
                     # no threshold event 
@@ -476,6 +486,9 @@ class lever(interactableABC):
         '''returns the current number of presses that button object has detected'''
         return self.buttonObj.num_pressed
 
+    def reset_press_count(self): 
+        ''' sets self.buttonObj.num_pressed to start from the initial value '''
+        self.buttonObj.num_pressed = self.threshold_condition['initial_value'] 
 
     def activate(self): 
         ''' activate lever as usual, and once it is active we can begin the button object listening for presses'''

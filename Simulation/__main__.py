@@ -25,12 +25,12 @@ from Control.Scripts.StaticBox import ClosedBox, OpenBox
 # (TODO) Import your SimulationABC Implementations Here using the following syntax: from .Scripts.your_file_name import SimulationClassName
 from .Scripts.SarahsSimulation import SarahsSimulation
 from .Scripts.VoleTests import RandomVoles
-from .Scripts.ping_shared_rfidQ import SimulatePings
+from .Scripts.RFID_Simulation_Tests import SimulatePings
 from .Scripts.InteractableTests import LeverTests, ButtonTests
 
 
 # Map Instantiation (which will also instantiate the hardware components) 
-map = Map(cwd+'/Control/Configurations')
+map = Map(cwd+'/Control/Configurations', map_file_name = 'map_for_tests.json')
 
 
 sim_log('\n\n\n\n-----------------------------New Simulation Running------------------------------------')

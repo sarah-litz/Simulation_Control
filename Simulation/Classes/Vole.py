@@ -169,7 +169,6 @@ class Vole:
     
 
     def update_location(self, newcomponent=None): 
-        #TESTME
         ''' 
         updates vole's current component position 
         if current component position is None, then check to see if we need to update the vole's chamber/edge/id location 
@@ -186,14 +185,25 @@ class Vole:
         self.curr_component = newcomponent 
 
         print(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
+
+        #
+        # BIG CHANGE HERE! LEAVING OFF HERE! MAKE SURE THIS IS OK!
+        # This is the Vole PASSING prev_component, meaning that we should reset its threshold to True so watch_for_threshold_event begins looping again to look for more threshold events. 
+        if self.prev_component is not None: 
+            self.prev_component.interactable.threshold = False # threshold back to False now that we used the threshold for a vole to pass! 
             
     
     def move_to_interactable(self, goal_interactable): 
         '''
         converts interactable to component, and calls the move_to_component function. 
         '''
-        print(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
-        sim_log(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
+        if self.curr_component is not None: 
+            print(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
+            sim_log(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
+        else: 
+            print(f'(Vole{self.tag}, move_to_interactable) {self.curr_loc}(Empty Chamber)->{goal_interactable}')
+            sim_log(f'(Vole{self.tag}, move_to_interactable) {self.curr_loc}(Empty Chamber)->{goal_interactable}')
+
         interactable_loc = self.map.get_location_object(goal_interactable)
         goal_component = interactable_loc.get_component_from_interactable(goal_interactable)
         return self.move_to_component(goal_component)
@@ -560,11 +570,11 @@ class Vole:
             ## END FOR: Done Simulating Components along the Edge ##
 
 
-        # All Component Thresholds Reached; loop back thru and reset the dependent components threshold values to False now that we have confirmed an event occurred 
+        # All Component Thresholds Reached; loop back thru and reset all the edge components threshold values to False now that we have confirmed an event occurred 
         print('\n')
         for component in edge:
 
-            component.interactable.threshold = False  # reset the components threshold
+            # component.interactable.threshold = False  # reset the components threshold => This should now be getting done in vole.update_location for each interatable as we pass it.
             
             print(f'(Simulation/Vole.py, attempt_move) the threshold condition was met for {component.interactable.name}.') #CHANGE Event: {event}')
         

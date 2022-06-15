@@ -25,7 +25,7 @@ class ClosedBox(modeABC):
         return 'Closed Box'
     
     def setup(self):
-        pass 
+        pass
     def run(self):
         return 
 

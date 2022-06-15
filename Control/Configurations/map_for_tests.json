@@ -1,0 +1,30 @@
+{ 
+    "chambers": [
+        {
+            "id": 1, 
+            "descriptive_name": "Chamber 1", 
+            "components": [
+            ] 
+        }, 
+        {
+            "id": 2, 
+            "descriptive_name": "Chamber 2 (right side)", 
+            "components": [
+            ]
+        }
+
+    ], 
+    "edges": [
+        {
+            "start_chamber_id":1, 
+            "target_chamber_id":2, 
+            "id":12, 
+            "type":"shared", 
+            "components":[
+                { "interactable_name":"rfid1", "type":"rfid" }, 
+                { "interactable_name":"door1", "type":"door" }
+            ]
+        }
+
+    ]
+}

@@ -48,7 +48,7 @@ The terms specified below are 4 attributes assigned to every Interactable that c
     {
         "threshold_condition": { 
             "attribute": "pressed", 
-            "initial_value":0, "goal_value": 4, "reset_value": true,
+            "initial_value":0, "goal_value": 4,
             "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))"
         }    
     }

@@ -216,8 +216,13 @@ class DoorTests(modeABC):
 
 class LeverDoorConnectionTests(modeABC): 
     """
+    
     Description: 
         lever/door relationship testing
+
+        everytime that lever1 meets threshold, reset the recorded number of presses to 0 and increment the required number of presses to open the door. 
+        (should not have to manually open door, as this is an automated call set in the configuration file by the attribute threshold_callback_fn) 
+    
     """
     
     def __init__(self, timeout, map):
@@ -229,8 +234,38 @@ class LeverDoorConnectionTests(modeABC):
     def setup(self): 
         pass 
 
-    def lever1door1(self): 
-        '''goal: everytime that lever1 meets threshold, increment it'''
+    def run(self): 
+        '''goal: everytime that lever1 meets threshold, increment the required number of presses to open the door'''
+        lever1 = self.map.instantiated_interactables['lever_door1']
+        door1 = self.map.instantiated_interactables['door1']
 
+        # Extend Lever 
+        lever1.extend() 
 
+        ## Wait for Lever Press or Timeout ## 
+        while self.active: 
+
+            event = None 
+            while event is None and self.active: 
+                
+                try: event = lever1.threshold_event_queue.get_nowait() # loops until something is added. If nothing is ever added, then will just exit once timeout ends ( can add a timeout arg to this call if needed )
+                except queue.Empty: pass 
+                time.sleep(.5)
+
+            if event is None:  # timed out before lever threshold event
+
+                return 
+
+            else: 
+                ## Lever Threshold Met ## 
+                print(f"{self}: {event}")  
+
+                lever1.reset_press_count() # manually reset the number of lever presses to 0 so we start over 
+
+                lever1.threshold_condition['goal_value'] += 1 # increase required number of presses by 1
+
+                print(f"(mode2, run()) New Lever1 Threshold (required presses): {lever1.threshold_condition['goal_value']}")
+            
+        lever1.retract() 
     
+ 
