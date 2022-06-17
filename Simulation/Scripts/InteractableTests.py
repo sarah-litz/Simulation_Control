@@ -17,9 +17,9 @@ from ..Classes.SimulationABC import SimulationABC
 
 class ButtonTests(SimulationABC): 
 
-    def __init__(self, modes, map): 
+    def __init__(self, modes): 
 
-        super().__init__(modes, map)
+        super().__init__(modes)
 
         self.modes = modes 
     
@@ -40,9 +40,9 @@ class ButtonTests(SimulationABC):
 
 class LeverTests(SimulationABC): 
 
-    def __init__(self, modes, map):
+    def __init__(self, modes):
         
-        super().__init__(modes, map) 
+        super().__init__(modes) 
 
         self.modes = modes 
     

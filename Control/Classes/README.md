@@ -23,7 +23,7 @@ For example, within a door's open() function we write:
 
     interactable.isIndependent is set to True if the interactable's behavior is independent of a vole's behavior, and is based on some value of another interactable. 
 
-- Door is Independent (depends on lever.pressed value)
+- Door is Independent (depends on lever.num_pressed value)
 - Lever is Dependent (dependent on vole presses)
 - RFID is Dependent (dependent on vole whereabouts)
 

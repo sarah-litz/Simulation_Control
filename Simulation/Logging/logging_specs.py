@@ -11,6 +11,7 @@ formatter = logging.Formatter('%(asctime)s %(message)s') # To Display Level Name
 cwd = os.getcwd() 
 logging.basicConfig(filename=f'{cwd}/Logging/eventlogging.log' , level=logging.DEBUG )
 simulation_fp=cwd+'/Simulation/Logging/simulation.log'
+volepaths_fp=cwd+'/Simulation/Logging/volepaths.log'
 
 
 def setup_logger(name, log_file, level=logging.DEBUG):
@@ -27,6 +28,7 @@ def setup_logger(name, log_file, level=logging.DEBUG):
 
 
 simulation_logger = setup_logger('simulation_logger', simulation_fp, level = logging.debug)
+volepath_logger = setup_logger('volepath_logger', volepaths_fp, level =  logging.debug)
 
 
 def debug(message): 
@@ -36,6 +38,12 @@ def debug(message):
 
 def sim_log(message): 
     simulation_logger.debug(message)
+
+def vole_log(message): 
+    volepath_logger.debug(message)
+    simulation_logger.debug(message)
+
+
 
 
 

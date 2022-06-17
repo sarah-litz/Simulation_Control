@@ -59,10 +59,10 @@ The terms specified below are 4 attributes assigned to every Interactable that c
 : if an interactable is a dependent for another, then the object that it is a dependent for is placed in this list
 
 **barrier** (boolean)
-: defaults to False. Set to True if the interactable acts like a barrier to a vole, whether the vole is aware of it or not. (This is set to True for RFIDs and Doors, since each time a vole passes an RFID there will be a ping, and each time a vole passes a Door we need to check that the door was open, and throw errors if the state of the Door was closed when the vole moved across it.)
+: defaults to False. Set to True if the interactable is a barrier to a voles movements. (This is set to True for Doors, since each time a vole passes a Door we need to check that the door is Open.)
 
 **autonomous** (boolean)
-: defaults to False. Set to True if it the interactable is not dependent on other interactables or on a vole interaction. (This is set to True for RFIDs) 
+: defaults to False. Set to True if the interactable is not dependent on other interactables or on a vole interaction. This will basically just be an interactable that gets simulated every single time a vole passes it (This is set to True for RFIDs). 
 
 
 ## Adding Interactables to the Map 

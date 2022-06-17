@@ -17,7 +17,7 @@
             }
         },  
         "threshold_condition": { 
-            "attribute": "pressed", 
+            "attribute": "num_pressed", 
             "initial_value":0, "goal_value": 1, 
             "onThreshold_callback_fn": "lambda: print('DISPENSE FOOD')"
         }
@@ -41,7 +41,7 @@
             }
         }, 
         "threshold_condition": { 
-            "attribute": "pressed", 
+            "attribute": "num_pressed", 
             "initial_value":0, "goal_value": 1,
             "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))"
         }    
@@ -65,7 +65,7 @@
             }
         }, 
         "threshold_condition": { 
-            "attribute": "pressed", 
+            "attribute": "num_pressed", 
             "initial_value":0, "goal_value":1, 
             "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))"
         }

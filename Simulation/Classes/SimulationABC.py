@@ -10,6 +10,7 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 # Local Imports 
 from code import interact
 from Logging.logging_specs import sim_log
+from Simulation.Logging.logging_specs import vole_log
 from .Vole import Vole
 
 # Standard Lib Imports 
@@ -20,11 +21,13 @@ cwd = os.getcwd()
 
 class SimulationABC: 
 
-    def __init__(self, modes, map): 
+    def __init__(self, modes): 
         
+        print(f'New Simulation Created: {self}')
+
         self.voles = []
         
-        self.map = map
+        self.map = modes[0].map # default to the map of the first mode in the list. We will update map to the active modes map throughout experiemnt. 
 
         # configure sim: updates interactables w/ simulation attributes & instantiates voles 
         self.configure_simulation(cwd + '/Simulation/Configurations/simulation.json') 
@@ -35,7 +38,9 @@ class SimulationABC:
 
         self.current_mode = None # contains the Mode object that the control software is currently running. 
 
-        print(f'New Simulation Running: {self}')
+        print(f'{self} Map')
+        self.draw_chambers() 
+        self.draw_edges() 
 
     def __str__(self): 
         return __name__
@@ -73,6 +78,7 @@ class SimulationABC:
         if current_mode not in self.simulation_func.keys(): # no simulation function specified for this mode 
             # do nothing loop until current mode is inactive 
             sim_log(f'(Simulation.py, run_sim) No simulation function for {type(current_mode)}.')
+            print(f'(Simulation.py, run_sim) No simulation function for {type(current_mode)}.')      
             while current_mode.active: 
                 time.sleep(0.5)
             return 
@@ -80,6 +86,10 @@ class SimulationABC:
    
         sim_log(f'(Simulation.py, run_sim) {current_mode} is paired with the simulation function: {self.simulation_func[current_mode]}')
         
+        print(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
+        vole_log(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
+
+
 
         #
         # Run the Mode's Simulation Function in separate thread. Exit when the running mode becomes inactive or exits its timeout interval. 
@@ -136,6 +146,9 @@ class SimulationABC:
                 # wait for a mode to become active 
                 time.sleep(0.5)
                 self.current_mode = self.get_active_mode() # update the current mode when one becomes active 
+
+            # update the map to match the new current mode map 
+            self.map = self.current_mode.map 
 
             sim_log(f'NEW MODE: (Simulation.py, run_sim) Simulation Updating for Control Entering a New Mode: {(self.current_mode)}')
 

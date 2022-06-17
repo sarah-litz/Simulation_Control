@@ -355,7 +355,7 @@ class interactableABC:
             # Check for a Threshold Event by comparing the current threshold value with the goal value 
             if attribute == self.threshold_condition['goal_value']: # Threshold Event: interactable has met its threshold condition
                 
-                print(f'({self}, watch_for_threshold_event) Threshold Event Detected!')
+                print(f'(InteractableABC.py, watch_for_threshold_event) {self} Threshold Event Detected!')
                 event_bool = True 
 
 
@@ -465,12 +465,14 @@ class lever(interactableABC):
         ## Threshold Condition Tracking ## 
         # self.pressed is a property method to ensure that num_pressed updates
 
-        # we want Button to be updating the num_pressed value. notify 
+        # we want Button to be updating the num_pressed value
 
         if self.buttonObj.pressed_val < 0: # simulating gpio connection
             self.isPressed = None 
+            self.num_pressed = 0 
         else: 
             self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
+            self.num_pressed = self.pressed
             
         #self.required_presses = self.threshold_condition["goal_value"] # Threshold Goal Value specifies the threshold goal, i.e. required_presses to meet the threshold
         #self.threshold_attribute = self.threshold_condition["attribute"] # points to the attribute we should check to see if we have reached goal. For lever, this is simply a pointer to the self.pressed attribute. 
@@ -521,7 +523,7 @@ class lever(interactableABC):
     def add_new_threshold_event(self): 
 
         # appends to the lever's threshold event queue 
-        self.threshold_event_queue.put(f'lever{self.ID} pressed {self.pressed} times!')
+        self.threshold_event_queue.put(f'{self} pressed {self.num_pressed} times!')
         # (NOTE) if you don't want this component to be checking for a threhsold value the entire time, then deactivate here ( will be re-activated when a new mode starts thru call to activate_interactables ) 
         # self.deactivate()
 
@@ -753,7 +755,7 @@ class door(interactableABC):
 
     def add_new_threshold_event(self): 
         # appends to the threshold event queue 
-        self.threshold_event_queue.put(f'{self.name} isOpen:{self.buttonObj}')
+        self.threshold_event_queue.put(f'{self.name} isOpen:{self.isOpen}')
         print("Door Threshold: ", self.threshold, "  Door Threshold Condition: ", self.threshold_condition)
         print(f'(Door(InteractableABC.py, add_new_threshold_event) {self.name} event queue: {list(self.threshold_event_queue.queue)}')
            
@@ -896,8 +898,8 @@ class rfid(interactableABC):
         self.rfidQ = queue.Queue()
 
 
-        self.barrier = True # because rfid beam is unavoidable when vole runs passed interactable. 
-        self.autonomous = True # operates independent of direct interaction with a vole or other interactales. 
+        self.barrier = False # if rfid doesnt reach threshold, it wont prevent a voles movement
+        self.autonomous = True # operates independent of direct interaction with a vole or other interactales. This will ensure that vole interacts with rfids on every pass. 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
 

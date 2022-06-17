@@ -222,7 +222,7 @@ class Map:
         chamber1_component_lst = chmbr1obj.get_component_list()
         chamber1_interactable_lst = [c.interactable for c in chamber1_component_lst]
         chamber1_bridge_interactable = chmbr1references[0]
-        print(f'chamber {chmbr1id} references:', [ *(ele.name for ele in chmbr1references) ] )
+        # print(f'chamber {chmbr1id} references:', [ *(ele.name for ele in chmbr1references) ] )
         # Ensure that the Bridges are on an End of the Chamber Interactables
         if chamber1_bridge_interactable != chamber1_interactable_lst[0] and chamber1_bridge_interactable != chamber1_interactable_lst[len(chamber1_interactable_lst) -1 ]: 
                 raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) {chamber1_bridge_interactable.name} must be on the edge of the chamber, or edge{new_edge.id} must include the chamber_interactables inbetween {chamber1_bridge_interactable.name} and the edge of the chamber (in the direction of where edge{new_edge.id} exists)')
@@ -232,7 +232,7 @@ class Map:
             chamber2_component_lst = chmbr2obj.get_component_list() 
             chamber2_interactable_lst = [c.interactable for c in chamber2_component_lst]
             chamber2_bridge_interactable = chmbr2references[len(chmbr2references)-1].interactable
-            print(f'chamber {chmbr2id} references:', [ *(ele.name for ele in chmbr2references) ] )
+            # print(f'chamber {chmbr2id} references:', [ *(ele.name for ele in chmbr2references) ] )
             # Ensure that the Bridges are on an End of the Chamber Interactables
             if chamber2_bridge_interactable != chamber2_interactable_lst[0] and chamber2_bridge_interactable != chamber2_interactable_lst[len(chamber2_interactable_lst)-1]: 
                 raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) {chamber2_bridge_interactable.name} must be on the edge of the chamber, or edge{new_edge.id} must include the chamber_interactables inbetween {chamber2_bridge_interactable.name} and the edge of the chamber (in the direction of where edge{new_edge.id} exists)')
@@ -247,14 +247,14 @@ class Map:
                 chmbrcomponents = chamber1_component_lst
                 chmbrinteractables = chamber1_interactable_lst
                 chmbrbridge = chamber1_bridge_interactable
-                print(f'----edge{new_edge.id} references to chamber{chmbr1id}------')
+                # print(f'----edge{new_edge.id} references to chamber{chmbr1id}------')
             else: 
                 if len(chmbr2references) > 0: 
                     chmbrRefs = chmbr2references 
                     chmbrcomponents = chamber2_component_lst
                     chmbrinteractables = chamber2_interactable_lst
                     chmbrbridge = chamber2_bridge_interactable
-                    print(f'-------edge{new_edge.id} references to chamber{chmbr2id}--------')
+                    # print(f'-------edge{new_edge.id} references to chamber{chmbr2id}--------')
                 else: 
                     break 
 
@@ -268,8 +268,8 @@ class Map:
                 startidx = e
             interactable_lst = chmbrinteractables[startidx:endidx+1] 
             
-            print(f'checking for references to: {[*(c.name for c in chmbrRefs)]}' ) 
-            print(f'comparing with: {[*(ele.name for ele in interactable_lst )]}')
+            # print(f'checking for references to: {[*(c.name for c in chmbrRefs)]}' ) 
+            # print(f'comparing with: {[*(ele.name for ele in interactable_lst )]}')
 
             # check that lists are the same 
             

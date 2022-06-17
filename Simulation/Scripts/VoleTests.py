@@ -13,9 +13,9 @@ from ..Classes.SimulationABC import SimulationABC
 
 class RandomVoles(SimulationABC): 
 
-    def __init__(self, modes, map):
+    def __init__(self, modes):
         
-        super().__init__(modes, map) 
+        super().__init__(modes) 
 
         self.modes = modes 
     
@@ -23,18 +23,40 @@ class RandomVoles(SimulationABC):
         return 'VoleTests.RandomVoles'
     def run(self): 
         
-        print('RandomVoles(SimulationABC) This is the run function!')
+        print('RandomVoles(SimulationABC) Simulation is Running!')
 
         vole1 = self.get_vole(1)
         door1 = self.map.instantiated_interactables['door1']
         vole1.move_to_interactable(door1)
 
 
+class AttemptMoveVole(SimulationABC): 
+
+    def __init__(self, modes): 
+
+        super().__init__(modes)
+
+        self.modes = modes 
+    
+    def __str__(self): 
+
+        return 'VoleTests, AttemptMoveVole' 
+
+    def run(self): 
+
+        print('AttemptMoveVole(SimulationABC) Simulation is Running!')
+
+        vole1 = self.get_vole(1) 
+        print('Vole Component Location:',vole1.prev_component,' ', vole1.curr_component)
+        vole1.attempt_move(2) 
+
+    
+
 class ErrorCases(SimulationABC): 
 
-    def __init__(self, modes, map):
+    def __init__(self, modes):
         
-        super().__init__(modes, map) 
+        super().__init__(modes) 
 
         self.modes = modes 
     
@@ -51,9 +73,9 @@ class ErrorCases(SimulationABC):
 
 class ThreeModes(SimulationABC): 
 
-    def __init__(self, modes, map):
+    def __init__(self, modes):
         
-        super().__init__(modes, map) 
+        super().__init__(modes) 
 
         self.modes = modes 
 

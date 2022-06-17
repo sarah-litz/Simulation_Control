@@ -131,7 +131,7 @@ class mode2(modeABC):
             ## Lever Threshold Met ## 
 
             print(f"(mode2, run()) Threshold Event for lever1, event: {event}" )
-            lever1.pressed = 0 # reset num of presses 
+            lever1.num_pressed = 0 # reset num of presses 
             lever1.threshold_condition['goal_value'] += 1 # increase required number of presses by 1
             print(f"(mode2, run()) New Lever1 Threshold (required presses): {lever1.threshold_condition['goal_value']}")
 

@@ -13,9 +13,9 @@ from ..Classes.SimulationABC import SimulationABC
 
 class SarahsSimulation(SimulationABC): 
 
-    def __init__(self, modes, map):
+    def __init__(self, modes):
         
-        super().__init__(modes, map) 
+        super().__init__(modes) 
 
 
 
