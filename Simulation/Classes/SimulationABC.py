@@ -10,7 +10,7 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 # Local Imports 
 from code import interact
 from Logging.logging_specs import sim_log
-from Simulation.Logging.logging_specs import vole_log
+from Simulation.Logging.logging_specs import vole_log, clear_log
 from .Vole import Vole
 
 # Standard Lib Imports 
@@ -26,6 +26,9 @@ class SimulationABC:
         print(f'New Simulation Created: {self}')
 
         self.voles = []
+        
+        # Start Vole Log From Scratch 
+        # clear_log('volepaths.log')
         
         self.map = modes[0].map # default to the map of the first mode in the list. We will update map to the active modes map throughout experiemnt. 
 
@@ -122,6 +125,9 @@ class SimulationABC:
     @run_in_thread
     def run_sim(self): 
 
+        self.draw_chambers() 
+        self.draw_edges() 
+        
         sim_log('(Simulation.py, run_sim) Daemon Thread for getting the active mode, and running the specified simulation while active mode is in its timeout period.')
 
         ''' This Function Runs Continuously Until the Experiment Ends 

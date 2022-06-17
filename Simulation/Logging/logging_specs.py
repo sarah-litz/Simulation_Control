@@ -14,12 +14,15 @@ simulation_fp=cwd+'/Simulation/Logging/simulation.log'
 volepaths_fp=cwd+'/Simulation/Logging/volepaths.log'
 
 
-def setup_logger(name, log_file, level=logging.DEBUG):
+def setup_logger(name, log_file, level=logging.DEBUG, mode = None):
     """To setup as many loggers as you want"""
 
-    handler = logging.FileHandler(log_file)        
+    if mode is None: 
+        handler = logging.FileHandler(log_file)        
+    else: 
+        handler = logging.FileHandler(log_file, mode = mode)
     # handler.setFormatter(formatter)
-
+    
     logger = logging.getLogger(name)
     # logger.setLevel(level)
     logger.addHandler(handler)
@@ -28,7 +31,7 @@ def setup_logger(name, log_file, level=logging.DEBUG):
 
 
 simulation_logger = setup_logger('simulation_logger', simulation_fp, level = logging.debug)
-volepath_logger = setup_logger('volepath_logger', volepaths_fp, level =  logging.debug)
+volepath_logger = setup_logger('volepath_logger', volepaths_fp, level =  logging.debug, mode='w')
 
 
 def debug(message): 
@@ -43,7 +46,9 @@ def vole_log(message):
     volepath_logger.debug(message)
     simulation_logger.debug(message)
 
-
+def clear_log(logger): 
+    with open(f'{logger}', 'w'): 
+        pass 
 
 
 

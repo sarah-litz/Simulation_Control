@@ -47,7 +47,7 @@ class AttemptMoveVole(SimulationABC):
         print('AttemptMoveVole(SimulationABC) Simulation is Running!')
 
         vole1 = self.get_vole(1) 
-        print('Vole Component Location:',vole1.prev_component,' ', vole1.curr_component)
+        print(f'Vole{vole1.tag} Starting Location: {vole1.curr_loc}, Starting Component Location: (',vole1.prev_component,', ', vole1.curr_component, ')')
         vole1.attempt_move(2) 
 
     

@@ -191,12 +191,14 @@ class Vole:
         else: self.curr_loc = self.map.get_location_object(newcomponent.interactable) 
         if prev_loc != self.curr_loc: 
             print(f'Vole {self.tag} traveled from {prev_loc.edge_or_chamber}{prev_loc.id} into {self.curr_loc.edge_or_chamber}{self.curr_loc.id}')
+            vole_log(f'\nVole {self.tag} traveled from {prev_loc.edge_or_chamber}{prev_loc.id} into {self.curr_loc.edge_or_chamber}{self.curr_loc.id}')            
             self.prev_loc = prev_loc # update the voles previous location
 
         self.prev_component = self.curr_component 
         self.curr_component = newcomponent 
 
         print(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
+        vole_log(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
 
         #
         # BIG CHANGE HERE! LEAVING OFF HERE! MAKE SURE THIS IS OK!

@@ -25,8 +25,8 @@
     {
         "id": 1,  
         "threshold_condition": {
-            "attribute": "attribute_name", "inital_value":0, "goal_value":1, "reset_value":true, 
-            "onThreshold_callback_fn":"**optional** lambda function", 
+            "attribute": "attribute_name", "inital_value":0, "goal_value":1,
+            "onThreshold_callback_fn":[ "**optional** list of lambda function" ], 
             "check_threshold_with_fn": "**optional** lambda function", 
         },
         "hardware_specs": { 
@@ -61,9 +61,9 @@
         "threshold_condition": {
             "attribute":"check_threshold_with_fn", 
             "initial_value":true, "goal_value":false, 
-            "onThreshold_callback_fn":"list(map(lambda p: p.override('open'), self.parents))"
+            "check_threshold_with_fn":"lambda self: self.buttonObj.buttonQ.empty()", 
+            "onThreshold_callback_fn":[ "list(map(lambda p: p.override('open'), self.parents))" ]
         },
-        "check_threshold_with_fn":"lambda self: self.buttonObj.buttonQ.empty()",
         "hardware_specs": {
             "button_specs": { 
                 "button_pin":24, 

@@ -75,14 +75,6 @@ sim2.run_sim()
 mode2.enter() 
 mode1.enter() # follow sim start by entering the first mode!
 
-print('Sim1')
-sim1.draw_chambers()
-sim1.draw_edges() 
-
-print(f'\nSim2')
-sim2.draw_chambers() 
-sim2.draw_edges() 
-
 sim2.run_sim()
 
 mode2.enter() 

@@ -374,10 +374,11 @@ class interactableABC:
                     # Callback Function (OnThresholdEvent)
                     if "onThreshold_callback_fn" in self.threshold_condition: 
                         # call call back function 
-                        callbackfn = self.threshold_condition['onThreshold_callback_fn']
-                        print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: ', "parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
-                        # print("parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
-                        callbackfn = eval(callbackfn)
+                        callbackfn_lst = self.threshold_condition['onThreshold_callback_fn']
+                        for callbackfn in callbackfn_lst: 
+                            print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: ', "parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
+                            # print("parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
+                            callbackfn = eval(callbackfn)
 
 
                     print(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
@@ -469,10 +470,10 @@ class lever(interactableABC):
 
         if self.buttonObj.pressed_val < 0: # simulating gpio connection
             self.isPressed = None 
-            self.num_pressed = 0 
+            # self.num_pressed = 0 
         else: 
             self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
-            self.num_pressed = self.pressed
+            # self.num_pressed = self.pressed
             
         #self.required_presses = self.threshold_condition["goal_value"] # Threshold Goal Value specifies the threshold goal, i.e. required_presses to meet the threshold
         #self.threshold_attribute = self.threshold_condition["attribute"] # points to the attribute we should check to see if we have reached goal. For lever, this is simply a pointer to the self.pressed attribute. 
@@ -484,12 +485,13 @@ class lever(interactableABC):
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
     @property
-    def pressed(self): 
+    def num_pressed(self): 
         '''returns the current number of presses that button object has detected'''
         return self.buttonObj.num_pressed
 
     def reset_press_count(self): 
         ''' sets self.buttonObj.num_pressed to start from the initial value '''
+        print('resetting number of presses!')
         self.buttonObj.num_pressed = self.threshold_condition['initial_value'] 
 
     def activate(self): 
