@@ -494,6 +494,11 @@ class lever(interactableABC):
         print('resetting number of presses!')
         self.buttonObj.num_pressed = self.threshold_condition['initial_value'] 
 
+    def set_press_count(self, count): 
+        ''' sets self.buttonObj.num_pressed to specified value '''
+        print(f'setting the number of presses to {count}')
+        self.buttonObj.num_pressed = count 
+        
     def activate(self): 
         ''' activate lever as usual, and once it is active we can begin the button object listening for presses'''
         interactableABC.activate(self)

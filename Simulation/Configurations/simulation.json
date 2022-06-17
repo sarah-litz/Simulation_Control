@@ -17,13 +17,16 @@
             "simulate_with_fn": "lambda self, vole: self.rfidQ.put( (vole, self.ID) )"  
         }, 
         {"name":"lever_food", 
-            "simulate":true
+            "simulate":true, 
+            "simulate_with_fn":"lambda self, vole: self.set_press_count( self.threshold_condition['goal_value'] )"
         }, 
         {"name":"lever_door1", 
-            "simulate":true
+            "simulate":true, 
+            "simulate_with_fn":"lambda self, vole: self.set_press_count( self.threshold_condition['goal_value'] )"
         },
         {"name":"lever_door2", 
-            "simulate":true 
+            "simulate":true, 
+            "simulate_with_fn":"lambda self, vole: self.set_press_count( self.threshold_condition['goal_value'] )"
         }, 
         {"name":"rfid3", 
             "simulate":true,
