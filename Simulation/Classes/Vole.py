@@ -33,17 +33,10 @@ class Vole:
         self.prev_component = None # last interactable that vole moved away from (so we know the direction of movement)
         try: self.curr_component = self.curr_loc.headval # current interactable the vole is closest to
         except AttributeError: self.curr_component = None # (interactable1, interactable2)
-        print(f'VOLE {self.tag} POSITION BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
-        
 
-        '''self.prev_interactable = None # last interactable that vole moved away from (so we know the direction of movement)
-        try: self.curr_interactable = self.curr_loc.headval.interactable # current interactable the vole is closest to
-        except AttributeError: self.curr_interactable = None # (interactable1, interactable2)
-        print(f'VOLE {self.tag} POSITION BETWEEN INTERACTABLES: {self.prev_interactable}, {self.curr_interactable}')
-        '''
-    
+        vole_log(f'VOLE {self.tag} STARTING POSITION BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
 
-    
+
     ##
     ## Simulating Interactable thru setting attribute value or thru function call
     ##
@@ -406,7 +399,7 @@ class Vole:
         if curr_interactable.threshold is True: 
             # threshold is True, we can freely make move 
             print(f'(Simulation/Vole{self.tag}, move_next_component) the threshold condition was met for {curr_interactable}. Vole{self.tag} making the move from {self.curr_component} to {component}.')
-            self.update_location(component)
+            self.update_location(component, nxt_edge_or_chmbr_id = nxt_edge_or_chmbr_id)
             return True
 
 
@@ -434,7 +427,7 @@ class Vole:
             if curr_interactable.threshold: # recheck the threshold 
                 print(f'(Simulation/Vole{self.tag}, move_next_component) threshold met for {curr_interactable}. Vole{self.tag} moving from {self.curr_component} to {component}.')
                 # update location 
-                self.update_location(component)
+                self.update_location(component, nxt_edge_or_chmbr_id = nxt_edge_or_chmbr_id)
                 return True 
 
             # Simulation did not successfully meet threshold. 
@@ -533,7 +526,9 @@ class Vole:
                 pass 
             
             else: 
-                 
+                
+                # 
+                # Dependency Chain Checks to see if we can allow simulation to occur
                 #
                 # Simulation for any non-autonomous Component ( because all autonomous components are automatically simulated in the move_next_component function ) 
                 #
@@ -542,8 +537,13 @@ class Vole:
                     for dependent in interactable.dependents:
                         if dependent.threshold is False: 
                             self.simulate_vole_interactable_interaction(dependent)
-                    self.simulate_vole_interactable_interaction(interactable) # function call which simulates interaction thru function call or changing vals of specified attributes
+                    
 
+                    # # # Double Check This!!! # # # 
+                    # # # Dependency Chain # # # 
+                    # If the component has no dependents and IS a dependent for a parent component (i.e., has at least one parent), then simulate. 
+                    if len(interactable.dependents) == 0 and len(interactable.parents) > 0: self.simulate_vole_interactable_interaction(interactable) # function call which simulates interaction thru function call or changing vals of specified attributes
+                    # # # # # # 
 
 
 
@@ -650,8 +650,8 @@ class Vole:
         # Check if the final component landed the vole in the new chamber or not. If it did not, then we should
         # if self.curr_loc.edge_or_chamber == 'edge': # vole is sitting at border between edge and chamber. 
 
-        sim_log(f'(Vole.py, attempt_move) Simulated Vole {self.tag} successfully moved into chamber {self.curr_loc}')
-        print(f'Simulated Vole{self.tag} Move Successful: New Location is Chamber {self.curr_loc}. Component Location is between ({self.prev_component}, {self.curr_component})')
+        sim_log(f'(Vole.py, attempt_move) Simulated Vole {self.tag} moved into {self.curr_loc}')
+        print(f'Simulated Vole{self.tag} New Location is {self.curr_loc}. Component Location is between ({self.prev_component}, {self.curr_component})')
         return True
 
 

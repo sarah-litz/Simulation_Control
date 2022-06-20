@@ -7,17 +7,18 @@
 
 ## Configuration File Overview ## 
 
-### Step-By-Step ###
+### Step-By-Step: Configurations for a Newly Added Interactable ###
 
-1. If it doesn't already exist, add a new .json whose file name matches the type of the interactable. For consistency purposes, this should have the same name as the class name for the interactable.
+1. If it doesn't already exist, add a new .json whose file name matches the type of the interactable. The file name should have the same name as the class name for the interactable, and should always be a '.json' file.
 
 2. Add specifications for a new interactable within the configuration file of that type. For details on how to do this, keep reading this document for both general examples and examples that are specific to existing interactable types. 
 
 3. Add to map.json in order to have the object instantiated when the experiment runs. 
 
-4. Add name of new interactable to other configuration files to establish any relationships it has with other interactables! i.e. When needed, add the name of the interactable as a dependent to another (existing) interactable.
+4. Add name of new interactable to other configuration files to establish any relationships it has with other interactables! i.e. When needed, add the name of the interactable as a dependent to another interactable's "dependents" field.
 
-### template .json file ### 
+
+> template .json file: 
 
 ~~~json 
     
@@ -151,7 +152,7 @@
 
 1. **"door1"** is assigning a name for our door that will be used throughout the experiment. When referencing this button in map.json or in other config files, refer to the door with this name.
 
-2. **"threshold_condition"** doors have the most simple threshold_condition to define, because it has no parent interactables (i.e. door does not get assigned as a dependent to another interactable). As a result, we do not need to define any onThreshold_callback_fn to trigger an event in a parent. And to simplify it even more, we are able to directly reference its threshold attribute, so we don't have to a call a function for checking the attribute value. 
+2. **"threshold_condition"** doors have the most simple threshold_condition to define, because we don't have to define an onThreshold_callback_fn or a check_threshold_with_fn as we do for some of the other interactables. We don't need to define onThreshold_callback_fn because it has no parent interactables (i.e. door does not get assigned as a dependent to another interactable), so we don't need to trigger an event in a parent when the doors meets its threshold. And to simplify it even more, we are able to directly reference its threshold attribute, so we don't have to a call a function for checking the attribute value. 
 
 i. "attribute" 
 

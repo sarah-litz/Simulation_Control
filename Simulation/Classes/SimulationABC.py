@@ -41,9 +41,6 @@ class SimulationABC:
 
         self.current_mode = None # contains the Mode object that the control software is currently running. 
 
-        print(f'{self} Map')
-        self.draw_chambers() 
-        self.draw_edges() 
 
     def __str__(self): 
         return __name__
@@ -88,8 +85,8 @@ class SimulationABC:
 
    
         sim_log(f'(Simulation.py, run_sim) {current_mode} is paired with the simulation function: {self.simulation_func[current_mode]}')
-        
-        print(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
+
+        # print(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
         vole_log(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
 
 

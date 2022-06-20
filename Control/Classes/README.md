@@ -36,10 +36,6 @@ If an interactable has any dependents, then there must be a method dependents_lo
 - set the interactables isIndependent attribute to True (results in the simulation side not directly setting this interactable's attribute to its goal_value, as this should instead be triggered by the interactable's dependents)
 - define how the interactable handles/interacts with its dependents.
 
-Example: For a door, we define that if any of its dependents (levers) reaches threshold, then we call open() or close() the door (whichever was indicated in the threshold_condition['goal_value']). If there are any other buttons that control the opening/closing of a door, the logic for those buttons should be added within this function. (i.e. if button_press, then open() door)
-
-*On the simulation side of things, if we try to call vole_interactable_interaction on an interactable that isIndependent==True, then we return and do not procede with a simulation becuase we defined that the interactable acts independent of a vole's behavior, so we don't want to simulate a behavior that doesn't make sense in a real experiment.*
-
 ## Map
 
 ## ModeABC

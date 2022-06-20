@@ -1,14 +1,49 @@
 
 # Box_Vole_Simulation
 
+## README Table of Contents ##
+
+> Control Files
+
+[Intro: Control Package](Control/README.md)
+    
+- The basics of running and writing basic experiments using the the Control Software Package. 
+
+[Control Configuration Files](Control/Configurations/README.md)
+
+- configuring components so they behave a certain way when the experiment runs
+
+[Writing (Control-Side) Scripts to Run an Experiment](Control/Scripts/README.md)
+
+- more in depth description for creating a new script to run the experiment!
+
+[Control Software Classes](Control/Classes/README.md)
+
+- more in depth descriptions of the classes that build the control software: InteractableABC, Map, and ModeABC
+
+> Simulation Files 
+
+[Intro: Simulation Package](Simulation/README.md) 
+
+- the basics of running and writing a simulated experiment 
+
+[Simulation Configuration Files](Simulation/Configurations/README.md)
+
+- defining which component(s) we want to be simulated, as well as *how* they are simulated. 
+
+[Writing (Simulation) Scripts to Run a Simulated Experiment --> DNE]
+
+[Simulation Software Classes](Simulation/Classes/README.md)
+
+
 
 ## Control Software and Simulation Software Communication "Channels"
 
-### Interactables: attr(threshold) vs attr(threshold_event_queue)
+### Interactables: How the code uses attr(threshold) vs attr(threshold_event_queue)
 
 
-- set to TRUE by the control software 
-- SET to FALSE by a Vole, after the Vole passes this dependent (specifically, this gets done in update_location()). 
+- threshold is set to TRUE by the control software. Immediately following this is a call to the method add_new_threshold_event(), where the interactable adds to its threshold_event_queue. 
+- threshold is set to FALSE by a Vole, after the Vole passes this dependent (specifically, this gets done in update_location()). 
     - once threshold gets set to False again, the watch_for_threshold_event method will quit its sleep state and start looping again to check for threshold states again.
 
 ~~~
