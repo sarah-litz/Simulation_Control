@@ -8,27 +8,35 @@ from .Classes.Map import Map
 # (TODO) Import Your ModeABC Implementations here using the following syntax: from Scripts.your_file_name import mode_name_1, mode_name_2, etc.
 from .Scripts.ModeScripts1 import mode1, mode2 
 from .Scripts.HardwareTesting import LeverTests, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests
-from .Scripts.StaticBox import ClosedBox, OpenBox
+from .Scripts.StaticBox import ClosedBox, OpenBox, BasicBox
 
 
-control_log(f'\n\n\nrunning {__name__}: New Experiment! ')
+def main(): 
 
-# Map Instantiation (which will also instantiate the hardware components) 
-map = Map(cwd+'/Control/Configurations')
+    control_log(f'\n\n\nrunning {__name__}: New Experiment! ')
 
-# (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-closedbox = ClosedBox(timeout = 30, map = map)
-openbox = OpenBox(timeout= 30, map = map)
-doorTests = DoorTests(timeout=30, map=map)
-leverTests = LeverTests(timeout = 20, map = map)
-leverdoorconnectiontests = LeverDoorConnectionTests(timeout = 40, map = map)
+    # Map Instantiation (which will also instantiate the hardware components) 
+    map = Map(cwd+'/Control/Configurations')
+    simpleMap =  Map(cwd+'/Control/Configurations', map_file_name = 'map_for_tests.json')
+
+    # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
+    closedbox = ClosedBox(timeout = 30, map = map)
+    openbox = OpenBox(timeout= 30, map = map)
+    basicbox = BasicBox(timeout = 30, map = map)
 
 
-# (TODO) start experiment
-leverdoorconnectiontests.enter() 
-leverTests.enter()
-closedbox.enter()
-openbox.enter()
+    if __name__ is not '__main__': # falls into this if the simulation package imported this module
+        # (TODO) Add Any Modes that you want to get passed to the Simulation Package in the list here 
+        # The modes will run in the order that they are placed in the list
+        return [ closedbox, openbox, basicbox ]
+
+    # (TODO) start experiment
+    closedbox.enter()
+    openbox.enter()
+
+
+if __name__ is '__main__': 
+    main() 
 
 
 

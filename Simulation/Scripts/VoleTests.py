@@ -4,6 +4,15 @@ from ..Logging.logging_specs import sim_log
 from ..Classes.SimulationABC import SimulationABC
 
 
+# Map Instantiation 
+
+
+# Control Scripts (Modes)
+# (TODO) instantiate the modes that you want to run 
+from Control.Scripts.StaticBox import ClosedBox, OpenBox, BasicBox
+
+
+
 
 class SimpleMapVole(SimulationABC): 
     
@@ -59,6 +68,8 @@ class OperantMapVole(SimulationABC):
         super().__init__(modes)
 
         self.modes = modes 
+
+        print('MODES: ', modes )
     
     def __str__(self): 
 

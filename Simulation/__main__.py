@@ -10,6 +10,7 @@ description:this file links a specified simulation class (a file w/in the Simula
 
 
 # Imports
+import inspect
 import os 
 cwd = os.getcwd() # current working directory
 import time
@@ -33,98 +34,39 @@ def input_before_continue(message):
     input(f'press the enter key to continue!')
     return 
 
-                    # # # # # # # # # # # # # # # # 
-                    # # SIMPLE BOX EXPERIMENTS  # # 
-                    # # # # # # # # # # # # # # # # 
 
-# Map Instantiation (which will also instantiate the hardware components) 
-simpleMap = Map(cwd+'/Control/Configurations', map_file_name = 'map_for_tests.json')
+sim_log('\n\n\n\n-----------------------------Simulation Package Started------------------------------------')
 
-sim_log('\n\n\n\n-----------------------------New Simulation Running------------------------------------')
+from Simulation import modes # references Simulation/__init__ file to retrieve list of modes created in Control/__main__.py
+operantSim = OperantMapVole( modes = modes ) # create simulation, pass list of modes as argument 
+simpleMapSim = SimpleMapVole( modes = modes )
 
-#
-# CONTROL SCRIPTS 
-#
-# (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-simpleMapMode1 = ClosedBox( timeout = 40, map = simpleMap ) 
-simpleMapMode2 = OpenBox( timeout = 40, map = simpleMap )
-simpleMapMode3 = BasicBox( timeout = 40, map = simpleMap ) ## TODO-today: 
+# Pair Each Mode with Simulation Function that should get run when the mode starts running.
+simpleMapSim.simulation_func[ modes[0] ] = ( simpleMapSim.moveToDoor1 )
+simpleMapSim.simulation_func[ modes[1] ] = ( simpleMapSim.attemptMoveToChamber2 )
+# LEAVING OFF HERE! (at the following TODO marked in the next line)
+simpleMapSim.simulation_func[ modes[2] ] = ( operantSim.attemptMoveToChamber2 ) # TODO! DON'T ALLOW SOMEONE TO PASS IN FUNCITON FROM A DIFFERENT CLASS BECAUSE THEN THE BOX BASICALLY RESETS AKA IT WONT RECALL WHERE THE VOLES LEFT OFF!
 
+print(f'Double Check that the following looks correct...') 
+for (k, v) in simpleMapSim.simulation_func.items(): 
+    input_before_continue(f' Control Mode: {k} is paired with Simulation {v}')
 
-#
-# SIMULATION SCRIPTS
-#
-# (TODO) instantiate the Simulation, pass in the Mode objects and map -- this should be using the class you imported in the second "todo"
-# (TODO) in the modes argument, pass a list of all of the modes that you instantiated above. These should get passed in in the same order that they will run in.
-simplemapSim = SimpleMapVole( modes = [simpleMapMode1, simpleMapMode2, simpleMapMode3] ) ## TODO-today: 
+# Start Simulation 
+simpleMapSim.run_sim() # starts running simulation in daemon thread
 
-time.sleep(3) # pause before starting up the experiment 
+time.sleep(4) # Pause Before Starting Modes 
 
-
-# (TODO)
-# indicate the simulation function to run when the mode enters timeout. Function will only run once, and if the mode ends its timeout period before simulation can end, then the simulation will be forced to exit at this point
-simplemapSim.simulation_func[simpleMapMode1] = (simplemapSim.moveToDoor1)
-simplemapSim.simulation_func[simpleMapMode2] = (simplemapSim.attemptMoveToChamber2)
-simplemapSim.simulation_func[simpleMapMode3] = (simplemapSim.renameThis) ## TODO-today: 
+# Loop to Enter Modes in Given Order
+# (TODO) Comment out calls to input_before_continue if you don't want program to wait for User Input in between Modes Executing.
+for mode in modes: 
+    input_before_continue(f'ready to start running Control Software Mode: {mode}? Paired with simulation funciton: {simpleMapSim.simulation_func[ mode ]}')
+    mode.enter() 
+    input_before_continue(f'{mode} finished running')
 
 
-# (TODO) calls to start the experiment and the Simulations 
-simplemapSim.run_sim() # runs simulation as daemon thread. 
-time.sleep(2) # Pause before starting
-input_before_continue('Begin running Mode 1 of the Simple Map Experiment? Paired with the simulation function moveToDoor1 ')
-#simpleMapMode1.enter() # follow sim start by entering the first mode!
-input_before_continue('simpleMapMode1 finished. begin mode 2 of simple map experiment? Paired with the simulation function attemptMoveToChamber2')
-simpleMapMode2.enter() 
-input_before_continue('simpleMapMode2 finished. begin simpleMapMode3? Paired with no simulation function. Nothing will happen.')
-simpleMapMode3.enter()
-
-                    # # # # # # # # # # # # # # # # 
-                    # # OPERANT BOX EXPERIMENTS # # 
-                    # # # # # # # # # # # # # # # # 
-
-# Map Instantiation (which will also instantiate the hardware components) 
-operantMap = Map(cwd+'/Control/Configurations') 
-
-sim_log('\n\n\n\n-----------------------------New Simulation Running------------------------------------')
-
-#
-# CONTROL SCRIPTS
-#
-# (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-operantMapMode1 = ClosedBox( timeout = 40, map = operantMap)
-operantMapMode2 = OpenBox( timeout = 40, map = operantMap )
-operantMapMode3 = BasicBox( timeout = 40, map = operantMap ) ## TODO-today: 
+input_before_continue('Thats All! G O O D B Y E')
 
 
-#
-# SIMULATION SCRIPTS
-#
-# (TODO) instantiate the Simulation, pass in the Mode objects and map -- this should be using the class you imported in the second "todo"
-# (TODO) in the modes argument, pass a list of all of the modes that you instantiated above. These should get passed in in the same order that they will run in.
-operantmapSim = OperantMapVole( modes = [operantMapMode1, operantMapMode2, operantMapMode3] ) ## TODO-today: 
-
-
-time.sleep(3) # pause before starting up the experiment 
-
-
-# (TODO)
-# indicate the simulation function to run when the mode enters timeout. Function will only run once, and if the mode ends its timeout period before simulation can end, then the simulation will be forced to exit at this point
-operantmapSim.simulation_func[operantMapMode1] = (operantmapSim.attemptMoveToChamber2)
-## TODO-today: add another function in the OperantMapVole class that we can run during the other modes!
-
-
-# (TODO) calls to start the experiment and the Simulations 
-operantmapSim.run_sim() # runs simulation as daemon thread. 
-time.sleep(2) # Pause before starting
-input_before_continue('Begin running operantMapMode1? ( Paired with the simulation function attemptMoveToChamber2')
-operantMapMode1.enter() 
-input_before_continue('operantMapMode1 has finished. Begin running operantMapMode2? Paired with no simulation funciton.')
-operantMapMode2.enter() 
-input_before_continue('operantMapMode2 has finished. Begin running operantMapMode3? Paired with no simulation function')
-operantMapMode3.enter() 
-
-
-print('G O O D B Y E')
 
 
 
