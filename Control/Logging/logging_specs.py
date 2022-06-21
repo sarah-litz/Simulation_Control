@@ -17,7 +17,7 @@ control_fp=cwd+'/Control/Logging/control.log'
 def setup_logger(name, log_file, level=logging.DEBUG):
     """To setup as many loggers as you want"""
 
-    handler = logging.FileHandler(log_file)        
+    handler = logging.FileHandler(log_file, mode='w')        
     # handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)

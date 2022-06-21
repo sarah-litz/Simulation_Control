@@ -65,6 +65,7 @@ class SimulationABC:
         waits for current mode's timeout to end and immediately returns, killing the simulation function as a result 
         '''
 
+
         #
         # Wait for Mode's Timeout Interval
         while not current_mode.inTimeout and current_mode.active: # active mode not in Timeout
@@ -132,6 +133,18 @@ class SimulationABC:
                     Get/waits for an active mode
                     Calls the function that is paired with the currently active mode '''
 
+
+        # Validity Check that will only execute once # 
+        ''' check validitity of the simulation functions that were set to notify user of potential errors as early as possible '''
+        for (mode, simFn) in self.simulation_func.items(): 
+             # DON'T ALLOW SOMEONE TO PASS IN FUNCITON FROM A DIFFERENT CLASS BECAUSE THEN THE BOX BASICALLY RESETS AKA IT WONT RECALL WHERE THE VOLES LEFT OFF!
+            if hasattr(self, simFn.__name__): 
+                sim_log(f'{mode} is paired with {simFn.__name__}')
+            else: 
+                raise Exception(f'specified {simFn} as a simulation function for {self}. Simulation Function Must Belong To {self}. Otherwise 2 diff simulations will get created, and Voles will reset to initial positions.')
+
+
+
         # NOTE: the function that we call should potentially also run on its own thread, so then all this function does is 
         # loop until the active mode is not in Timeout or the current mode is inactive. Basically will just allow for a more immediate 
         # stopage of the simulation when a mode gets out of timeout and/or stops running 
@@ -150,8 +163,13 @@ class SimulationABC:
                 time.sleep(0.5)
                 self.current_mode = self.get_active_mode() # update the current mode when one becomes active 
 
-            # update the map to match the new current mode map 
+            # update the map to match the new current mode map; if the current map does not match the previous map, this may cause errors, so we should raise Exception explaining that a different instance of SimulationABC should get created to run for a different MAP instance 
+            self.prevmap = self.map
             self.map = self.current_mode.map 
+
+            if self.prevmap != self.map: 
+                raise Exception(f'Modes Have Different Maps! The control modes that are running have different maps. Please create unique instances of the SimulationABC class for every unique Map instance that the Control Modes is running to avoid errors. Not running the simulation for this mode.')
+
 
             sim_log(f'NEW MODE: (Simulation.py, run_sim) Simulation Updating for Control Entering a New Mode: {(self.current_mode)}')
 

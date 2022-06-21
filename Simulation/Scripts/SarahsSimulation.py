@@ -17,9 +17,8 @@ class SarahsSimulation(SimulationABC):
         
         super().__init__(modes) 
 
-
-
-        '''Interactable Behavior: 
+        '''
+        Interactable Behavior: 
         - in running a simulation, we will automatically add an attribute to each interactable that allows 
         - default behavior ( if left unchanged )
         '''

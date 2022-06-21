@@ -18,48 +18,53 @@ from .Logging.logging_specs import sim_log
 from Control.Classes.Map import Map
 
 
+# (Optional TODO) Import Your ModeABC Implementations Here using the following syntax: from Control.Scripts.your_file_name import modeName1, modeName2, etc. 
+    #   the default import statement below uses the modes that are created in the __main__.py of the Control software 
+from Simulation import modes # references Simulation/__init__ file to retrieve list of modes created in Control/__main__.py
 
-# (TODO) Import Your ModeABC Implementations Here using the following syntax: from Control.Scripts.your_file_name import modeName1, modeName2, etc. 
-from Control.Scripts.StaticBox import ClosedBox, OpenBox, BasicBox
 
 # (TODO) Import your SimulationABC Implementations Here using the following syntax: from .Scripts.your_file_name import SimulationClassName
-from .Scripts.SarahsSimulation import SarahsSimulation
-from .Scripts.VoleTests import SimpleMapVole, OperantMapVole
-from .Scripts.RFID_Simulation_Tests import SimulatePings
-from .Scripts.InteractableTests import LeverTests, ButtonTests
+from .Scripts.VoleTests import OperantMapVole
+from .Scripts.InteractableTests import LeverTests, ButtonTests, RfidSimulatedPings
 
 
+# Helper Function for creating "checkpoints" throughout the experiments execution that wait for user input before continuing with experiment execution. 
 def input_before_continue(message):
     print(f'{message}')
     input(f'press the enter key to continue!')
     return 
 
-
 sim_log('\n\n\n\n-----------------------------Simulation Package Started------------------------------------')
 
-from Simulation import modes # references Simulation/__init__ file to retrieve list of modes created in Control/__main__.py
+
+# (TODO) Instantiate the Simulation Classes that you want to run.
 operantSim = OperantMapVole( modes = modes ) # create simulation, pass list of modes as argument 
-simpleMapSim = SimpleMapVole( modes = modes )
+
 
 # Pair Each Mode with Simulation Function that should get run when the mode starts running.
-simpleMapSim.simulation_func[ modes[0] ] = ( simpleMapSim.moveToDoor1 )
-simpleMapSim.simulation_func[ modes[1] ] = ( simpleMapSim.attemptMoveToChamber2 )
-# LEAVING OFF HERE! (at the following TODO marked in the next line)
-simpleMapSim.simulation_func[ modes[2] ] = ( operantSim.attemptMoveToChamber2 ) # TODO! DON'T ALLOW SOMEONE TO PASS IN FUNCITON FROM A DIFFERENT CLASS BECAUSE THEN THE BOX BASICALLY RESETS AKA IT WONT RECALL WHERE THE VOLES LEFT OFF!
+operantSim.simulation_func[ modes[0] ] = ( operantSim.moveToChamber3 ) # right most chamber
+operantSim.simulation_func[ modes[1] ] = ( operantSim.attemptMoveToChamber2 ) # left most chamber
+operantSim.simulation_func[ modes[2] ] = ( operantSim.attemptMoveToChamber1 ) # middle chamber
+operantSim.simulation_func[ modes[3] ] = ( operantSim.renameThis ) # nothing happens
+
+
+
 
 print(f'Double Check that the following looks correct...') 
-for (k, v) in simpleMapSim.simulation_func.items(): 
-    input_before_continue(f' Control Mode: {k} is paired with Simulation {v}')
-
+for m in modes: 
+    if m in operantSim.simulation_func.keys(): 
+        input_before_continue(f' Control Mode: {m} is paired with Simulation {operantSim.simulation_func[m]}')
+    else: 
+        input_before_continue(f' Control Mode: {m} is not paired with a Simulation Funciton.')
 # Start Simulation 
-simpleMapSim.run_sim() # starts running simulation in daemon thread
+operantSim.run_sim() # starts running simulation in daemon thread
 
 time.sleep(4) # Pause Before Starting Modes 
 
 # Loop to Enter Modes in Given Order
 # (TODO) Comment out calls to input_before_continue if you don't want program to wait for User Input in between Modes Executing.
 for mode in modes: 
-    input_before_continue(f'ready to start running Control Software Mode: {mode}? Paired with simulation funciton: {simpleMapSim.simulation_func[ mode ]}')
+    input_before_continue(f'ready to start running Control Software Mode: {mode}?')
     mode.enter() 
     input_before_continue(f'{mode} finished running')
 

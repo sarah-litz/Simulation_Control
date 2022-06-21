@@ -27,7 +27,7 @@ class ClosedBox(modeABC):
     def setup(self):
         pass        
     def run(self):
-        return 
+        return
 
         
 
@@ -67,5 +67,45 @@ class BasicBox(modeABC):
         pass   
   
     def run(self):
+        print('Fill In With Extra Logic for How We Want Box To Run!')
+        pass 
+
+
+
+class IteratorBox(modeABC): 
+    '''
+    Description: 
+        << operant map. Each time a lever gets pressed we increment the goal number of presses >>
+    '''
+    def __init__(self, timeout, map):
+        super().__init__(timeout, map)
+
+    def __str__(self): 
+        return 'Iterator Box'
+    
+    def setup(self): 
+        ''' any tasks to setup before run() gets called '''
+        pass  
+    
+    def run(self): 
+        ''' when lever presses reaches threshold, increment required number of presses '''
+        pass 
+
+class SimpleBox(modeABC): 
+    '''
+    Description: 
+        << utilizes a simple map with 2 chambers and 1 edge, where there is a single rfid and door along the edge >> 
+    '''
+    def __init__(self, timeout, map):
+        super().__init__(timeout, map)
+
+    def __str__(self): 
+        return 'Simple Box'
+    
+    def setup(self): 
+        pass 
+    
+    def run(self): 
+        ''' simple map version! '''
         print('Fill In With Extra Logic for How We Want Box To Run!')
         pass 

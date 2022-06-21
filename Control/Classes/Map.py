@@ -149,9 +149,12 @@ class Map:
             i.reset() 
     def activate_interactables(self): 
         ''' loops thru all instantiated interactables and ensures that all are actively running '''
+        
+        control_log('\n\n')
         for (n,i) in self.instantiated_interactables.items(): 
             if not i.active: 
                 i.activate()
+        control_log('\n')
         
     def deactivate_interactables(self, clear_threshold_queue = True): 
         ''' loops thru all instantiated interactables and sets each of them to be inactive. Called in between modes '''
@@ -159,6 +162,9 @@ class Map:
             i.deactivate()
         if clear_threshold_queue: 
             self.reset_interactables() # empties the interactables threshold queue
+        
+        control_log('\n')
+
     
                 
         
@@ -207,7 +213,7 @@ class Map:
             if i.edge_or_chamber_id == chmbr1id: 
                 # throw error if there is a chamber 1 chamber_interactable AFTER we have already encountered a chamber 2 interactable, as this is not preserving the order of chmbr1->edge->chmbr2
                 if len(chmbr2references) > 0: 
-                    raise Exception(f'(Map.py, configure_setup, validate_chmbr_interactable_references) configuration for Edge{new_edge.id} Components is invalid because trying to place a chamber{i.edge_or_chamber_id}, {i} after specifying chamber{chmbr2lst[0].edge_or_chamber_id} interactable(s): {chmbr2lst}. Please ensure that map.json configs are correct and run again.')
+                    raise Exception(f'(Map.py, configure_setup, validate_chmbr_interactable_references) configuration for Edge{new_edge.id} Components is invalid because trying to place a chamber{i.edge_or_chamber_id}, {i} after specifying chamber{chmbr2references[0].edge_or_chamber_id} interactable(s): {chmbr2references}. Please ensure that map.json configs are correct and run again.')
                 chmbr1references.append(i)
             else: 
                 chmbr2id = i.edge_or_chamber_id

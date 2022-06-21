@@ -8,7 +8,7 @@ from .Classes.Map import Map
 # (TODO) Import Your ModeABC Implementations here using the following syntax: from Scripts.your_file_name import mode_name_1, mode_name_2, etc.
 from .Scripts.ModeScripts1 import mode1, mode2 
 from .Scripts.HardwareTesting import LeverTests, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests
-from .Scripts.StaticBox import ClosedBox, OpenBox, BasicBox
+from .Scripts.StaticBox import ClosedBox, OpenBox, BasicBox, IteratorBox, SimpleBox
 
 
 def main(): 
@@ -23,16 +23,21 @@ def main():
     closedbox = ClosedBox(timeout = 30, map = map)
     openbox = OpenBox(timeout= 30, map = map)
     basicbox = BasicBox(timeout = 30, map = map)
+    iteratorbox = IteratorBox(timeout = 30, map = map)
+    simplebox = SimpleBox(timeout=30, map = map)
 
 
     if __name__ is not '__main__': # falls into this if the simulation package imported this module
         # (TODO) Add Any Modes that you want to get passed to the Simulation Package in the list here 
         # The modes will run in the order that they are placed in the list
-        return [ closedbox, openbox, basicbox ]
+        return [ closedbox, openbox, basicbox, iteratorbox, simplebox ]
 
     # (TODO) start experiment
     closedbox.enter()
     openbox.enter()
+    basicbox.enter() 
+    iteratorbox.enter() 
+    simplebox.enter()
 
 
 if __name__ is '__main__': 

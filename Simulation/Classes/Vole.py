@@ -206,10 +206,10 @@ class Vole:
         '''
         if self.curr_component is not None: 
             print(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
-            sim_log(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
+            vole_log(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
         else: 
-            print(f'(Vole{self.tag}, move_to_interactable) {self.curr_loc}(Empty Chamber)->{goal_interactable}')
-            sim_log(f'(Vole{self.tag}, move_to_interactable) {self.curr_loc}(Empty Chamber)->{goal_interactable}')
+            print(f'(Vole{self.tag}, move_to_interactable) {self.curr_loc.edge_or_chamber}{self.curr_loc.id}(Empty)->{goal_interactable}')
+            vole_log(f'(Vole{self.tag}, move_to_interactable)  {self.curr_loc.edge_or_chamber}{self.curr_loc.id}(Empty)->{goal_interactable}')
 
         interactable_loc = self.map.get_location_object(goal_interactable)
         goal_component = interactable_loc.get_component_from_interactable(goal_interactable)
@@ -491,7 +491,7 @@ class Vole:
             edge = edge.get_component_list()
             reversed = False 
 
-        vole_log(f'(Vole.py, attempt_move) vole{self.tag} is on the edge with the following components: {[*(ele.interactable.name for ele in edge)]}')
+  
 
         #
         # Edge Traversal 
@@ -500,11 +500,18 @@ class Vole:
         # position start location along the edge to be where the vole's current position is 
         # if the current position is None, then we will start at the beginning of the list and loop thru all components on edge.
         # if the current position is Not None, traverse along edge until we find edge component, where self.curr_component == component
+        
+        ## Case that vole is in a chamber that is connected to the edge we need, but vole is currenlty positioned between 2 interactables that are attached to a diff edge ##
+        if self.curr_component.interactable.name not in [*(ele.interactable.name for ele in edge)]: 
+            self.move_to_component(edge[0])
 
+        vole_log(f'(Vole.py, attempt_move) vole{self.tag} is on the edge with the following components: {[*(ele.interactable.name for ele in edge)]}')
+        
         # begin simulation from the vole's current interactable position. 
         if self.curr_component is None: 
             self.curr_component = edge[0] # first component on edge 
-        # remove components that come before vole's current position 
+        
+        # remove any components that come before vole's current position 
         i = 0
         while self.curr_component.interactable.name != edge[i].interactable.name: 
             i+=1 

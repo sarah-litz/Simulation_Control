@@ -205,7 +205,7 @@ class modeABC:
    #   
     def setup(self): 
         ''' any tasks for setting up box before run() gets called '''
-        raise NameError('this funciton should be overriden')
+        raise NameError(f'{__name__} this function should be overriden')
 
     def run(self):
         """This is the main method that contains the logic for the specific mode. It should be overwritten for each specific mode class that inherits this one. Because of that, if this function is not overwritten it will raise an error on its default. 
