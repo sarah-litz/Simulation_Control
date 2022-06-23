@@ -40,8 +40,16 @@
             "simulate":true
         }, 
         {"name":"open_door1_button", 
-            "simulate":false
-        }
+            "simulate":true
+        }, 
+        {"name":"close_door1_button", 
+            "simulate":true
+        }, 
+        {"name":"close_door2_button", 
+            "simulate":true
+        }, 
+        {"name":"open_door2_button", 
+        "simulate":true}
         
     ],
 

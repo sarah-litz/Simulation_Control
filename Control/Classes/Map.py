@@ -412,6 +412,7 @@ class Map:
                         self.instantiated_interactables[dname].parents.append(i) # assign dependent its new parent
 
                     except KeyError as e: 
+                        print(e)
                         print(f' specified an unknown interactable {e} as a dependent for {i.name}. Double check the config files for {e} and for {i.name} to ensure they are correct, and ensure that {e} was added in the map config file as well.')
                         ans = input(f' would you like to carry on the experiment without adding {e} as a dependent for {i.name}? (y/n)')
                         if ans == 'n': exit()

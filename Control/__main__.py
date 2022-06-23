@@ -17,7 +17,7 @@ def main():
 
     # Map Instantiation (which will also instantiate the hardware components) 
     map = Map(cwd+'/Control/Configurations')
-    simpleMap =  Map(cwd+'/Control/Configurations', map_file_name = 'map_for_tests.json')
+    # simpleMap =  Map(cwd+'/Control/Configurations', map_file_name = 'map_for_tests.json')
 
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
     closedbox = ClosedBox(timeout = 30, map = map)

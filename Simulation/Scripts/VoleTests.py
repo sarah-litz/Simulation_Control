@@ -40,6 +40,8 @@ class OperantMapVole(SimulationABC):
         vole1 = self.get_vole(1)
         door1 = self.map.instantiated_interactables['door1']
         vole1.move_to_interactable(door1)
+
+        print(f'{self} is O V E R ! ')
     
     def attemptMoveToChamber2(self): 
 

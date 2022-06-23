@@ -154,9 +154,9 @@ class interactableABC:
             if self.isSimulation: 
 
                 # If button is being simulated, then we care about changes to isPressed. If isPressed == True, then increment presses
-
-                print(f'(InteractableABC, Button, list_for_event) Button for {self.parent} is being simulated. Calling simulated_listen_for_event instead.')  
-                control_log(f'(InteractableABC, Button, list_for_event) Button for {self.parent} is being simulated. Calling simulated_listen_for_event instead.')  
+# COME BACK HERE --> IM NOT CALLING ANY FUNCTION HERE?? EVEN THO I SAY IM CALLING SIMULATED_LISTEN_FOR_EVENT
+                print(f'(InteractableABC, Button, listen_for_event) Button for {self.parent} is being simulated. Calling simulated_listen_for_event instead.')  
+                control_log(f'(InteractableABC, Button, listen_for_event) Button for {self.parent} is being simulated. Calling simulated_listen_for_event instead.')  
                 return             
 
             #
@@ -373,13 +373,11 @@ class interactableABC:
                     #
                     # Callback Function (OnThresholdEvent)
                     if "onThreshold_callback_fn" in self.threshold_condition: 
-                        # call call back function 
+                        # execute each of the callback functions in the list, in order
                         callbackfn_lst = self.threshold_condition['onThreshold_callback_fn']
                         for callbackfn in callbackfn_lst: 
                             print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: ', "parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
-                            # print("parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
                             callbackfn = eval(callbackfn)
-
 
                     print(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
                     control_log(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
@@ -491,7 +489,7 @@ class lever(interactableABC):
 
     def reset_press_count(self): 
         ''' sets self.buttonObj.num_pressed to start from the initial value '''
-        print('resetting number of presses!')
+        print('\n\n\n\nresetting number of presses!')
         self.buttonObj.num_pressed = self.threshold_condition['initial_value'] 
 
     def set_press_count(self, count): 
@@ -503,6 +501,7 @@ class lever(interactableABC):
         ''' activate lever as usual, and once it is active we can begin the button object listening for presses'''
         interactableABC.activate(self)
         self.buttonObj.listen_for_event()
+
 
     def validate_hardware_setup(self):
         
@@ -522,7 +521,7 @@ class lever(interactableABC):
                 if self.servoObj.servo is None: 
                     errorMsg.append('servoObj')
                 
-                raise Exception(f'(Lever, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead.')
+                raise Exception(f'(Lever, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
 
             return 
 
@@ -704,7 +703,7 @@ class door(interactableABC):
                 if self.servoObj.servo is None: 
                     errorMsg.append('servoObj')
                 
-                raise Exception(f'(Door, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead.')
+                raise Exception(f'(Door, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
 
             return 
 
@@ -993,7 +992,7 @@ class buttonInteractable(interactableABC):
                 if self.buttonObj.pressed_val < 0: 
                     errorMsg.append('buttonObj')
                 
-                raise Exception(f'(buttonInteractable, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead.')
+                raise Exception(f'(buttonInteractable, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
 
             return 
     

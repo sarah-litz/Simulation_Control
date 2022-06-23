@@ -45,7 +45,7 @@ class OpenBox(modeABC):
     
     def setup(self): 
         ''' any tasks to setup before run() gets called '''
-        self.map.instantiated_interactables['door1'].open() # open the door
+        # self.map.instantiated_interactables['door1'].open() # open the door
    
     def run(self):
         pass 
