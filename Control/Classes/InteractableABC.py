@@ -146,7 +146,7 @@ class interactableABC:
             def increment_presses(pin): 
                 self.num_pressed += 1 
                 self.buttonQ.put(f'press#{self.num_pressed}') # add press to parents buttonQ
-                print(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}, buttonQ = {list(self.buttonQ.queue)}')
+                # print(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}, buttonQ = {list(self.buttonQ.queue)}')
                 control_log(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}')
                 
 
@@ -156,9 +156,8 @@ class interactableABC:
             if self.isSimulation: 
 
                 # If button is being simulated, then we care about changes to isPressed. If isPressed == True, then increment presses
-# COME BACK HERE --> IM NOT CALLING ANY FUNCTION HERE?? EVEN THO I SAY IM CALLING SIMULATED_LISTEN_FOR_EVENT
-                print(f'(InteractableABC, Button, listen_for_event) Button for {self.parent} is being simulated. Calling simulated_listen_for_event instead.')  
-                control_log(f'(InteractableABC, Button, listen_for_event) Button for {self.parent} is being simulated. Calling simulated_listen_for_event instead.')  
+                # print(f'(InteractableABC, Button, listen_for_event) Button for {self.parent} is being simulated. Simulated Button doesnt listen for event.')  
+                control_log(f'(InteractableABC, Button, listen_for_event) Button for {self.parent} is being simulated. Simulated Button doesnt listen for an event. {self.parent} will be listening for its own threshold event so will still pick up on simulated button presses.')  
                 return             
 
             #
@@ -285,7 +284,6 @@ class interactableABC:
         try: self.validate_hardware_setup() # validate that this hardware was properly setup (e.g. the button and servos ) if interactable is not being simulated
         except Exception as e: print(e), sys.exit(0)
 
-        print(f"(InteractableABC.py, activate) {self.name} has been activated. isSimulation: {self.isSimulation}. starting contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
         control_log(f"(InteractableABC.py, activate) {self.name} has been activated. starting contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
         
         self.threshold = False # "resets" the interactable's threshold value so it'll check for a new threshold occurence

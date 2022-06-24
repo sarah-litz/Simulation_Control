@@ -75,6 +75,7 @@ class modeABC:
         try: 
             """This method runs when the mode is entered from another mode. Essentially it is the startup method. This differs from the __init__ method because it should not run when the object is created, rather it should run every time this mode of operation is started. 
             """
+
             print(f'\nnew mode entered: {self}') # print to console 
 
             time.sleep(2) # pause before activating interactables 

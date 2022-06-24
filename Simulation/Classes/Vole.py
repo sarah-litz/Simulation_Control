@@ -18,6 +18,16 @@ import time
 from ..Logging.logging_specs import sim_log, vole_log
 from .Timer import countdown
 
+
+'''
+POTENTIAL TODO: create separate vole class that is only the vole with the attributes and no access to the methods provided for a simulated vole. 
+then the Map class will be able to track where a vole currently is within a Map. 
+will also be able to throw an error if a vole makes a physically impossible move. (e.g. lever press and then another lever press but no rfid ping for an rfid ping that is inbetween the 2 levers)
+'''
+
+'''
+SIMULATED VOLE
+'''
 class Vole: 
 
     def __init__(self, tag, start_chamber, map): 
