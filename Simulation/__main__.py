@@ -16,7 +16,7 @@ cwd = os.getcwd() # current working directory
 import time
 from .Logging.logging_specs import sim_log
 from Control.Classes.Map import Map
-
+from Control.Classes.Timer import draw_table
 
 # (Optional TODO) Import Your ModeABC Implementations Here using the following syntax: from Control.Scripts.your_file_name import modeName1, modeName2, etc. 
     #   the default import statement below uses the modes that are created in the __main__.py of the Control software 
@@ -50,12 +50,18 @@ operantSim.simulation_func[ modes[3] ] = ( operantSim.renameThis ) # nothing hap
 
 
 
-print(f'Double Check that the following looks correct...') 
+print(f'\n Double Check that the following Control/Simulation Pairings look correct...') 
+data = [ ['Control Mode', 'Simulation Scripts'] ]
 for m in modes: 
     if m in operantSim.simulation_func.keys(): 
-        input_before_continue(f' Control Mode: {m} is paired with Simulation {operantSim.simulation_func[m]}')
+        data.append( [m, operantSim.simulation_func[m].__name__] )
+        # input_before_continue(f' Control Mode: {m} is paired with Simulation {operantSim.simulation_func[m]}')
     else: 
-        input_before_continue(f' Control Mode: {m} is not paired with a Simulation Funciton.')
+        data.append( [m, 'None'] )
+        # input_before_continue(f' Control Mode: {m} is not paired with a Simulation Funciton.')
+draw_table(data)
+input_before_continue('')
+
 # Start Simulation 
 operantSim.run_sim() # starts running simulation in daemon thread
 

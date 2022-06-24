@@ -119,11 +119,13 @@ class SimulationABC:
         current_mode.simulation_lock.release() # release lock to denote that simulation for this mode finished running  
         return
         
-
     @run_in_thread
     def run_sim(self): 
 
+        self.map.print_interactable_table()
+        print('\n')
         self.draw_chambers() 
+        print('\n')
         self.draw_edges() 
         
         sim_log('(Simulation.py, run_sim) Daemon Thread for getting the active mode, and running the specified simulation while active mode is in its timeout period.')

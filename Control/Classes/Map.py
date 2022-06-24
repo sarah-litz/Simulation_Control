@@ -20,6 +20,7 @@ import os
 from tkinter import E
 
 # Local Imports 
+from .Timer import draw_table
 from Logging.logging_specs import control_log
 from .ModeABC import modeABC 
 from . import InteractableABC
@@ -41,6 +42,7 @@ class Map:
             self.configure_setup(config_directory + f'/{map_file_name}')
         else: self.configure_setup(config_directory + '/map.json')
 
+
     def print_graph_info(self): 
         for chamber in self.graph.values(): 
             print(chamber)                       # chamber id and adjacent vertices
@@ -49,7 +51,12 @@ class Map:
                 print(edge)                      # edge id and vertices it connects
 
 
-
+    def print_interactable_table(self): 
+        row1 = ['Interactable', 'is Simulation?', 'Returned Messages During Setup (reference Logging Files for error specifics)']
+        data = [ row1 ] 
+        for i_name in self.instantiated_interactables.keys(): 
+            data.append( [i_name, self.instantiated_interactables[i_name].isSimulation, self.instantiated_interactables[i_name].messagesReturnedFromSetup ] )
+        draw_table(data, cellwidth=20)
 
     #
     # Getters and Setters 
@@ -158,6 +165,9 @@ class Map:
         
     def deactivate_interactables(self, clear_threshold_queue = True): 
         ''' loops thru all instantiated interactables and sets each of them to be inactive. Called in between modes '''
+        
+        control_log('\n')
+
         for (n,i) in self.instantiated_interactables.items(): 
             i.deactivate()
         if clear_threshold_queue: 
@@ -178,7 +188,7 @@ class Map:
         '''argument should be list of the actual interactable objects that are w/in a chamber'''
         '''loop thru the edges chmbr_interactable_lst and return True if the ordering of the references reflects the ordering provided in the chamber config''' 
 
-        print(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
+        control_log(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
         ## Before Adding Edge Components, Perform a One Time Check to Validate the Chamber Interactables That Are Optionally Specified on the Edge:      
             # argument is entire dictionary of edge components provided in the configuration file 
             # returns list of only the references to chamber_interactables that are provided w/in the dictionary 

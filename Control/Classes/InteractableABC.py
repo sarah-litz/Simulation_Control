@@ -48,6 +48,7 @@ class interactableABC:
         self.active = False # must activate an interactable to startup threads for tracking any vole interactions with the interactable
         self.name = name # name used is the one specified in the configuration files 
         self.isSimulation = False # simulation feature: set to True if interactable is being simulated 
+        self.messagesReturnedFromSetup = '' # append to with any messages that we want to display after setup, but before activating an interactable
 
         ## Location Information ## 
         self.edge_or_chamber = None # string to represent if this interactable sits along an edge or in a chamber
@@ -63,6 +64,7 @@ class interactableABC:
         self.parents = [] # if an interactable is a dependent for another, then the object that it is a dependent for is placed in this list. 
         self.barrier = False # set to True if the interactable acts like a barrier to a vole, meaning we require a vole interaction of somesort everytime a vole passes by this interactable. 
         self.autonomous = False # set to True if it is not dependent on other interactables or on vole interactions (i.e. this will be True for RFIDs only )
+
 
     
     def __str__(self): 
@@ -118,7 +120,7 @@ class interactableABC:
             except AttributeError as e: 
                 # attribute error raised 
                 control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
-                print(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
+                self.parent.messagesReturnedFromSetup += f'simulating gpio connection. '
                 return -1
 
         def run_in_thread(func): 
@@ -239,7 +241,7 @@ class interactableABC:
             except AttributeError as e: 
                 # attribute error raised if we werent able to import SERVO_KIT and we try to access SERVO_KIT.servo 
                 control_log(f'(InteractableABC.py, Servo) {self.parent.name}: simulating servo connection. ErrMssg: {e}')
-                print(f'(InteractableABC.py, Servo) {self.parent.name}: simulating servo connection. ErrMssg: {e}' )
+                self.parent.messagesReturnedFromSetup += f'simulating servo connection. ' 
                 return None
             
 

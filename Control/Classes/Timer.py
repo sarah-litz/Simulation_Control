@@ -16,3 +16,21 @@ def countdown(timeinterval, message):
         timeinterval -= 1
     print('\n')
 
+
+
+def draw_table(data=[], cellwidth = 12): 
+    for i, d in enumerate(data):
+        line = '|'.join(str(x).ljust(cellwidth) for x in d)
+        print(line)
+        if i == 0:
+            print('-' * len(line))
+
+
+        ''' Example For Creating the Table: 
+        draw_table( 
+            data=[ 
+                ['row1col1', 'row1col2', 'row1col3'], 
+                ['row2col1', 'row2col2', 'row2col3'], 
+                ['row3col1', 'row3col2', 'row3col3']
+            ]
+        )'''
