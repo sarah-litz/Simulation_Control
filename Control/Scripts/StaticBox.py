@@ -25,10 +25,9 @@ class ClosedBox(modeABC):
         return 'Closed Box'
     
     def setup(self):
-        pass        
+        pass
     def run(self):
-        return
-
+        pass
         
 
 
@@ -67,8 +66,26 @@ class BasicBox(modeABC):
         pass   
   
     def run(self):
-        print('Fill In With Extra Logic for How We Want Box To Run!')
-        pass 
+        print('Extending Levers!')
+        lever1 = self.map.instantiated_interactables['lever_door1']
+        lever2 = self.map.instantiated_interactables['lever_door2']
+        lever_food = self.map.instantiated_interactables['lever_food'] 
+        
+        lever_list = [lever2, lever2, lever_food]
+
+        for l in lever_list: 
+            l.extend() 
+
+        while self.active: 
+
+            # Retract Lever if there is a threshold event! # 
+            for l in lever_list: 
+                
+                if len(l.threshold_event_queue.queue) > 0: 
+
+                    l.retract() 
+
+                    lever_list.remove(l)
 
 
 

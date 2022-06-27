@@ -123,10 +123,7 @@ class SimulationABC:
     def run_sim(self): 
 
         self.map.print_interactable_table()
-        print('\n')
-        self.draw_chambers() 
-        print('\n')
-        self.draw_edges() 
+        self.map.draw_map(voles = self.voles)
         
         sim_log('(Simulation.py, run_sim) Daemon Thread for getting the active mode, and running the specified simulation while active mode is in its timeout period.')
 

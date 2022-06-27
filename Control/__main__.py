@@ -13,11 +13,18 @@ from .Scripts.StaticBox import ClosedBox, OpenBox, BasicBox, IteratorBox, Simple
 
 def main(): 
 
+    # Helper Function for creating "checkpoints" throughout the experiments execution that wait for user input before continuing with experiment execution. 
+    def input_before_continue(message):
+        print(f'{message}')
+        input(f'press the enter key to continue!')
+        return 
+
     control_log(f'\n\n\nrunning {__name__}: New Experiment! ')
 
-    # Map Instantiation (which will also instantiate the hardware components) 
-    map = Map(cwd+'/Control/Configurations')
-    # simpleMap =  Map(cwd+'/Control/Configurations', map_file_name = 'map_for_tests.json')
+
+    # (TODO) Map Instantiation (which will also instantiate the hardware components) 
+    map = Map(cwd+'/Control/Configurations') # optional argument: map_file_name to specify filepath to a different map configuration file 
+
 
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
     closedbox = ClosedBox(timeout = 30, map = map)
@@ -26,18 +33,24 @@ def main():
     iteratorbox = IteratorBox(timeout = 30, map = map)
     simplebox = SimpleBox(timeout=30, map = map)
 
+    # (TODO) Update the list of control mode scripts with each of the scripts you want to run, in the order that you want them to run in! 
+    mode_scripts = [ closedbox, openbox, basicbox, iteratorbox, simplebox ]
+
 
     if __name__ is not '__main__': # falls into this if the simulation package imported this module
         # (TODO) Add Any Modes that you want to get passed to the Simulation Package in the list here 
         # The modes will run in the order that they are placed in the list
-        return [ closedbox, openbox, basicbox, iteratorbox, simplebox ]
+        return mode_scripts
 
-    # (TODO) start experiment
-    closedbox.enter()
-    openbox.enter()
-    basicbox.enter() 
-    iteratorbox.enter() 
-    simplebox.enter()
+    # Visualizations 
+    map.draw_map()
+
+
+    # loop thru specified control scripts and start the experiment
+    for mode in mode_scripts: 
+        # (TODO) Comment out call to input_before_continue if you don't want program to wait for User Input in between Modes Executing.
+        input_before_continue(f'ready to start running Control Software Mode: {mode}?')
+        mode.enter() 
 
 
 if __name__ is '__main__': 

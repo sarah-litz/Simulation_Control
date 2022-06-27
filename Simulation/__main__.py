@@ -41,38 +41,35 @@ sim_log('\n\n\n\n-----------------------------Simulation Package Started--------
 operantSim = OperantMapVole( modes = modes ) # create simulation, pass list of modes as argument 
 
 
-# Pair Each Mode with Simulation Function that should get run when the mode starts running.
+# (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
 operantSim.simulation_func[ modes[0] ] = ( operantSim.attemptMoveToChamber2 ) # left most chamber
 operantSim.simulation_func[ modes[1] ] = ( operantSim.attemptMoveToChamber1 ) # middle chamber
 operantSim.simulation_func[ modes[2] ] = ( operantSim.moveToChamber3 ) # right most chamber
 operantSim.simulation_func[ modes[3] ] = ( operantSim.renameThis ) # nothing happens
 
 
-
-
+# Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 
 print(f'\n Double Check that the following Control/Simulation Pairings look correct...') 
 data = [ ['Control Mode', 'Simulation Scripts'] ]
 for m in modes: 
     if m in operantSim.simulation_func.keys(): 
         data.append( [m, operantSim.simulation_func[m].__name__] )
-        # input_before_continue(f' Control Mode: {m} is paired with Simulation {operantSim.simulation_func[m]}')
     else: 
         data.append( [m, 'None'] )
-        # input_before_continue(f' Control Mode: {m} is not paired with a Simulation Funciton.')
 draw_table(data)
 input_before_continue('')
 
+
 # Start Simulation 
-operantSim.run_sim() # starts running simulation in daemon thread
+operantSim.run_sim() # starts running simulation in daemon thread ( this will transfer control between the simulation functions as the active control mode changes )
 
 time.sleep(4) # Pause Before Starting Modes 
 
 # Loop to Enter Modes in Given Order
-# (TODO) Comment out calls to input_before_continue if you don't want program to wait for User Input in between Modes Executing.
 for mode in modes: 
+    # (TODO) Comment out call to input_before_continue if you don't want program to wait for User Input in between Modes Executing.
     input_before_continue(f'ready to start running Control Software Mode: {mode}?')
     mode.enter() 
-    input_before_continue(f'{mode} finished running')
 
 
 input_before_continue('Thats All! G O O D B Y E')

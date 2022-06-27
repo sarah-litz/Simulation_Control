@@ -193,7 +193,7 @@ class modeABC:
             else: 
                 # # ping added to shared queue. send to specific rfid object # # 
 
-                print('PING: ', ping)
+                print('\nPING: ', ping)
                 id = ping[0] # parse the ping information (NOTE: come back to ensure I am parsing correctly)
 
                 rfid_interactable = rfid_objects[id] # retrieve the corresponding rfid object 

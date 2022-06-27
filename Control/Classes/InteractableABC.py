@@ -607,6 +607,7 @@ class lever(interactableABC):
         if self.isSimulation: return 
         else: 
             '''Logic here for shutting down hardware'''
+            self.retract() 
             return 
 
 
@@ -652,12 +653,13 @@ class door(interactableABC):
         else: # if not simulating gpio connection, then isPressed should be a function call that checks the GPIO input/output value each call
             self.isOpen = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
         
-            # Set Doors Starting state to its Initial Open/Close Position
-        if self.isOpen != threshold_condition['initial_value']: 
+        # Set Doors Starting state to its Initial Open/Close Position
+        # --> need to do this open/close startingstate AFTER isSimulation has been set. ( maybe just have people do this in the setup() function of the actual script )
+        '''if self.isOpen != threshold_condition['initial_value']: 
             if threshold_condition['initial_value'] == True: 
                 self.open() 
             else: 
-                self.close()
+                self.close()'''
 
 
         ## Dependency Chain Information ## 

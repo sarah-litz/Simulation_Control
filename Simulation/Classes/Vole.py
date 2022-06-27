@@ -203,6 +203,9 @@ class Vole:
         print(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
         vole_log(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
 
+        location_visual = self.map.draw_location(location = self.curr_loc, voles = [self])
+        vole_log(location_visual)
+
         #
         # BIG CHANGE HERE! LEAVING OFF HERE! MAKE SURE THIS IS OK!
         # This is the Vole PASSING prev_component, meaning that we should reset its threshold to True so watch_for_threshold_event begins looping again to look for more threshold events. 

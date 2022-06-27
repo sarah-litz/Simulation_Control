@@ -67,7 +67,6 @@ class Map:
             # loop thru interactales w/in the edge or chamber
             i = interactables[idx]
             
-
             voles_before_i = [] 
             voles_after_i = []
             
@@ -77,15 +76,16 @@ class Map:
                 if v.curr_component.interactable == i: 
 
                     # figure out if vole should be drawn before or after the interactable
-                    if idx == 0: 
+                    if idx == 0 or idx == (len(interactables)-1): # if vole in first or last position of linked list 
 
                         # edge case to avoid out of bounds error
-                        if v.prev_component == None: 
-                            # v before i 
+                        # if v.prev_component == None: 
+                        if idx == 0: 
+                            # vole before interactable
                             voles_before_i.append('Vole'+str(v.tag))
                         
-                        else: 
-                            # i before v 
+                        else: # case: if idx == (len(interactables)-1)
+                            # interactable before vole
                             voles_after_i.append('Vole'+str(v.tag))
                     
                     elif v.prev_component.interactable == interactables[idx-1]: 
@@ -103,7 +103,7 @@ class Map:
         # make list of string names rather than the objects 
         return vole_interactable_lst
     
-    def draw_chambers(self, voles): 
+    def draw_chambers(self, voles=[]): 
 
         for cid in self.graph.keys(): 
             
@@ -157,6 +157,43 @@ class Map:
             print(f'({e.v1}) <---{vole_interactable_lst}----> ({e.v2})')
 
 
+    def draw_location(self, location, voles=[]): 
+        
+        # draws the specified location, not the entire map 
+        drawing = '' # we return a string that represents all of the things to print ( this way we can write the drawings to the logging files )
+        
+        # get voles that are at location 
+        loc_voles = []
+        for v in voles: 
+            if v.curr_loc == location: 
+                loc_voles.append(v)
+        
+        # make list of interactables at location 
+        interactables = [c.interactable for c in location] # creates list of the interactable names 
+
+        vole_interactable_lst = self.draw_helper(loc_voles, interactables)
+
+        if location.edge_or_chamber == 'edge': 
+            # draw edge 
+            print(f'({location.v1}) <---{vole_interactable_lst}----> ({location.v2})')
+            drawing += (f'({location.v1}) <---{vole_interactable_lst}----> ({location.v2})')
+        else: 
+            # draw chamber
+            print(f'_____________\n|   (C{location.id})    |')
+            drawing += (f'_____________\n|   (C{location.id})    |')
+            def draw_name(name): 
+                if len(str(name)) > 8: 
+                    name = name[:7] + '-'
+                space = 9 - len(str(name)) 
+                print(f'|[{name}]' + f"{'':>{space}}" + '|')
+                return (f'\n|[{name}]' + f"{'':>{space}}" + '|')
+            for name in vole_interactable_lst: 
+                drawing += draw_name(name)          
+            print(f'-------------')
+            drawing += (f'\n-------------')
+
+        return drawing
+
     #
     # Summary Tables
     #
@@ -179,8 +216,7 @@ class Map:
             data.append( [i_name, self.instantiated_interactables[i_name].isSimulation, self.instantiated_interactables[i_name].messagesReturnedFromSetup ] )
         draw_table(data, cellwidth=20)
     
-    def draw_chambers(self): 
-        ''' '''
+
 
     #
     # Getters and Setters 
