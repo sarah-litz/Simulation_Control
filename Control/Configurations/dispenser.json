@@ -1,0 +1,22 @@
+{
+    "food_dispenser": 
+    {
+        "id":1, 
+        "threshold_condition": { "attribute":"isPressed", "initial_value": null, "goal_value": false },
+
+        "dependents": [], 
+        "hardware_specs": {
+            "button_specs": { 
+                "button_pin": 24, 
+                "pullup_pulldown":"pullup"
+            }, 
+            "servo_specs": { 
+                "servo_pin":1, 
+                "servo_type":"continuous",
+                "dispense_speed":0.75, 
+                "stop_speed":0.06
+            }, 
+            "dispense_time": 3
+        }
+    }
+}

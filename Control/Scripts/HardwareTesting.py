@@ -268,4 +268,38 @@ class LeverDoorConnectionTests(modeABC):
             
         lever1.retract() 
     
- 
+
+
+class DispenserTests(modeABC):
+
+    '''
+    this mode is used for testing basic functional of the food dipenser throughout its code building process!
+    '''
+
+    def __init__(self, timeout, map): 
+        super().__init__(timeout, map)
+    
+    def __str__(self): 
+        return 'Dispenser Tests'
+    
+    def setup(self): 
+        pass 
+
+    def run(self): 
+        
+        # Goal #1: Dispense a Pellet 
+        food_dispenser = self.map.instantiated_interactables['food_dispenser']
+
+        print('stopping')
+        food_dispenser.stop() 
+
+        # Helper Function for creating "checkpoints" throughout the experiments execution that wait for user input before continuing with experiment execution. 
+        def input_before_continue(message):
+            print(f'{message}')
+            input(f'press the enter key to continue!')
+            return 
+        
+        input_before_continue('')
+
+        food_dispenser.dispense() 
+    

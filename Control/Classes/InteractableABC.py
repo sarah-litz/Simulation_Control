@@ -71,6 +71,8 @@ class interactableABC:
 
         return self.name
 
+    # ------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------
     
     #
     # InteractableABC Subclasses: Servo, PosServo(Servo), ContServo(Servo), and Button ( utilizes Rpi.GPIO and adafruit_servokit.ServoKit )
@@ -93,7 +95,7 @@ class interactableABC:
             # self.pressed_val denotes what value we should look for (0 or 1) that denotes a lever press 
             self.pressed_val = self._setup_gpio()  # defaults to -1 in scenario that gpio setup fails (including if isSimulation)
 
-            # isSimulation is True if we were unable to connect to gpio pin 
+            # Setup the isSimulation attribute: isSimulation is True if we were unable to connect to gpio pin 
             if self.pressed_val < 0: self.isSimulation = True 
             else: self.isSimulation = False 
 
@@ -131,10 +133,6 @@ class interactableABC:
                 return t
             return run 
 
-        @run_in_thread
-        def simulated_listen_for_event(self, timeout = None): 
-            ''' listener for a simulated button 
-            '''
 
         @run_in_thread
         def listen_for_event(self, timeout=None, edge=None): # detects the current pin for the occurence of some event
@@ -258,8 +256,9 @@ class interactableABC:
             self.throttle = 0 # continuous servo tracks speed that wheel turns at 
 
         
-
-
+    # ------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------
+    
     #
     # InteractableABC methods
     #
@@ -320,8 +319,6 @@ class interactableABC:
         raise Exception(f'must override add_new_threshold_event in class definition for {self.name}')
         self.threshold_event_queue.put()
 
-    def isThreshold(self): 
-        ''' checks if interactable has reached its threshold. Returns True if yes, False otherwise. '''
 
     def dependents_loop(self): 
         ## DEPENDENTS LOOP ## 
@@ -871,21 +868,8 @@ class door(interactableABC):
         self.servoObj.servo.throttle = self.stop_speed 
         return 
 
-    def check_state(self):
-        """This returns the state of whether the doors are open or closed, and also sets the state variable to the returned value
-        """
-        pass
 
-    #@threader
-    def __set_door(self, angle):
-        """This sets the door value to any given input value.
 
-        Args:
-            angle (int): Servo angle to set the door value to.
-        """
-
-        #  This Function Accesses Hardware => Perform Sim Check First
-        pass
 
 
 
@@ -969,10 +953,11 @@ class buttonInteractable(interactableABC):
         else: 
             self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
     
-    @property
-    def pressed(self): 
-        '''returns the current number of presses that button object has detected'''
-        return self.buttonObj.num_pressed
+    # (NOTE - don't think i need this, as this should be handled by Button class now.)
+    # @property
+    # def pressed(self): 
+    #    '''returns the current number of presses that button object has detected'''
+    #    return self.buttonObj.num_pressed
 
     def activate(self): 
         ''' activate button as usual, and once it is active we can begin the button object listening '''
@@ -1007,4 +992,136 @@ class buttonInteractable(interactableABC):
 
         # append to event queue 
         self.threshold_event_queue.put(press)
+    
+
+
+
+class dispenser(interactableABC): 
+
+    def __init__(self, ID, threshold_condition, hardware_specs, name ): 
+
+        # Initialize the parent class
+        super().__init__(threshold_condition, name)
+
+        self.ID = ID 
+
+
+        # Movement Controls # 
+        self.servoObj = self.PosServo(servo_specs = hardware_specs['servo_specs'], parentObj = self) # positional servo to control extending/retracting lever; we can control by setting angles rather than speeds
+        self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self)  # Button/Sensor for detecting if pellet successfully dispensed # 
+
+
+        ## Current Position/State Tracking ## 
+        self.stop_speed = hardware_specs['servo_specs']['stop_speed']
+        self.dispense_speed = hardware_specs['servo_specs']['dispense_speed']
+        self.dispense_time = hardware_specs['dispense_time']
+            # ( Threshold Tracking ) #
+        if self.buttonObj.pressed_val < 0: 
+            # simulating gpio connection, simulate the isPressed Value
+            self.isPressed = None 
+        else: 
+            # not simulating, use the actual buttonObj i/o value to get current state 
+            self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
+
+        ## Threshold Attribute ## 
+        self.pellet_state =  False # set to True once we confirm that a pellet is present in the trough. 
+        self.monitor_for_retrieval = False # gets set to True only once we confirm that a pellet is present in the trough. When we set this True, then we will start recording threshold events ( i.e. waiting for the pellet state to get set back to false, due to a vole retrieval )
+
+        ## Dependency Chain ## 
+        self.barrier = False # does not block a voles movement 
+        self.autonomous = False # is dependent on a lever press in order to trigger a dispense
+
+
+    def run_in_thread(func): 
+        ''' decorator function to run function on its own daemon thread '''
+        def run(*k, **kw): 
+            t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+            t.start() 
+            return t
+        return run    
+
+    def validate_hardware_setup(self): 
+        if self.isSimulation: 
+            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
+            return 
         
+        else: 
+            # not simulating dispenser, check that the dispenser Movement Controllers (button and servo) have been properly setup 
+            if self.buttonObj.pressed_val < 0 or self.servoObj.servo is None: 
+                errorMsg = []
+                # problem with both button and/or servo. figure out which have problems
+                if self.buttonObj.pressed_val < 0: 
+                    errorMsg.append('buttonObj')
+                if self.servoObj.servo is None: 
+                    errorMsg.append('servoObj')
+                raise Exception(f'(Dispenser, validate_hardware_setup) {self} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
+            return 
+
+    def add_new_threshold_event(self):
+        if self.monitor_for_retrieval: 
+            self.threshold_event_queue.put(f'{self} ~ an event ~')
+            self.monitor_for_retrieval = False # reset since we recorded a single pellet retrieval.
+        else: 
+            print('not monitoring for retrieval at the moment') 
+            return
+
+    def start(self): 
+        self.servoObj.servo.throttle = self.dispense_speed 
+        print('hopefully servo is moving')
+    def stop(self): 
+        if self.isSimulation: 
+            return 
+        self.servoObj.servo.throttle = self.stop_speed
+    
+    @run_in_thread
+    def dispense(self): 
+
+        # Edge Case: if there is already a pellet in the trough, we don't want to dispense again ( this likely means vole did not take pellet on a previous dispense )
+        if self.isPressed is True:     
+            print('(InteractableABC, dispenser) previous pellet not retrieved')
+            control_log('(InteractableABC, dispenser.dispense()) Already a pellet in the trough.')
+            self.monitor_for_retrieval = True 
+            return 
+
+        # Simulation Check
+        if self.isSimulation: 
+            print('(InteractableABC, dispenser.dispense()) Simulating dispenser, setting the isPressed value to True to simulate that a pellet was dispensed.')
+            control_log('(InteractableABC, dispenser.dispense()) Simulating dispenser, setting the isPressed value to True to simulate that a pellet was dispensed.')
+            self.isPressed = True 
+            self.monitor_for_retrieval = True 
+            return 
+        
+        # Dispense a Pellet using Servos 
+        self.start() # starts servo moving at dispense speed 
+
+        # wait for the dispense timeout period. Check to see if pellet dispense was successful during this time. 
+        dispenses_read = 0 
+        start = time.time() 
+        while time.time() < ( start + self.dispense_time ): 
+            # Accuracy Check: check that we read isPressed as True at least twice in a row before confirming that there was a pellet dispensed. 
+            if self.isPressed: 
+                dispenses_read += 1 
+            if dispenses_read > 2: 
+                # Pellet was dispensed! 
+                self.stop() 
+                self.pellet_state = True # note that a pellet was dispensed 
+                self.monitor_for_retrieval = True 
+                print(f'(InteractableABC, Dispenser) {self}: Pellet Dispensed!')
+                control_log(f'(InteractableABC, Dispenser) {self}: Pellet Dispensed!')
+                return  
+            time.sleep(0.005) 
+
+
+        print(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
+        control_log(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
+        return 
+
+
+
+
+
+        
+        
+
+
+

@@ -17,6 +17,8 @@
 
 4. Add name of new interactable to other configuration files to establish any relationships it has with other interactables! i.e. When needed, add the name of the interactable as a dependent to another interactable's "dependents" field.
 
+5. If this was a brand new type of interactable (meaning that you created a new json file for this interactable), then there we must make some additions in other places within the code. Navigate to the last section of this README file for details on steps to complete this! 
+
 
 > template .json file: 
 
@@ -196,3 +198,19 @@ iii. "goal_value"
 
 3. **"hardware_specs"**
 
+
+
+## Adding a New Type of Interactable ## 
+
+> Additions to Map Class
+
+We must add the actual object instantiation into the Map Class. To do this, navigate to the file Map.py. First, import your new interactable (this is done at the top of the file where the rest of the interactable classes get imported). Next, within the function instantiate_interactable_hardware, locate the section of the function that is commented  # Instantiate New Interactable. You should see a series of if/elif/elif...etc. that is checking for each type of interactable. Add in a new elif statement that checks for your new interactable type, and if an object is of this type, we will create that object!
+
+
+> Override functions from the interactable abstract class (InteractableABC)
+
+Write the functions that InteractableABC requires to be overriden! The Methods that need to be overriden are as follows: 
+    
+1. validate_hardware_setup: this function can pretty much be copied from existing versions. This is just a function that once we have confirmed that an interactable is NOT being simulated, we will execute a couple steps to check that the hardware components that makeup the given interactable ( servos and buttons ) managed to be setup correctly. If they were not setup correctly, but the user did not request that we simulate this interactable, then we should throw an error. 
+
+2. add_new_threshold_event: format the **event** variable and then put the new **event** onto the threshold_event_queue

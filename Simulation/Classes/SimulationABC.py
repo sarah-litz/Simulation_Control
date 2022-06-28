@@ -273,12 +273,8 @@ class SimulationABC:
         self.voles.remove(vole)
 
 
-
-
-    
     #  (NOTE-to-self) Vole/Map Visualization: Moved into Map Class! Reference google doc (https://docs.google.com/document/d/1hulwYFaOrbArYCRNlivxHP25qtzuvBTOqtbG47uTGPY/edit) of scratch work to get the old simulationABC version of draw_helper, draw_edges, draw_chamber
     
-   
     #
     # Add Simulation Features to Map 
     #
