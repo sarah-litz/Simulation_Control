@@ -13,8 +13,8 @@
             "servo_specs": { 
                 "servo_pin":1, 
                 "servo_type":"continuous",
-                "dispense_speed":0.75, 
-                "stop_speed":0.06
+                "dispense_speed":0.23, 
+                "stop_speed":0.2
             }, 
             "dispense_time": 3
         }

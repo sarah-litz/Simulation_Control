@@ -1110,8 +1110,9 @@ class dispenser(interactableABC):
                 control_log(f'(InteractableABC, Dispenser) {self}: Pellet Dispensed!')
                 return  
             time.sleep(0.005) 
-
-
+        
+        # On Failure: Stop dispenser and notify user.
+        self.stop()
         print(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
         control_log(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
         return 

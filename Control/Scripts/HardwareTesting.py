@@ -287,19 +287,16 @@ class DispenserTests(modeABC):
 
     def run(self): 
         
-        # Goal #1: Dispense a Pellet 
-        food_dispenser = self.map.instantiated_interactables['food_dispenser']
-
-        print('stopping')
-        food_dispenser.stop() 
 
         # Helper Function for creating "checkpoints" throughout the experiments execution that wait for user input before continuing with experiment execution. 
         def input_before_continue(message):
             print(f'{message}')
             input(f'press the enter key to continue!')
             return 
-        
-        input_before_continue('')
 
+
+        # Goal: Dispense a Pellet 
+        input_before_continue('Test: Dispensing')
+        food_dispenser = self.map.instantiated_interactables['food_dispenser']
         food_dispenser.dispense() 
     
