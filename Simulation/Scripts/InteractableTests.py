@@ -79,9 +79,9 @@ class RfidSimulatedPings(SimulationABC):
     testing for simulating RFID pings
     '''
 
-    def __init__(self, modes, map):
+    def __init__(self, modes):
         
-        super().__init__(modes, map) 
+        super().__init__(modes) 
 
         self.modes = modes 
     
@@ -164,3 +164,32 @@ class RfidSimulatedPings(SimulationABC):
         #
 
         pass 
+
+
+class DispenserTests(SimulationABC): 
+
+    '''testing a vole interaction with dispenser and/or dispenser dependent '''
+
+    def __init__(self, modes):
+        
+        super().__init__(modes) 
+
+        self.modes = modes 
+    
+
+    def dispenser_interaction(self): 
+        ''' goal: 
+        1. simulate a lever food press in order to trigger a simulated pellet dispense 
+        2. simulate a direction interaction with the dispenser which will simulate a pellet retrieval
+        '''
+
+        vole1 = self.get_vole(1)
+        
+        food_lever = self.map.instantiated_interactables['lever_food']
+
+        vole1.move_to_interactable(food_lever)
+        vole1.simulate_vole_interactable_interaction(food_lever)
+
+
+
+    

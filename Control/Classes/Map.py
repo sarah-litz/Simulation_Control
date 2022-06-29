@@ -216,6 +216,18 @@ class Map:
             data.append( [i_name, self.instantiated_interactables[i_name].isSimulation, self.instantiated_interactables[i_name].messagesReturnedFromSetup ] )
         draw_table(data, cellwidth=20)
     
+    def print_dependency_chain(self): 
+        '''
+        prints table to display the relationships between interactables ( parents and dependency )
+        '''
+        row1 = ['Interactable', 'Dependent On', 'Can Control (Parent)']
+        data = [row1]
+        for i_name in self.instantiated_interactables.keys(): 
+            dnames = ','.join([d.name for d in self.instantiated_interactables[i_name].dependents]) # makes list of names and converts list to string 
+            pnames = ','.join([p.name for p in self.instantiated_interactables[i_name].parents]) 
+            data.append( [i_name, dnames, pnames] )
+        draw_table(data, cellwidth=50)
+        
 
 
     #
@@ -300,8 +312,9 @@ class Map:
         if "check_threshold_with_fn" in objspec['threshold_condition'].keys(): 
             setattr(new_obj, 'check_threshold_with_fn', eval(objspec['threshold_condition']['check_threshold_with_fn']) ) # function for checking if the threshold condition has been met
         if "dependents" in objspec.keys(): 
-            setattr( new_obj, 'dependent_names', objspec['dependents'] ) # interactable that the threshold is dependent on (e.g. if we want lever1 to control door1, then set door1's dependent to be lever1. )
-            
+            setattr( new_obj, 'dependent_names', objspec['dependents'] ) # interactable that the threshold is dependent on. Prevents a vole from directly interacting with the interactable, as the presence of any dependents specifies that the vole must directly interact with the dependents to trigger a threshold event.
+        if "parents" in objspec.keys(): 
+            setattr( new_obj, 'parent_names', objspec['parents']) # interactables can call functions to control their parent behavior (e.g. if we want lever1 to control door1, then add door1 as lever1's parent )
         
         self.instantiated_interactables[name] = new_obj  # add string identifier to list of instantiated interactables
         
@@ -568,12 +581,13 @@ class Map:
             '''
         
         self.set_dependent_interactables()
+        self.set_parent_interactables() 
     
          
 
     def set_dependent_interactables(self): 
 
-        # if an interactable specified a "dependent" in its configuration file, then it gets an attribute "interactable_name" which serves as a string representation of the interactable
+        # if an interactable specified a "dependent" in its configuration file, then it gets an attribute "dependent_names" which serves as a string representation of the interactable
         # after all objects have been instantiated, we now want to assign the actual interactable objects rather than just their string representation
 
         # loop thru all instantiated interactables and check for the attribute dependent_name 
@@ -584,7 +598,7 @@ class Map:
                 for dname in i.dependent_names:
                     try: 
                         i.dependents.append(self.instantiated_interactables[dname]) # assign parent its new dependent 
-                        self.instantiated_interactables[dname].parents.append(i) # assign dependent its new parent
+                        # self.instantiated_interactables[dname].parents.append(i) # assign dependent its new parent
 
                     except KeyError as e: 
                         print(e)
@@ -595,6 +609,28 @@ class Map:
                 
                 delattr(i, 'dependent_names')  # delete the dependent_names attribute since we don't need it anymore 
 
+    def set_parent_interactables(self): 
+        
+        # if an interactable specified a "parent" in its configuration file, then it gets an attribute "parent_names" which serves as a string representation of the interactable
+        # after all objects have been instantiated, we now want to assign the actual interactable objects rather than just their string representation
+        
+        for i_name in self.instantiated_interactables:
+            i = self.instantiated_interactables[i_name]
+            if hasattr(i, 'parent_names'): 
+                # has dependents we need to add 
+                for pname in i.parent_names:
+                    try: 
+                        i.parents.append(self.instantiated_interactables[pname]) # assign parent its new dependent 
+                        # self.instantiated_interactables[dname].parents.append(i) # assign dependent its new parent
+
+                    except KeyError as e: 
+                        print(e)
+                        print(f' specified an unknown interactable {e} as a parent for {i.name}. Double check the config files for {e} and for {i.name} to ensure they are correct, and ensure that {e} was added in the map config file as well.')
+                        ans = input(f' would you like to carry on the experiment without adding {e} as a parent for {i.name}? (y/n)')
+                        if ans == 'n': exit()
+        
+                delattr(i, 'parent_names')  # delete the dependent_names attribute since we don't need it anymore 
+          
 
 
     def get_chamber(self, id): 

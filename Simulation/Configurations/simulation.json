@@ -49,7 +49,10 @@
             "simulate":true
         }, 
         {"name":"open_door2_button", 
-        "simulate":true}
+        "simulate":true}, 
+        {"name":"food_dispenser",
+        "simulate":true
+        }
         
     ],
 

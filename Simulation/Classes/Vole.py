@@ -82,16 +82,8 @@ class Vole:
 
         ''' called from vole.attempt_move() in order to simulate a vole's interaction with an interactable '''
         ''' prior to simulation, checks if the requested simulation is valid. returns if not '''
-
-        #
-        # Independent vs Dependent check 
-        #
-        if len(interactable.dependents) > 0: 
-            # a fully independent interacable means that it is dependent on the values of its dependents and independent of a vole's actions
-            # i.e. it is pointless for the vole to interact directly with it. So return. (Doesn't mean we won't interact and simulate w/ its dependents tho)
-            print(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} isDependent on dependents, not on a vole interaction.')
-            return 
-
+        
+        
         #
         # Active Check
         #
@@ -101,11 +93,23 @@ class Vole:
             # vole unable to effect the threshold attribute value of an inactive interactable (so threshold value is the same the entire time)
             return 
 
+
         #
         # Physical Proximity Check 
         #
         if not self.at_location_of(interactable): 
             print(f'(Vole.py, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
+            return 
+
+
+
+        #
+        # Independent vs Dependent check 
+        #
+        if len(interactable.dependents) > 0: 
+            # a fully independent interacable means that it is dependent on the values of its dependents and independent of a vole's actions
+            # i.e. it is pointless for the vole to interact directly with it. So return. (Doesn't mean we won't interact and simulate w/ its dependents tho)
+            print(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} isDependent on dependents, not on a vole interaction.')
             return 
 
 

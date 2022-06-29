@@ -1,3 +1,4 @@
+import sys
 
 # Local Imports
 from ..Logging.logging_specs import sim_log
@@ -54,6 +55,35 @@ class OperantMapVole(SimulationABC):
     def moveToChamber3(self): 
 
         self.get_vole(1).attempt_move(destination = 3) # vole attempts to move into chamber 3
+
+    def voleInteractsWithDispenser(self): 
+        '''
+        this mode is used for testing basic functional of the food dipenser throughout its code building process!
+        '''
+
+        ''' goal: 
+        1. simulate a lever food press in order to trigger a simulated pellet dispense 
+        2. simulate a direction interaction with the dispenser which will simulate a pellet retrieval
+        '''
+
+        vole1 = self.get_vole(1)
+        
+        food_lever = self.map.instantiated_interactables['lever_food']
+        
+        dispenser = self.map.instantiated_interactables['food_dispenser']
+
+        vole1.move_to_interactable(food_lever)
+
+        vole1.simulate_vole_interactable_interaction(food_lever)
+
+        vole1.move_to_interactable(dispenser)
+
+        print('LEAVING OFF HERE!!!! started the dependency chain changes, but cant tell if teh vole/dispenser interaction is doing anything. ')
+        sys.exit(0) 
+        vole1.simulate_vole_interactable_interaction(dispenser)
+
+            
+
 
     def renameThis(self): 
 

@@ -123,6 +123,8 @@ class SimulationABC:
     def run_sim(self): 
 
         self.map.print_interactable_table()
+        print('\n')
+        self.map.print_dependency_chain()
         self.map.draw_map(voles = self.voles)
         
         sim_log('(Simulation.py, run_sim) Daemon Thread for getting the active mode, and running the specified simulation while active mode is in its timeout period.')
@@ -316,7 +318,7 @@ class SimulationABC:
                 
             if not set: # Simulation.json missing a config specification
                 # no configurations for interactable i in simulation.json. Default isSimulation to True and print to screen to let user know.
-                print(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
+                i.messagesReturnedFromSetup+=f'[simulation.json did not contain the interactable {name}. Defaults to True]'
                 sim_log(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
                 i.isSimulation = True 
         

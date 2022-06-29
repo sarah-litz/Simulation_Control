@@ -25,7 +25,7 @@ from Simulation import modes # references Simulation/__init__ file to retrieve l
 
 # (TODO) Import your SimulationABC Implementations Here using the following syntax: from .Scripts.your_file_name import SimulationClassName
 from .Scripts.VoleTests import OperantMapVole
-from .Scripts.InteractableTests import LeverTests, ButtonTests, RfidSimulatedPings
+from .Scripts.InteractableTests import LeverTests, ButtonTests, RfidSimulatedPings, DispenserTests
 
 
 # Helper Function for creating "checkpoints" throughout the experiments execution that wait for user input before continuing with experiment execution. 
@@ -42,10 +42,11 @@ operantSim = OperantMapVole( modes = modes ) # create simulation, pass list of m
 
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-operantSim.simulation_func[ modes[0] ] = ( operantSim.attemptMoveToChamber2 ) # left most chamber
-operantSim.simulation_func[ modes[1] ] = ( operantSim.attemptMoveToChamber1 ) # middle chamber
-operantSim.simulation_func[ modes[2] ] = ( operantSim.moveToChamber3 ) # right most chamber
-operantSim.simulation_func[ modes[3] ] = ( operantSim.renameThis ) # nothing happens
+operantSim.simulation_func[ modes[0] ] = ( operantSim.voleInteractsWithDispenser ) # left most chamber
+operantSim.simulation_func[ modes[1] ] = ( operantSim.attemptMoveToChamber2 ) # left most chamber
+operantSim.simulation_func[ modes[2] ] = ( operantSim.attemptMoveToChamber1 ) # middle chamber
+operantSim.simulation_func[ modes[3] ] = ( operantSim.moveToChamber3 ) # right most chamber
+operantSim.simulation_func[ modes[4] ] = ( operantSim.renameThis ) # nothing happens
 
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 

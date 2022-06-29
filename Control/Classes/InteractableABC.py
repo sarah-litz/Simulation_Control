@@ -743,7 +743,7 @@ class door(interactableABC):
                     dependent.threshold = False # reset now that we have triggered an event occurrence
 
                     # check self's threshold goal 
-                    '''if self.threshold_condition['goal_value'] == True: 
+                '''if self.threshold_condition['goal_value'] == True: 
 
                         self.open() 
 
@@ -1065,6 +1065,10 @@ class dispenser(interactableABC):
             print('not monitoring for retrieval at the moment') 
             return
 
+    def dependents_loop(self):
+        print('COME BACK (TODO) --> idk if i need the dependents loop to be a required override method at this point. Door is the only one using it and not sure it actually does anything.')
+        return 
+        
     def start(self): 
         self.servoObj.servo.throttle = self.dispense_speed 
         print('hopefully servo is moving')
