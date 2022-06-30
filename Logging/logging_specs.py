@@ -8,7 +8,7 @@ import os
 formatter = logging.Formatter('%(asctime)s %(message)s') # To Display Level Name (debug vs. info vs. etc): %(levelname)s 
 
 cwd = os.getcwd() 
-logging.basicConfig(filename=cwd + '/Logging/eventlogging.log' , level=logging.DEBUG, mode='w' )
+logging.basicConfig(filename=cwd + '/Logging/eventlogging.log' , level=logging.DEBUG, filemode='w' )
 control_fp=cwd+'/Control/Logging/control.log'
 simulation_fp=cwd+'/Simulation/Logging/simulation.log'
 

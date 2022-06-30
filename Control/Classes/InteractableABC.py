@@ -1071,10 +1071,10 @@ class dispenser(interactableABC):
     def add_new_threshold_event(self):
         if self.monitor_for_retrieval: 
             self.threshold_event_queue.put(f'Pellet Retrieval')
-            print('PELLET RETRIEVAL DETECTED!')
             self.monitor_for_retrieval = False # reset since we recorded a single pellet retrieval.
         else: 
-            print('not monitoring for retrieval at the moment')
+            control_log(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
+            print(f'(InteratableABC.py, {self}, add_new_threshold_event)not monitoring for retrieval at the moment')
             return
 
     def dependents_loop(self):
@@ -1102,8 +1102,7 @@ class dispenser(interactableABC):
         if self.isSimulation: 
             
             print('(InteractableABC, dispenser.dispense()) Simulating dispenser, setting the isPressed value to True to simulate that a pellet was dispensed.')
-            control_log('(InteractableABC, dispenser.dispense()) Simulating dispenser, setting the isPressed value to True to simulate that a pellet was dispensed.')
-            control_log(f'(InteractableABC, dispenser.dispense()) Monitoring for a pellet retrieval from {self}!')
+            control_log('(InteractableABC, dispenser.dispense()) Simulating dispenser, setting the isPressed value to True to simulate that a pellet was dispensed.  Monitoring for a pellet retrieval from {self}!')
 
             self.isPressed = True 
             self.monitor_for_retrieval = True 

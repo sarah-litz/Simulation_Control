@@ -28,7 +28,7 @@ def main():
 
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
     dispenserTests = DispenserTests(timeout = 30, map = map)
-    closedbox = ClosedBox(timeout = 30, map = map)
+    closedbox = ClosedBox(timeout = 60, map = map)
     openbox = OpenBox(timeout= 30, map = map)
     basicbox = BasicBox(timeout = 30, map = map)
     iteratorbox = IteratorBox(timeout = 30, map = map)

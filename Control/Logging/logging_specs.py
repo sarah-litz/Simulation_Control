@@ -10,7 +10,7 @@ formatter = logging.Formatter('%(asctime)s %(message)s') # To Display Level Name
 
 ## specify filepaths for logging ## 
 cwd = os.getcwd() 
-logging.basicConfig(filename=f'{cwd}/Logging/eventlogging.log' , level=logging.DEBUG )
+logging.basicConfig(filename=f'{cwd}/Logging/eventlogging.log' , level=logging.DEBUG, filemode='w'  )
 control_fp=cwd+'/Control/Logging/control.log'
 
 

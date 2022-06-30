@@ -72,15 +72,39 @@ class OperantMapVole(SimulationABC):
         
         dispenser = self.map.instantiated_interactables['food_dispenser']
 
+        # Lever press to trigger dispense 
+
         vole1.move_to_interactable(food_lever)
 
         vole1.simulate_vole_interactable_interaction(food_lever)
+
+        # pellet retrieval 
 
         vole1.move_to_interactable(dispenser)
 
         vole1.simulate_vole_interactable_interaction(dispenser)
 
-            
+
+        # # Round 2 # # 
+        print('ROUND 2 TESTS')
+        sim_log('\n\n ROUND 2 TESTS \n\n')
+        
+        # Second lever press to trigger dispense 
+        vole1.move_to_interactable(food_lever)
+
+        vole1.simulate_vole_interactable_interaction(food_lever)
+        
+        vole1.simulate_vole_interactable_interaction(food_lever) # Edge Case: 2 disenses in a row. Should not work because a pellet is already in the trough. 
+
+        # Pellet retrieval 
+
+        vole1.move_to_interactable(dispenser)
+
+        vole1.simulate_vole_interactable_interaction(dispenser) 
+
+        vole1.simulate_vole_interactable_interaction(dispenser) # Edge Case: 2 retrievals in a row. Should not work the second time because no pellet is present. 
+
+
 
     def renameThis(self): 
 
