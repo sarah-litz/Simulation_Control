@@ -2,7 +2,9 @@
     "food_dispenser": 
     {
         "id":1, 
-        "threshold_condition": { "attribute":"isPressed", "initial_value": null, "goal_value": false },
+        "threshold_condition": { 
+            "attribute":"isPressed", 
+            "initial_value": true, "goal_value": false },
 
         "dependents": [], 
         "hardware_specs": {

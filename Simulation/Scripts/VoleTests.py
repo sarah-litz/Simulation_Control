@@ -1,4 +1,4 @@
-import sys
+import sys, time
 
 # Local Imports
 from ..Logging.logging_specs import sim_log
@@ -78,12 +78,9 @@ class OperantMapVole(SimulationABC):
 
         vole1.move_to_interactable(dispenser)
 
-        print('LEAVING OFF HERE!!!! started the dependency chain changes, but cant tell if teh vole/dispenser interaction is doing anything. ')
-        sys.exit(0) 
         vole1.simulate_vole_interactable_interaction(dispenser)
 
             
-
 
     def renameThis(self): 
 

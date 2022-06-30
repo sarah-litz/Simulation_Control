@@ -409,11 +409,15 @@ class interactableABC:
                     # LEAVING OFF HERE!!!!!! 
                     while event_bool: 
 
+                        # repeatedly upate the current value of the threshold attribute so we can check for changes in its value #
                         # check for attributes that may have been added dynamically 
                         if hasattr(self, 'check_threshold_with_fn'): # the attribute check_threshold_with_fn is pointing to a function that we need to execute 
                             attribute = self.check_threshold_with_fn(self) # sets attribute value to reflect the value returned from the function call
+                        else: 
+                            attribute = getattr(self, threshold_attr_name) # necessary for lever_food w/ dispenser as its parent
+
+                        # wait for a change in the attribute value before starting to look for an event again #
                         
-                        # wait for a change in the attribute value before starting to look for an event again
                         if attribute != self.threshold_condition['goal_value']: 
                             # ISSUE 
                             # when self.threshold = False is uncommented, simulation movement from to pass rfid does not work. 
@@ -1005,11 +1009,9 @@ class dispenser(interactableABC):
 
         self.ID = ID 
 
-
         # Movement Controls # 
         self.servoObj = self.PosServo(servo_specs = hardware_specs['servo_specs'], parentObj = self) # positional servo to control extending/retracting lever; we can control by setting angles rather than speeds
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self)  # Button/Sensor for detecting if pellet successfully dispensed # 
-
 
         ## Current Position/State Tracking ## 
         self.stop_speed = hardware_specs['servo_specs']['stop_speed']
@@ -1018,14 +1020,23 @@ class dispenser(interactableABC):
             # ( Threshold Tracking ) #
         if self.buttonObj.pressed_val < 0: 
             # simulating gpio connection, simulate the isPressed Value
-            self.isPressed = None 
+            self.isPressed = self.threshold_condition['initial_value'] 
         else: 
             # not simulating, use the actual buttonObj i/o value to get current state 
             self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
 
+        if self.isPressed: 
+            # pellet is already present
+            self.pellet_state = True 
+            self.monitor_for_retrieval = True 
+
         ## Threshold Attribute ## 
-        self.pellet_state =  False # set to True once we confirm that a pellet is present in the trough. 
-        self.monitor_for_retrieval = False # gets set to True only once we confirm that a pellet is present in the trough. When we set this True, then we will start recording threshold events ( i.e. waiting for the pellet state to get set back to false, due to a vole retrieval )
+        if self.isPressed: 
+            initial = True 
+        else: initial = False 
+        self.pellet_state =  initial # True if pellet is in trough 
+        self.monitor_for_retrieval = initial # gets set to True only once we first confirm that a pellet is present in the trough. When we set this True, then we will start recording threshold events ( i.e. waiting for the pellet state to get set back to false, due to a vole retrieval ) If trough is initially empty, this prevents watch_for_threshold_event from recording this empty state as the occurrence of a pellet retrieval.
+
 
         ## Dependency Chain ## 
         self.barrier = False # does not block a voles movement 
@@ -1059,10 +1070,11 @@ class dispenser(interactableABC):
 
     def add_new_threshold_event(self):
         if self.monitor_for_retrieval: 
-            self.threshold_event_queue.put(f'{self} ~ an event ~')
+            self.threshold_event_queue.put(f'Pellet Retrieval')
+            print('PELLET RETRIEVAL DETECTED!')
             self.monitor_for_retrieval = False # reset since we recorded a single pellet retrieval.
         else: 
-            print('not monitoring for retrieval at the moment') 
+            print('not monitoring for retrieval at the moment')
             return
 
     def dependents_loop(self):
@@ -1083,14 +1095,16 @@ class dispenser(interactableABC):
         # Edge Case: if there is already a pellet in the trough, we don't want to dispense again ( this likely means vole did not take pellet on a previous dispense )
         if self.isPressed is True:     
             print('(InteractableABC, dispenser) previous pellet not retrieved')
-            control_log('(InteractableABC, dispenser.dispense()) Already a pellet in the trough.')
-            self.monitor_for_retrieval = True 
+            control_log(f'(InteractableABC, dispenser.dispense()) Already a pellet in the trough. Should already be monitoring for a pellet retrieval... current val of monitor_for_retrieval is: {self.monitor_for_retrieval}')
             return 
 
         # Simulation Check
         if self.isSimulation: 
+            
             print('(InteractableABC, dispenser.dispense()) Simulating dispenser, setting the isPressed value to True to simulate that a pellet was dispensed.')
             control_log('(InteractableABC, dispenser.dispense()) Simulating dispenser, setting the isPressed value to True to simulate that a pellet was dispensed.')
+            control_log(f'(InteractableABC, dispenser.dispense()) Monitoring for a pellet retrieval from {self}!')
+
             self.isPressed = True 
             self.monitor_for_retrieval = True 
             return 
