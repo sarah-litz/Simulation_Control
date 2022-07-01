@@ -34,6 +34,8 @@
         --> messing around with having door1 where we assign no dependents, and then door2 where we keep the assigned dependents. Because im reaching a point where I think the dependents might be useless??? 
         But very hesitant to do anything because I've referenced dependents so many times throughout the code, 
         so feel like they are serving a purpose that I am just struggling to define potentially. 
+        --> ( also another issue -- I had an error thrown in the Iterator Box portion of the experiment when running a simulation, so run the simulation again in the order that everything is currently in ( so have to go thru all fo the preceding sim functions first )
+        in hopes that i can replicate this exception being thrown again and figure out why it was thrown. think the exception had something to do with a vole movement where the interactables werent next to each other or something. )
         "dependents": [ "lever_door2", "open_door2_button", "close_door2_button" ],
         "hardware_specs": { 
             "button_specs": { 
