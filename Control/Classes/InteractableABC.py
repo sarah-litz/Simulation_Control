@@ -352,7 +352,7 @@ class interactableABC:
             # Check for a Threshold Event by comparing the current threshold value with the goal value 
             if attribute == self.threshold_condition['goal_value']: # Threshold Event: interactable has met its threshold condition
                 
-                print(f'(InteractableABC.py, watch_for_threshold_event) {self} Threshold Event Detected!')
+                control_log(f'(InteractableABC.py, watch_for_threshold_event) {self} Threshold Event Detected!')
                 event_bool = True 
 
 
@@ -374,6 +374,8 @@ class interactableABC:
                         callbackfn_lst = self.threshold_condition['onThreshold_callback_fn']
                         for callbackfn in callbackfn_lst: 
                             print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: ', "parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
+                            parent_names = {*(p.name+' ' for p in self.parents)}
+                            control_log(f' (InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: parents:[ {parent_names}  ]  callbackfn: , {callbackfn} ')
                             callbackfn = eval(callbackfn)
 
                     print(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
@@ -490,7 +492,6 @@ class lever(interactableABC):
 
     def reset_press_count(self): 
         ''' sets self.buttonObj.num_pressed to start from the initial value '''
-        print('\n\n\n\nresetting number of presses!')
         self.buttonObj.num_pressed = self.threshold_condition['initial_value'] 
 
     def set_press_count(self, count): 
@@ -1071,6 +1072,7 @@ class dispenser(interactableABC):
     def add_new_threshold_event(self):
         if self.monitor_for_retrieval: 
             self.threshold_event_queue.put(f'Pellet Retrieval')
+            print('PELLET RETRIEVAL!')
             self.monitor_for_retrieval = False # reset since we recorded a single pellet retrieval.
         else: 
             control_log(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
@@ -1094,15 +1096,15 @@ class dispenser(interactableABC):
 
         # Edge Case: if there is already a pellet in the trough, we don't want to dispense again ( this likely means vole did not take pellet on a previous dispense )
         if self.isPressed is True:     
-            print('(InteractableABC, dispenser) previous pellet not retrieved')
-            control_log(f'(InteractableABC, dispenser.dispense()) Already a pellet in the trough. Should already be monitoring for a pellet retrieval... current val of monitor_for_retrieval is: {self.monitor_for_retrieval}')
+            print('(InteractableABC, dispenser) Already a pellet in trough; previous pellet not retrieved')
+            control_log(f'(InteractableABC, dispenser.dispense()) Already a pellet in trough; Previous pellet not retrieved.')
             return 
 
         # Simulation Check
         if self.isSimulation: 
             
-            print('(InteractableABC, dispenser.dispense()) Simulating dispenser, setting the isPressed value to True to simulate that a pellet was dispensed.')
-            control_log('(InteractableABC, dispenser.dispense()) Simulating dispenser, setting the isPressed value to True to simulate that a pellet was dispensed.  Monitoring for a pellet retrieval from {self}!')
+            print('(InteractableABC, dispenser.dispense()) (simulated) Pellet Dispensed! ')
+            control_log(f'(InteractableABC, dispenser.dispense()) (simualted) Pellet Dispensed! setting the isPressed value to True to simulate that a pellet was dispensed.  Monitoring for a pellet retrieval from {self}!')
 
             self.isPressed = True 
             self.monitor_for_retrieval = True 

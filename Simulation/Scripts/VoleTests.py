@@ -64,44 +64,45 @@ class OperantMapVole(SimulationABC):
         ''' goal: 
         1. simulate a lever food press in order to trigger a simulated pellet dispense 
         2. simulate a direction interaction with the dispenser which will simulate a pellet retrieval
-        '''
+        3. Simulate 2 lever presses in a row 
+        4. simulate 2 pellet retrievals in a row 
 
+
+        Results: 
+        In total, this should sum to recording 3 lever presses and 2 retrievals. 
+        This is because in step #3 when we simulate 2 lever presses in a row, we skip the second dispense because there is already a pellet in the trough at this point. 
+        As a result, when we follow with 2 pellet retrieval simulations, only one of them will result in a pellet retrieval recording since there is only a single pellet in the trough. 
+        '''
+        
+        # Retrieve Objects: vole #1, the lever that controls the food dispensing, and the food dispener/trough itself
         vole1 = self.get_vole(1)
-        
-        food_lever = self.map.instantiated_interactables['lever_food']
-        
-        dispenser = self.map.instantiated_interactables['food_dispenser']
+        food_lever = self.map.instantiated_interactables['lever_food']     
+        dispenser = self.map.instantiated_interactables['food_trough']
+
 
         # Lever press to trigger dispense 
-
         vole1.move_to_interactable(food_lever)
-
+        print('______________LeverPress (1/3)______________')
         vole1.simulate_vole_interactable_interaction(food_lever)
 
         # pellet retrieval 
-
         vole1.move_to_interactable(dispenser)
-
+        print('______________Pellet Retrieval (1/3)______________')
         vole1.simulate_vole_interactable_interaction(dispenser)
 
-
-        # # Round 2 # # 
-        print('ROUND 2 TESTS')
-        sim_log('\n\n ROUND 2 TESTS \n\n')
-        
-        # Second lever press to trigger dispense 
+        # 2 lever presses in a row --> This requires pausing for a moment to allow the callback function to reset the press count to 0. If it is 2 presses super quick in a row, that will just be recorded as a single threshold event.
         vole1.move_to_interactable(food_lever)
-
-        vole1.simulate_vole_interactable_interaction(food_lever)
-        
+        print('______________LeverPress (2/3)______________')
+        vole1.simulate_vole_interactable_interaction(food_lever) # sets number of food_lever presses = required num of presses to trigger a dispense
+        time.sleep(3) # allow a second for the callback function reset_presses() to get called.
+        print('______________LeverPress (3/3)______________')
         vole1.simulate_vole_interactable_interaction(food_lever) # Edge Case: 2 disenses in a row. Should not work because a pellet is already in the trough. 
 
-        # Pellet retrieval 
-
+        # 2 Pellet retrievals in a row
         vole1.move_to_interactable(dispenser)
-
+        print('______________Pellet Retrieval (2/3)______________')
         vole1.simulate_vole_interactable_interaction(dispenser) 
-
+        print('______________Pellet Retrieval (3/3)______________')
         vole1.simulate_vole_interactable_interaction(dispenser) # Edge Case: 2 retrievals in a row. Should not work the second time because no pellet is present. 
 
 

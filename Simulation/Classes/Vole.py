@@ -89,6 +89,7 @@ class Vole:
         #
         if interactable.active is False: 
             print(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} is inactive')
+            sim_log(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} is inactive')
             # we don't care to simulate an inactive interactable
             # vole unable to effect the threshold attribute value of an inactive interactable (so threshold value is the same the entire time)
             return 
@@ -99,6 +100,7 @@ class Vole:
         #
         if not self.at_location_of(interactable): 
             print(f'(Vole.py, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
+            sim_log(f'(Vole.py, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
             return 
 
 
@@ -110,6 +112,7 @@ class Vole:
             # a fully independent interacable means that it is dependent on the values of its dependents and independent of a vole's actions
             # i.e. it is pointless for the vole to interact directly with it. So return. (Doesn't mean we won't interact and simulate w/ its dependents tho)
             print(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} isDependent on dependents, not on a vole interaction.')
+            sim_log(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} isDependent on dependents, not on a vole interaction.')
             return 
 
 
@@ -120,7 +123,7 @@ class Vole:
         #
         if interactable.isSimulation: 
 
-            sim_log( f'(Vole.py, simulate_vole_interactable_interaction) simulating vole{self.tag} interaction with {interactable.name}' ) 
+            vole_log( f'(Vole.py, simulate_vole_interactable_interaction) simulating vole{self.tag} interaction with {interactable.name}' ) 
             print(f'(Vole.py, simulate_vole_interactable_interaction) Simulating vole{self.tag} interaction with {interactable.name}')
     
             if hasattr(interactable, 'simulate_with_fn'):
@@ -222,10 +225,10 @@ class Vole:
         converts interactable to component, and calls the move_to_component function. 
         '''
         if self.curr_component is not None: 
-            print(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
+            # print(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
             vole_log(f'(Vole{self.tag}, move_to_interactable) {self.curr_component.interactable}->{goal_interactable}')
         else: 
-            print(f'(Vole{self.tag}, move_to_interactable) {self.curr_loc.edge_or_chamber}{self.curr_loc.id}(Empty)->{goal_interactable}')
+            # print(f'(Vole{self.tag}, move_to_interactable) {self.curr_loc.edge_or_chamber}{self.curr_loc.id}(Empty)->{goal_interactable}')
             vole_log(f'(Vole{self.tag}, move_to_interactable)  {self.curr_loc.edge_or_chamber}{self.curr_loc.id}(Empty)->{goal_interactable}')
 
         interactable_loc = self.map.get_location_object(goal_interactable)
@@ -239,7 +242,7 @@ class Vole:
         If at any point move_next_component cannot successfully be completed, meaning vole wasn't able to reach threshold, then we return from this function. 
         Voles location gets updated within the move_next_component function as we take each step. 
         '''
-        print(f'(Vole{self.tag}, move_to_component) {self.curr_component} -> {goal_component})')
+        sim_log(f'(Vole{self.tag}, move_to_component) {self.curr_component} -> {goal_component})')
 
         # check that goal_component exists 
         if goal_component.interactable.name not in self.map.instantiated_interactables: 
@@ -361,9 +364,11 @@ class Vole:
             goal_prev = getInteractable(component.prevval)
 
         print(f'(Vole{self.tag}, move_next_component) New Move: {curr_interactable}->{goal}')
-
+        vole_log(f'(Vole{self.tag}, move_next_component) New Move: {curr_interactable}->{goal}')
+        
         if curr_interactable == goal: 
-            print(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
+            # print(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
+            vole_log(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
             return True 
         
         # this function requires that we only need to take a single step/move to reach the goal component. Ensure that this is possible. 
@@ -548,9 +553,9 @@ class Vole:
             # check that vole's current interactable position allows us to simulate
             if self.curr_component.interactable.name != component.interactable.name: 
                 
-                raise Exception(f'(Vole.py, attempt_move) vole{self.tag} is positioned at {self.curr_component}, so unable to simulate interaction with {component.interactable.name}')
-                print(self.curr_component, component)
-                pass 
+                print(f'(Vole.py, attempt_move) vole{self.tag} is positioned at {self.curr_component}, so unable to simulate interaction with {component.interactable.name} and cannot complete the attempted move.')
+                sim_log(f'(Vole.py, attempt_move) vole{self.tag} is positioned at {self.curr_component}, so unable to simulate interaction with {component.interactable.name} and cannot complete the attempted move.')
+                return 
             
             else: 
                 

@@ -3,9 +3,12 @@
     "door1": 
     {
         "id":1, 
-        "threshold_condition": { "attribute":"isOpen", "initial_value": null, "goal_value": true },
-
-        "dependents": ["lever_door1", "open_door1_button", "close_door1_button"], 
+        "threshold_condition": { 
+            "attribute":"isOpen", 
+            "initial_value": null, "goal_value": true 
+        },
+        "parents":[], 
+        "dependents": [], 
         "hardware_specs": {
             "button_specs": { 
                 "button_pin": 4, 
@@ -27,6 +30,10 @@
     {
         "id":2, 
         "threshold_condition": { "attribute":"isOpen", "initial_value": false, "goal_value":true }, 
+        FORCING AN ERROR so i remember where im leaving off! 
+        --> messing around with having door1 where we assign no dependents, and then door2 where we keep the assigned dependents. Because im reaching a point where I think the dependents might be useless??? 
+        But very hesitant to do anything because I've referenced dependents so many times throughout the code, 
+        so feel like they are serving a purpose that I am just struggling to define potentially. 
         "dependents": [ "lever_door2", "open_door2_button", "close_door2_button" ],
         "hardware_specs": { 
             "button_specs": { 

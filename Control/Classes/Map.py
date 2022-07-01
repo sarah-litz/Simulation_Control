@@ -220,7 +220,7 @@ class Map:
         '''
         prints table to display the relationships between interactables ( parents and dependency )
         '''
-        row1 = ['Interactable', 'Dependent On', 'Can Control (Parent)']
+        row1 = ['Interactable', 'Requires Interaction With (Dependents)', 'Can Control (Parent)']
         data = [row1]
         for i_name in self.instantiated_interactables.keys(): 
             dnames = ','.join([d.name for d in self.instantiated_interactables[i_name].dependents]) # makes list of names and converts list to string 
@@ -852,7 +852,7 @@ class Map:
         returns list of iNTERACTABLE TYPE! 
         '''
         
-        print(f'(Map, get_component_path) {start_component}->{goal_component}')
+        control_log(f'(Map, get_component_path) {start_component}->{goal_component}')
             
         # Error Check: Incorrect Argument Type 
         if type(start_component) is not self.OrderedComponents.Component or type(goal_component) is not self.OrderedComponents.Component: 

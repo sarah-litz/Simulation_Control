@@ -27,7 +27,6 @@ def main():
 
 
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-    dispenserTests = DispenserTests(timeout = 30, map = map)
     closedbox = ClosedBox(timeout = 60, map = map)
     openbox = OpenBox(timeout= 30, map = map)
     basicbox = BasicBox(timeout = 30, map = map)
@@ -38,7 +37,7 @@ def main():
     mode_scripts = [ closedbox, openbox, basicbox, iteratorbox, simplebox ]
 
 
-    if __name__ is not '__main__': # falls into this if the simulation package imported this module
+    if __name__ != '__main__': # falls into this if the simulation package imported this module
         # (TODO) Add Any Modes that you want to get passed to the Simulation Package in the list here 
         # The modes will run in the order that they are placed in the list
         return mode_scripts

@@ -42,10 +42,10 @@ operantSim = OperantMapVole( modes = modes ) # create simulation, pass list of m
 
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-operantSim.simulation_func[ modes[0] ] = ( operantSim.voleInteractsWithDispenser ) # left most chamber
-operantSim.simulation_func[ modes[1] ] = ( operantSim.attemptMoveToChamber2 ) # left most chamber
-operantSim.simulation_func[ modes[2] ] = ( operantSim.attemptMoveToChamber1 ) # middle chamber
-operantSim.simulation_func[ modes[3] ] = ( operantSim.moveToChamber3 ) # right most chamber
+operantSim.simulation_func[ modes[0] ] = ( operantSim.attemptMoveToChamber2 ) # left most chamber
+operantSim.simulation_func[ modes[1] ] = ( operantSim.attemptMoveToChamber1 ) # middle chamber
+operantSim.simulation_func[ modes[2] ] = ( operantSim.moveToChamber3 ) # right most chamber
+operantSim.simulation_func[ modes[3] ] = ( operantSim.voleInteractsWithDispenser ) # food_lever presses and pellet retrieval 
 operantSim.simulation_func[ modes[4] ] = ( operantSim.renameThis ) # nothing happens
 
 

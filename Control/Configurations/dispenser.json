@@ -1,5 +1,5 @@
 {
-    "food_dispenser": 
+    "food_trough": 
     {
         "id":1, 
         "threshold_condition": { 
