@@ -106,8 +106,20 @@ class Vole:
 
 
         #
-        # Independent vs Dependent check 
+        # Dependency Chain Check
         #
+        
+        # Simulation Rules: 
+        # can simulate any non-barrier interactable 
+        # if barrier, can simulate if and only if that interactable is Autonomous. 
+        
+        if interactable.barrier: 
+            # ensure that barrier is also autonomous 
+            if not interactable.autonomous: 
+                print(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is a Barrier but is NOT autonomous. Interactables of this type do not allow for direct vole interactions.')
+                sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is a barrier and not autonomous. Interactables of this type do not allow for direct vole interactions. Vole must attempt simulating with {interactable.name} controllers ( interactables who have {interactable.name} as a parent )')
+                return 
+
         if len(interactable.dependents) > 0: 
             # a fully independent interacable means that it is dependent on the values of its dependents and independent of a vole's actions
             # i.e. it is pointless for the vole to interact directly with it. So return. (Doesn't mean we won't interact and simulate w/ its dependents tho)
@@ -371,6 +383,14 @@ class Vole:
             vole_log(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
             return True 
         
+        if self.prev_component == component: 
+            # Case: Vole is Turning Around!
+            # e.g. is in between rfid1 and door1, so curr_component is door1 and prev is rfid1. The passed in goal would be rfid1. 
+            # in order to make a direction change, we simply need to swap the prev and the curr component to represent this change in direction 
+            self.update_location(component)
+            vole_log(f'(vole{self.tag}, move_next_component) Vole is Turning Around but still positioned between the same interactables! Now facing {self.curr_component}, with back to {self.prev_component}.')
+            return True
+
         # this function requires that we only need to take a single step/move to reach the goal component. Ensure that this is possible. 
         if nxt_interactable != goal and prev_interactable != goal: # if curr_component->nxt.interactable != goal AND currcomponent->prev != goal
 
@@ -401,10 +421,12 @@ class Vole:
 
             if curr_interactable.autonomous: 
                 
+                print('SIMULATING RFID INTERACTION (<move_next_component>, # Not Barrier # section')
                 # interactable is not a barrier, but is autonomous so we simulate to interact with it anyways. Voles location will update even if this is not successful, as this is not a barrier interactable 
                 self.simulate_vole_interactable_interaction(curr_interactable) 
 
             # we can make move freely, update location 
+            print('# Not Barrier!!! # section')
             self.update_location(component, nxt_edge_or_chmbr_id = nxt_edge_or_chmbr_id)
             return True
                 
@@ -432,6 +454,8 @@ class Vole:
             return False 
 
         elif not curr_interactable.autonomous: # cannot simulate if not autonomous 
+            #
+            # DOORs without dependents will fall into this, as they are a barrier and not autonomous, meaning they must be controlled by something else. 
             print(f'(Simulation/Vole{self.tag}, move_next_component) Movement from {self.curr_component}->{component} cannot be completed because {self.curr_component} has no dependents that were set to control it, and it is not an autonomous interactable so requires dependents to operate it.')
             return False 
         

@@ -11,7 +11,6 @@
             "onThreshold_callback_fn": ["list(map(lambda p: p.dispense(), self.parents))", "self.reset_press_count()"]
         },
 
-        "dependents":[], 
         "parents": ["food_trough"], 
 
         "hardware_specs": {
@@ -40,8 +39,7 @@
             "onThreshold_callback_fn": [ "list(map(lambda p: p.open(), self.parents))", "self.reset_press_count()" ]
         },   
 
-        "parents":["door1"], 
-        "dependents":[],  
+        "parents":[], 
 
         "hardware_specs": {
             "button_specs": { 
@@ -63,7 +61,6 @@
     { 
         "id":3, 
         "parents":["door2"], 
-        "dpendents":[],
         "hardware_specs": { 
             "button_specs": {
                 "button_pin":22, 

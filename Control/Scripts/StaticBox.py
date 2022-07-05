@@ -25,7 +25,9 @@ class ClosedBox(modeABC):
         return 'Closed Box'
     
     def setup(self):
-        pass
+        door1 = self.map.instantiated_interactables['door1']
+        
+
     def run(self):
         pass
         

@@ -85,8 +85,11 @@ class Map:
                             voles_before_i.append('Vole'+str(v.tag))
                         
                         else: # case: if idx == (len(interactables)-1)
-                            # interactable before vole
-                            voles_after_i.append('Vole'+str(v.tag))
+                            # interactable after vole
+                            if v.prev_component != None and v.prev_component.interactable == interactables[idx-1]: 
+                                voles_before_i.append('Vole'+str(v.tag))
+                            else: 
+                                voles_after_i.append('Vole'+str(v.tag))
                     
                     elif v.prev_component.interactable == interactables[idx-1]: 
                         # draw v before i 

@@ -7,9 +7,7 @@
             "attribute":"check_threshold_with_fn", 
             "initial_value":true, "goal_value": false, 
             "check_threshold_with_fn": "lambda self: self.rfidQ.empty()"
-        }, 
-        "dependents":[]
-    
+        }    
     }, 
     "rfid2":
     {
@@ -19,8 +17,7 @@
             "initial_value":true, 
             "goal_value": false, 
             "check_threshold_with_fn": "lambda self: self.rfidQ.empty()"
-        }, 
-        "dependents":[]
+        }
     },
     "rfid3":
     {

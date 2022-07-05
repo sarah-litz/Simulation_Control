@@ -27,7 +27,8 @@ The terms specified below are 4 attributes assigned to every Interactable that c
 
     If an interactable has dependents assigned to it, all of its dependents must have already met their thresholds before the parent interactable can meet its own threshold. i.e. An interactable's dependents list should contain other interactables in the map that they depend on. 
 
-    The interactable that specifies an object as its dependent will be added to the dependent interactable's "parents" attribute. 
+**parents** 
+: list containing the "parent" interactables belonging to the current interactable. Parents are the interacatables that the current interactable can control. If an interactable has no parent, then we have reached the "top" of this dependency chain. 
 
 ~~~json 
 {

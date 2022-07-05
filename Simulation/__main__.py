@@ -42,7 +42,7 @@ operantSim = OperantMapVole( modes = modes ) # create simulation, pass list of m
 
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-operantSim.simulation_func[ modes[0] ] = ( operantSim.attemptMoveToChamber2 ) # left most chamber
+operantSim.simulation_func[ modes[0] ] = ( operantSim.moveToDoor1 ) # left most chamber
 operantSim.simulation_func[ modes[1] ] = ( operantSim.attemptMoveToChamber1 ) # middle chamber
 operantSim.simulation_func[ modes[2] ] = ( operantSim.moveToChamber3 ) # right most chamber
 operantSim.simulation_func[ modes[3] ] = ( operantSim.voleInteractsWithDispenser ) # food_lever presses and pellet retrieval 
@@ -51,20 +51,21 @@ operantSim.simulation_func[ modes[4] ] = ( operantSim.renameThis ) # nothing hap
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 
 print(f'\n Double Check that the following Control/Simulation Pairings look correct...') 
-data = [ ['Control Mode', 'Simulation Scripts'] ]
+data = [ ['Control Mode', 'filepath', 'Simulation Scripts', 'filepath'] ]
 for m in modes: 
     if m in operantSim.simulation_func.keys(): 
-        data.append( [m, operantSim.simulation_func[m].__name__] )
+        data.append( [m, ' ' + str(os.path.relpath(inspect.getfile(m.__class__))) , operantSim.simulation_func[m].__name__, ' ' + str(os.path.relpath(inspect.getfile(operantSim.__class__))) ])
+
     else: 
         data.append( [m, 'None'] )
-draw_table(data)
+draw_table(data, cellwidth=40)
 input_before_continue('')
 
 
 # Start Simulation 
 operantSim.run_sim() # starts running simulation in daemon thread ( this will transfer control between the simulation functions as the active control mode changes )
 
-time.sleep(4) # Pause Before Starting Modes 
+time.sleep(1) # Pause Before Starting Modes 
 
 # Loop to Enter Modes in Given Order
 for mode in modes: 
