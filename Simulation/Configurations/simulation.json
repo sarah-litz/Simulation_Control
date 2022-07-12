@@ -14,7 +14,7 @@
         }, 
         {"name":"rfid2", 
             "simulate":true, 
-            "simulate_with_fn": "lambda self, vole: self.rfidQ.put( (vole, self.ID) )"  
+            "simulate_with_fn": "lambda self, vole: self.shared_rfidQ.put( (vole, self.ID, time.time()) )" 
         }, 
         {"name":"lever_food", 
             "simulate":true, 
@@ -30,11 +30,11 @@
         }, 
         {"name":"rfid3", 
             "simulate":true,
-            "simulate_with_fn": "lambda self, vole: self.rfidQ.put( (vole, self.ID) )"  
+            "simulate_with_fn": "lambda self, vole: self.shared_rfidQ.put( (vole, self.ID, time.time()) )" 
         }, 
         {"name":"rfid4", 
             "simulate":true,
-            "simulate_with_fn": "lambda self, vole: self.rfidQ.put( (vole, self.ID) )"  
+            "simulate_with_fn": "lambda self, vole: self.shared_rfidQ.put( (vole, self.ID, time.time()) )" 
         }, 
         {"name":"door2", 
             "simulate":true

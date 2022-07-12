@@ -42,11 +42,11 @@ operantSim = OperantMapVole( modes = modes ) # create simulation, pass list of m
 
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-operantSim.simulation_func[ modes[0] ] = ( operantSim.moveToDoor1 ) # left most chamber
-operantSim.simulation_func[ modes[1] ] = ( operantSim.attemptMoveToChamber1 ) # middle chamber
+operantSim.simulation_func[ modes[0] ] = ( operantSim.chamberComponentSetTesting ) # left most chamber
+operantSim.simulation_func[ modes[1] ] = ( operantSim.voleInteractsWithDispenser ) # middle chamber
 operantSim.simulation_func[ modes[2] ] = ( operantSim.moveToChamber3 ) # right most chamber
-operantSim.simulation_func[ modes[3] ] = ( operantSim.voleInteractsWithDispenser ) # food_lever presses and pellet retrieval 
-operantSim.simulation_func[ modes[4] ] = ( operantSim.renameThis ) # nothing happens
+operantSim.simulation_func[ modes[3] ] = ( operantSim.moveToDoor1) # food_lever presses and pellet retrieval 
+operantSim.simulation_func[ modes[4] ] = ( operantSim.attemptMoveToChamber2 ) # nothing happens
 
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 

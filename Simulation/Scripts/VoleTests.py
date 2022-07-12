@@ -17,11 +17,6 @@ from Control.Scripts.StaticBox import ClosedBox, OpenBox, BasicBox
 
 class OperantMapVole(SimulationABC): 
     
-    '''
-    Current Description: 
-        - Currently Running on top of the Control Mode 'ClosedBox' for 20 seconds, with a simpleMap (2 chambers, 1 edge, an rfid and door component only)
-    Goal Description: 
-    '''
     
     def __init__(self, modes):
         
@@ -33,10 +28,16 @@ class OperantMapVole(SimulationABC):
 
         return 'OperantMapVole'
    
-    
-    def moveToDoor1(self): 
+    def chamberComponentSetTesting(self): 
         
-        print(f'{self} Simulation moveToDoor1 is Running!')
+        # for testing the potential switch from Chamber Components to a Chamber ComponentSet where we have a list of interactables stored in a single Component
+        vole1 = self.get_vole(1)
+        print("\n attempting move to food trough!")
+        food = self.map.instantiated_interactables['food_trough']
+        vole1.move_to_interactable(food)
+
+    def moveToDoor1(self): 
+        print(f'|||||  {self} Simulation moveToDoor1 is Running!   |||||')
 
         vole1 = self.get_vole(1)
         door1 = self.map.instantiated_interactables['door1']
@@ -62,7 +63,9 @@ class OperantMapVole(SimulationABC):
     def moveToChamber3(self): 
 
         self.get_vole(1).attempt_move(destination = 3) # vole attempts to move into chamber 3
-
+        
+        self.get_vole(1).move_to_interactable(self.map.instantiated_interactables['open_door2_button'])
+    
     def voleInteractsWithDispenser(self): 
         '''
         this mode is used for testing basic functional of the food dipenser throughout its code building process!

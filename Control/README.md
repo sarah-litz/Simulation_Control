@@ -88,7 +88,7 @@ The list of edge components can be made up of { interactable_name , type } dicti
 
 > Chamber Interactables on an Edge 
 
-It is important to specify chamber_interactable for any chamber interactable that plays a role in a voles movements. Conversely, the only interactables that we should not place on an edge as a chamber_interactable are interactables that do not have any relationships with other interactables (i.e. no parent or dependent interactables), and are also not considered an autonomous interactable (meaning a vole would have to make a conscious decision to choose to interact with it.)
+It is important to specify chamber_interactable for any chamber interactable that plays a role in a voles movements. Conversely, the only interactables that we should not place on an edge as a chamber_interactable are interactables that do not have any relationships with other interactables (i.e. no parent or dependent interactables), and are also NOT autonomous, meaning a vole would have to make a conscious decision to choose to interact with it.
 
 ~~~json 
 {

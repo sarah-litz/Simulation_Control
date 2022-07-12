@@ -27,14 +27,14 @@ def main():
 
 
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-    closedbox = ClosedBox(timeout = 30, map = map)
-    openbox = OpenBox(timeout= 30, map = map)
-    basicbox = BasicBox(timeout = 30, map = map)
-    iteratorbox = IteratorBox(timeout = 30, map = map)
-    simplebox = SimpleBox(timeout=30, map = map)
+    closedbox = ClosedBox(timeout = 15, map = map)
+    openbox = OpenBox(timeout= 15, map = map)
+    basicbox = BasicBox(timeout = 15, map = map)
+    iteratorbox = IteratorBox(timeout = 15, map = map)
+    simplebox = SimpleBox(timeout=15, map = map)
 
     # (TODO) Update the list of control mode scripts with each of the scripts you want to run, in the order that you want them to run in! 
-    mode_scripts = [ closedbox, openbox, basicbox, iteratorbox, simplebox ]
+    mode_scripts = [ closedbox, iteratorbox, basicbox, openbox, simplebox ]
 
 
     if __name__ != '__main__': # falls into this if the simulation package imported this module
