@@ -41,9 +41,6 @@ The terms specified below are 4 attributes assigned to every Interactable that c
 }
 ~~~
 
-
-    As we can see, the threshold condition for lever_door1 has an attribute "onThreshold_callback_fn" which gets called when lever_door1 meets its threshold_condition. We can see, that this onThreshold_callback_fn is further defining the lever's relationship with its parent interactable, door1, by specifying the callback function that calls open() on door1. 
-
 ~~~json 
     "lever_door1": 
     {
@@ -54,6 +51,8 @@ The terms specified below are 4 attributes assigned to every Interactable that c
         }    
     }
 ~~~
+
+    As we can see, the threshold condition for lever_door1 has an attribute "onThreshold_callback_fn" which gets called when lever_door1 meets its threshold_condition. We can see, that this onThreshold_callback_fn is further defining the lever's relationship with its parent interactable, door1, by specifying the callback function that calls open() on door1. 
 
 
 **parents** (list)

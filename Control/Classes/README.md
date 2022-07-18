@@ -19,12 +19,6 @@ For example, within a door's open() function we write:
     else: 
         # door hardware is present, continue with normal execution...
 
-### Dependent vs Independent Interactables
-
-- Door is Independent (depends on lever.num_pressed value)
-- Lever is Dependent (dependent on vole presses)
-- RFID is Dependent (dependent on vole whereabouts)
-
 #### Dependents Loop
 
     class interactableABC

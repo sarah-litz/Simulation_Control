@@ -30,11 +30,20 @@ class OperantMapVole(SimulationABC):
    
     def chamberComponentSetTesting(self): 
         
+        
         # for testing the potential switch from Chamber Components to a Chamber ComponentSet where we have a list of interactables stored in a single Component
+        
         vole1 = self.get_vole(1)
+        print('\n Testing attempt_move functionality!')
+        vole1.attempt_move(3) # attempt move from chamber1->chamber3
+
+        # turn around and try to move to an unordered interactable component back in chamber 1
+        vole1.move_to_interactable(self.map.instantiated_interactables['lever_food'])
+        
+        '''vole1 = self.get_vole(1)
         print("\n attempting move to food trough!")
         food = self.map.instantiated_interactables['food_trough']
-        vole1.move_to_interactable(food)
+        vole1.move_to_interactable(food)'''
 
     def moveToDoor1(self): 
         print(f'|||||  {self} Simulation moveToDoor1 is Running!   |||||')
@@ -48,7 +57,7 @@ class OperantMapVole(SimulationABC):
         time.sleep(2)
 
         # Attempt at turning around... 
-        vole1.move_to_interactable(self.map.instantiated_interactables['lever_door1'])
+        # vole1.move_to_interactable(self.map.instantiated_interactables['lever_door1'])
         
         print(f'{self} is O V E R ! ')
     
