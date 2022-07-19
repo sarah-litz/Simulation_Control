@@ -405,7 +405,7 @@ class Vole:
         #
         component_lst = self.map.get_component_path(self.curr_component, goal_component) 
         print( f'\n(Vole{self.tag}, move_to_component) components between curr_loc and goal_loc:, {[*(str(c) for c in component_lst)]}')
-        print( f'\n(Vole{self.tag}, move_to_component) RAW VERSION components between curr_loc and goal_loc:, {[*(c for c in component_lst)]}\n')
+        # print( f'\n(Vole{self.tag}, move_to_component) RAW VERSION components between curr_loc and goal_loc:, {[*(c for c in component_lst)]}\n')
         sim_log(f'(Vole{self.tag}, move_to_component) components between curr_loc and goal_loc:, {[*(str(c) for c in component_lst)]}')
 
 
@@ -503,15 +503,13 @@ class Vole:
                 print('\n NEW LOGIC! Potentially can get rid of the other if/elif checks that follow this if statement. Hopefully falls into this everytime. \n')    
 
             # extra check for scenario that current component is a reference to a chamber component
-            if goal_prev == curr_interactable or goal_nxt == curr_interactable: # this scenario will happen when chamber interactables are added to an edge 
+            elif goal_prev == curr_interactable or goal_nxt == curr_interactable: # this scenario will happen when chamber interactables are added to an edge 
                 # if goal->prev == curr_component ( goal component links back to our current component )
                 # if goal->nxt == curr_component ( goal component links forward to our current component )
                 
                 # valid move requested from a chamber component -> adjacent edge component
                 print('Logic for checking if the current component is a referenced as a chamber component on an edge. If we always fall into both this if statement and the NEW LOGIC statement, then we can delete this if statement cause it gets covered by the first if statement. ')
                 pass 
-            elif len(self.map.get_component_path(self.curr_component,goal_component)) == 2: 
-                print('delete this logic eventually')
             else: 
                 # invalid move request 
                 raise Exception(f'Vole{self.tag}, move_next_component) only accepts components as arguments that are directly next to the voles location: {self.curr_component}. prev={self.curr_component.prevval}, next={self.curr_component.nextval}. The goal component {goal_component} has prev={goal_component.prevval} and next={goal_component.nextval}')
@@ -540,7 +538,7 @@ class Vole:
             
             # curr_interactable = [curr_interactable] # convert any Ordered Interactable to a list object 
        
-        print('current interactable ISssss: ', curr_interactable)
+        
         #
         # Not Barrier
         #
@@ -610,16 +608,20 @@ class Vole:
 
 
     def attempt_move( self, destination, validity_check = True ): 
-        # for vole movement into a CHABMER that is a single step/edge away from current positioning.
-        # Allowed Movements: 
-            # edge -> chamber 
-            # chamber -> edge -> chamber 
-        ## destination is an integer specifying a CHAMBERID that we want to move to. The New destination Chamber must be a single move away from the vole's current edge/chamber. 
-        ''' called by a Vole object ''' 
-        ''' attempts to executes a move. if validity_check is set to True, then we check if the move is physically valid or not. '''
-        ''' SETTING the interactable's to meet their goal_value by calling simulate_vole_interaction '''
-        ''' GETTING the thresholds of each interactable and checking that it is True '''
-        ''' if the threshold of any interactable is not True, then we cannot successfully make the move '''
+        ''' for vole movement into a CHABMER that is a single step/edge away from current positioning.
+        Allowed Movements: 
+            edge -> chamber 
+            chamber -> edge -> chamber 
+        destination is an integer specifying a CHAMBERID that we want to move to. The New destination Chamber must be a single move away from the vole's current edge/chamber. '''
+        
+        
+        ''' called by a Vole object 
+        attempts to executes a move. if validity_check is set to True, then we check if the move is physically valid or not.
+        SETTING the interactable's to meet their goal_value by calling simulate_vole_interaction 
+        GETTING the thresholds of each interactable and checking that it is True
+        if the threshold of any interactable is not True, then we cannot successfully make the move '''
+
+        
 
         print(f'(Vole{self.tag}, attempt_move) Attempting move from {self.curr_loc.edge_or_chamber}{self.curr_loc.id} -> Chamber{destination}.')
         vole_log(f'(Vole{self.tag}, attempt_move) Attempting move from {self.curr_loc.edge_or_chamber}{self.curr_loc.id} -> Chamber{destination}.')

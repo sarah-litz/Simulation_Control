@@ -466,6 +466,184 @@ sys.path.append('/Users/sarahlitz/Projects/Donaldson Lab/Vole Simulator Version 
 
 
 
+'''
+
+previous draft of class for unordered components 
+
+
+    class UnorderedComponents: 
+        
+        (FISH)
+        class for holding a list of unordered Chamber components. 
+        Unordered Chamber Components are any components that are not referenced from an adjacent edge.  
+        If the order of chamber components IS important, then they should be referenced from an adjacent edge as a 'chamber_interactable' in map.json.
+        When a chamber_interactable is referenced, this interactable will be assigned to the edge's component linked list, but the interactable itself will remain assigned to the chamber.
+        
+        def __init__(self): 
+            
+            self.components = [] # will contain a list of Component objects.
+            self.nextval = None # will point to a single OrderedComponents.Component object 
+            self.prevval = None # will point to a single OrderedComponents.Component object 
+        
+        @property 
+        def headval(self): 
+            # FISH
+            # using this in order to mimic how the linked list for the OrderedComponents works
+            try: 
+                val = self.components[0] # returns first value in the list of components assigned to the chamber
+                return val
+            except IndexError: return None # empty chamber
+
+        def __iter__(self): 
+            for component in self.components: 
+                yield component 
+        def component_exists(self, interactable): 
+            interactables = [c.interactable for c in self.components]
+            if interactable in interactables: 
+                return True 
+            return False 
+        def get_interactable_from_component(self, name): 
+            for c in self.components: 
+                if c.interactable.name == name: 
+                    return c.interactable 
+            return None # a component with an interactable with name does not exist in this list of unordered components
+        def get_component_list(self, reverse = False): 
+            if reverse: 
+                return self.components.reverse() 
+            else: 
+                return self.components 
+        def get_interactable_list(self, reverse=False): 
+            if reverse: 
+                return [c.interactable for c in self.components].reverse() 
+            else: 
+                return [c.interactable for c in self.components]
+        def get_component_from_interactable(self, interactable):
+            # return the component which acts as a container to interactable
+            for c in self.components: 
+                if interactable == c.interactable: 
+                    return c 
+            return None # interactable does not exist in the chambers components list
+        
+        def remove_component(self, interactable): 
+            # accepts the argument of an interactable object and removes the component that is paired with that interactable 
+            self.components.remove(self.get_component_from_interactable(interactable))
+        
+        class Component:
+            # FISH
+            def __init__(self, interactable):  
+                self.interactable = interactable # access to the actual object that represents a hardware component
+            def __str__(self): 
+                return str(self.interactable.name)
+'''
+
+
+
+'''
+
+removed from Map.py, get_component_path 
+
+
+            # loop thru loc_path of edges and chambers
+            # forwardTraversal = True # set to false if vole is moving "backwards" relative to given component ordering
+            for idx in range(len(loc_path)): 
+                
+                loc = loc_path[idx] # edge or chamber object specified by path 
+
+                
+            if loc.edge_or_chamber == 'chamber': 
+                    # get the next edge from the location path 
+                    if (idx+1) < len(loc_path): 
+                        next_edge = loc_path[idx+1]
+                        if loc.id == next_edge.v1: 
+                            forwardTraversal = True
+                        else: 
+                            forwardTraversal = False # reverse the chamber's components! 
+                            
+            
+                #
+                # Current Location is a Chamber
+                #
+                if type(loc) == self.Chamber: # if current loc is a chamber 
+                    
+                    # For Each Chamber, we need to configure 2 things before retrieving the Chamber components: 
+                    # (1) if any of the components are referenced from an edge, we will wait for the edge to add this interactable as a component, so we should skip it. 
+                    # (2) we need to check if we are doing a forwards or backwards traverse of the chamber components, and set the variable reverse to True/False accordingly.
+                                    # LEAVING OFF HERE
+                                    # Chamber components that never get referenced on an edge have orders that matter less. 
+                                    # However, to preserve an order here, we will look for any bridge component ( a component that exists on an edge )
+                                    # if the bridge components that we need are in the first spots along the chamber, then reverse the component ordering 
+                                    # if the bridge components that lead into the edge we need are in the last spots in the chamber, then do not reverse the component ordering. 
+                                    # if no bridge components exist... ????? COME BACK! 
+                                    # LEAVING OFF HERE 
+
+                    # if loc_path[i+1] exists, grab this edges component list 
+                    adj_components = [] 
+                    if idx+1 < len(loc_path): 
+
+                        # Check for if Next Edge references chamber interactables! 
+                        # Grab its component list to avoid adding Chamber Interactables twice!
+                        adj_components = loc_path[idx+1].get_component_list() 
+                    
+
+                    # get all of the chambers components!
+                    components = loc.get_component_list() # locations components 
+
+                    # add any chamber components with interactables that are not also assigned to an edge
+                    for c in components: # for each component assigned to the current chamber 
+                        
+                        # convert from components to their interactables 
+                        interactable_path = [x.interactable for x in component_path]
+                        adj_interactables = [x.interactable for x in adj_components]
+
+                        #
+                        # LEAVING OFF HERE
+                        #
+                        # Figure out if we should reverse the chamber's component list! 
+                        # IF we check our FIRST component.interactable and it is already in the component_path, do NOT reverse ordering. 
+                        # ELIF the first component.interactable is in adj_interactables ( the nxt edge in the path ), then we DO reverse ordering.
+                        # ELIF: check to see if our LAST component.interactable is already in the component_path, if it is, DO reverse ordering. 
+                        # ELIF: check to see if our LAST component.interactable is in adj_interactables (the next edge in the path). if yes, do NOT reverse ordering  
+                        # ELSE: panic??? Idk.  Come Back! 
+
+                        # IF the component.interactable does not already exist in the component_path (case that it was already added by the previous edge)
+                        # AND if the component does not exist in the next edges component list (case that it will be specified in the following edge)
+                        # THEN add the component to the component_path 
+                        # ELSE we don't want to add this component as we can let the edges handle that.
+                        if c.interactable not in interactable_path and c.interactable not in adj_interactables: 
+                            component_path.append(c)
+                
+
+                #
+                # Current Location is an Edge
+                #
+                else: 
+                    # current loc is an Edge! 
+                    # based on direction that we are moving in path, check if we should reverse the order of the edge components 
+                    # grab edges components list and add components to component path 
+
+                    ## Preserve Component Ordering based on Direction of Vole Movement ## 
+                    if idx+1 < len(loc_path): 
+                        # grab id of the chamber that follows 
+                        adj_cid = loc_path[idx+1].id
+                        # compare to the ordering of the edges chambers 
+                        if adj_cid == loc.v1: # nxt chamber in path is the 1st chamber of the edge, so we should reverse the edge components 
+                            reverse = True 
+                        else: reverse = False  
+                    
+                    # Edge Case: Final Element in path. Use the previous chamber to figure out component ordering
+                    else: 
+                        # grab id of the chamber that precedes 
+                        adj_cid = loc_path[idx-1].id 
+                        # compare to the chamber ordering that the edge chamber knows
+                        if adj_cid == loc.v1: # prev chamber in path is the 1st chamber of the edge, so do NOT reverse the edge components 
+                            reverse = False
+                        else: reverse = True 
+
+                    # Add All Edge Components in the Specifed Ordering #                        
+                    component_path.extend(loc.get_component_list(reverse=reverse)) 
+'''
+
+
 ''' 
 random helpful syntax : 
 __getattribute__ and __name__
