@@ -39,7 +39,7 @@
             "onThreshold_callback_fn": [ "list(map(lambda p: p.open(), self.parents))", "self.reset_press_count()" ]
         },   
 
-        "parents":[], 
+        "parents":["door1"], 
 
         "hardware_specs": {
             "button_specs": { 

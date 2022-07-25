@@ -12,7 +12,7 @@ class WaitFiveSecondsBeforeRetractOrClose(modeABC):
         super().__init__(timeout,map)
     
     def __str__(self): 
-        return 'Levers Extend for 5 Seconds before Retracting'
+        return '5 Sec Intervals b4 Close/Retract'
     
     def setup(self):
 
@@ -33,13 +33,33 @@ class WaitFiveSecondsBeforeRetractOrClose(modeABC):
 
                 self.lever_door1.retract() 
 
-            if self.door1.isOpen(): 
+            if self.door1.isOpen: 
 
                 # wait 5 seconds and reclose the door 
 
-                time.sleep(5)
+                time.sleep(10)
                 
                 self.door1.close() 
+
+
+class IteratorBox(modeABC): 
+    '''
+    Description: 
+        << operant map. Each time a lever gets pressed we increment the goal number of presses >>
+    '''
+    def __init__(self, timeout, map):
+        super().__init__(timeout, map)
+
+    def __str__(self): 
+        return 'Iterator Box'
+    
+    def setup(self): 
+        ''' any tasks to setup before run() gets called '''
+        pass  
+    
+    def run(self): 
+        ''' when lever presses reaches threshold, increment required number of presses '''
+        pass 
 
 
 class ReactiveBox(modeABC):
@@ -65,7 +85,7 @@ class ReactiveBox(modeABC):
 
     def run(self):
 
-        print('Extending Levers!')
+        print('Extending All Levers!')
         lever1 = self.map.instantiated_interactables['lever_door1']
         lever2 = self.map.instantiated_interactables['lever_door2']
         lever_food = self.map.instantiated_interactables['lever_food'] 
@@ -112,9 +132,9 @@ class ReactiveBox(modeABC):
                         if len(r.threshold_event_queue.queue) > 0: 
 
                             # event! 
-                            if r.id < 3: 
+                            if r.ID < 3: 
                                 # at Door 1 
-                                if r.id == 1: 
+                                if r.ID == 1: 
 
                                     # Vole passed rfid1. check rfid2 for a threshold event 
                                     if len(rfid2.threshold_event_queue.queue) > 0: 
@@ -154,21 +174,3 @@ class ReactiveBox(modeABC):
 
 
 
-class IteratorBox(modeABC): 
-    '''
-    Description: 
-        << operant map. Each time a lever gets pressed we increment the goal number of presses >>
-    '''
-    def __init__(self, timeout, map):
-        super().__init__(timeout, map)
-
-    def __str__(self): 
-        return 'Iterator Box'
-    
-    def setup(self): 
-        ''' any tasks to setup before run() gets called '''
-        pass  
-    
-    def run(self): 
-        ''' when lever presses reaches threshold, increment required number of presses '''
-        pass 

@@ -27,8 +27,8 @@ def main():
 
 
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-    intervalBox = WaitFiveSecondsBeforeRetractOrClose(timeout = 15, map = map)
-    iteratorBox = IteratorBox(timeout = 15, map = map)
+    intervalBox = WaitFiveSecondsBeforeRetractOrClose(timeout = 30, map = map)
+    iteratorBox = IteratorBox(timeout = 30, map = map)
     reactiveBox = ReactiveBox(timeout = 15, map = map )
 
     # (TODO) Update the list of control mode scripts with each of the scripts you want to run, in the order that you want them to run in! 

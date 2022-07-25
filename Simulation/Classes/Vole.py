@@ -266,7 +266,6 @@ class Vole:
         '''
         converts interactable to component, and calls the move_to_component function. 
         '''
-        print(type(goal_interactable))
         if goal_interactable.edge_or_chamber_id < 0: 
             # ensure that interactable's location is reachable by a vole 
             # Goal Location does not exist or is not reachable by a vole (e.g. if the interactable is in a chamber with a negative integer for its id)
@@ -294,7 +293,7 @@ class Vole:
                 # goal interactable is a chamber interactable that is referenced by an edge, so we should just move to its component
                 for (edge, interactable_lst) in interactable_loc.edgeReferences.items(): 
                     if goal_interactable in interactable_lst: # retrieve component from the edge 
-                        edge.get_component_from_interactable(goal_interactable)
+                        goal_component = edge.get_component_from_interactable(goal_interactable)
                         return self.move_to_component(goal_component)
 
         else: # Goal is an interactable on an Edge
@@ -314,8 +313,8 @@ class Vole:
         Voles location gets updated within the move_next_component function as we take each step. 
         '''
 
-        sim_log(f'(Vole{self.tag}, move_to_component) {str(self.curr_component)} -> {str(goal_component)})')
-        print(f'(Vole{self.tag}, move_to_component) {str(self.curr_component)} -> {str(goal_component)})')
+        sim_log(f'(Vole{self.tag}, move_to_component) {str(self.curr_component)} -> {str(goal_component)}')
+        print(f'(Vole{self.tag}, move_to_component) {str(self.curr_component)} -> {str(goal_component)}')
 
         # The goal_component will either specify a singular interactable ( if it is an ordered component ) or can specify 
         # a ComponentSet, which represents the unordered interactables within a chamber and may contain a list of interactables. 
@@ -345,16 +344,16 @@ class Vole:
         # 
         # Voles Current Component is None: Must first reposition at nearest component before getting the component path!
         #
-        print('GOAL LOCATION:', goal_loc)
         while self.curr_component is None: # Loop Until We Find the first Component along our path that we can position the vole at! 
             
             #
             # This entire while loop is just to get the vole positioned at some component, since its current component is None and that is unhelpful to start out on!  
             # 
-
+            sim_log(f'(Vole.py, move_to_component) Vole{self.tag} current component is None; Searching for the nearest component to update the voles location to.')
             # manually put together the component path by using the start_loc and goal_loc 
             # goal_loc = self.map.get_location_object(goal_component.interactable)
             path = self.map.get_edge_chamber_path(self.curr_loc, goal_loc)
+            # sim_log((f'(Vole, move_to_component) Value Returned by get_edge_chamber_path({self.curr_loc}->{goal_loc}): {path}'))
             
             # position vole in place that provides more information for us ( we know that vole is in an empty edge/chamber, so there is some flexibility for the vole movements here! )
             # move to closest new location. If sitting on edge, move to closest chamber. If sitting in chamber, move to closest edge. 
@@ -376,7 +375,8 @@ class Vole:
                     self.update_location(None, nxt_edge_or_chmbr_id=newloc)
                     # self.curr_loc = newloc # new chamber is empty. manually move vole there anyways and we will loop again. 
                 
-            # still in while loop that is just to get the vole positioned at some component, since its current component is None and that is unhelpful to start out on!  
+            # STILL IN WHILE LOOP FOR WHEN VOLE START COMPONENT IS NONE! 
+            # we just wanna get the vole positioned at some component, since its current component is None and that is unhelpful to start out on!  
             else: # current location is a chamber. move to closest edge 
 
                 for (c,e) in self.curr_loc.connections.items(): 
@@ -388,7 +388,7 @@ class Vole:
                             clst = e.get_component_list(reverse=True)
                         else: 
                             clst = e.get_component_list() 
-                    
+                    # STILL IN WHILE LOOP FOR WHEN VOLE START COMPONENT IS NONE!
                     if clst is not None: 
                         # move to first component 
                         self.update_location(clst[0])
@@ -397,16 +397,16 @@ class Vole:
                         self.update_location(None, nxt_edge_or_chmbr_id = e.id)
                         # self.curr_loc = e
         
-        # End of While loop that ensures voles current location is not "None" 
+        # END of While loop that ensures voles current location is not "None" 
 
 
         #
         # Get list of components in between current location and goal location 
         #
         component_lst = self.map.get_component_path(self.curr_component, goal_component) 
-        print( f'\n(Vole{self.tag}, move_to_component) components between curr_loc and goal_loc:, {[*(str(c) for c in component_lst)]}')
+        print( f'\n(Vole{self.tag}, move_to_component) components between curr_loc and goal_loc:, {[*(str(c) for c in component_lst)]}\n')
         # print( f'\n(Vole{self.tag}, move_to_component) RAW VERSION components between curr_loc and goal_loc:, {[*(c for c in component_lst)]}\n')
-        sim_log(f'(Vole{self.tag}, move_to_component) components between curr_loc and goal_loc:, {[*(str(c) for c in component_lst)]}')
+        vole_log(f'(Vole{self.tag}, move_to_component) components between curr_loc and goal_loc:, {[*(str(c) for c in component_lst)]}')
 
 
         # for each component in component_lst, call move_next_component

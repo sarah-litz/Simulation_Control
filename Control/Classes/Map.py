@@ -76,7 +76,7 @@ class Map:
             
             
             for v in voles: # for each interactable, loop thru the voles w/in the same chamber and check their component location 
-
+                
                 if type(v.curr_component) is self.Chamber.ComponentSet and v.curr_component.interactableSet == i: 
                     # voles current_component.interactableSet is the entire set of Unordered Interactables 
                     # as we loop through interactables, one of the elements should also be the entire set of Unordered Interactables 
@@ -89,7 +89,7 @@ class Map:
                     unordered_component = v.curr_component.interactableSet
                     if v.prev_component is not None:
         
-                        # check if voles prev location is an Ordered Chamber Interactable:                             
+                        # check if voles **Previous** location is an Ordered Chamber Interactable:                             
                         if v.prev_component.interactable in interactables: # where interactables is the entire set of Chamber interactables (ordered and unordered)
                             # figure out if this interactable comes before or after the set of Unordered Interactables ( where the vole currently stands )
                             if interactables.index(v.prev_component.interactable) > interactables.index(unordered_component): 
@@ -103,12 +103,6 @@ class Map:
                     
                     # Finish looping/printing the Unordered Component Set so we don't reprint the vole everytime 
                     # idx = idx + len(unordered_component) + 1 # skip the index iterator forward 
-
-
-                    # On Each Component, append to vole_interactable_lst in order to make one complete list with ordered voles/interactables 
-                    vole_interactable_lst.extend(voles_before_i)
-                    vole_interactable_lst.append(str([o.name for o in i]))
-                    vole_interactable_lst.extend(voles_after_i)
 
                 else:    
                     # ORDERED COMPONENT: not at the unordered interactable set, we can make a direct comparison between curr_component and i
@@ -149,16 +143,20 @@ class Map:
                             # draw i before v 
                             voles_after_i.append('Vole'+str(v.tag)) # append string representation for the vole 
 
-                    # On Each Component, append to vole_interactable_lst in order to make one complete list with ordered voles/interactables 
-                    vole_interactable_lst.extend(voles_before_i)
-                    vole_interactable_lst.append(str(i))
-                    vole_interactable_lst.extend(voles_after_i)
+            if type(i) is list: 
+                # Interactable Set! 
+                # On Each Component, append to vole_interactable_lst in order to make one complete list with ordered voles/interactables 
+                vole_interactable_lst.extend(voles_before_i)
+                vole_interactable_lst.append(str([o.name for o in i]))
+                vole_interactable_lst.extend(voles_after_i)
+            else: 
+                # Single Interactable
+                # On Each Component, append to vole_interactable_lst in order to make one complete list with ordered voles/interactables 
+                vole_interactable_lst.extend(voles_before_i)
+                vole_interactable_lst.append(str(i))
+                vole_interactable_lst.extend(voles_after_i)
 
-            if len(voles) == 0: 
-                if type(i) is list: # Unordered Chamber Set
-                    vole_interactable_lst.extend
-                else: 
-                    vole_interactable_lst.append(str(i)) 
+                
         # make list of string names rather than the objects 
         return vole_interactable_lst
     
@@ -663,14 +661,22 @@ class Map:
 
         print('Edges and Chambers before Setting Dependents/Parents: ')
         self.draw_chambers()
-        self.connect_edges_and_chambers()
+        self._connect_edges_and_chambers()
         self.set_dependent_interactables()
         self.set_parent_interactables() 
     
 
-    def connect_edges_and_chambers(self):    
-        print('CONNECT_EDGES_AND_CHAMBERS fn running! ==> this function does nothing right now!! Come back if we need this!')
+    def _connect_edges_and_chambers(self):    
+        print('CONNECT_EDGES_AND_CHAMBERS fn running! ==> This function is not doing anything right now!! Come back if we need this! ')
         return 
+
+        #
+        # Leaving Off Here:: Can I just use this syntax?? self.get_chamber(edge.v1).unorderedComponent
+        #
+
+        #
+        # The prev/next pointer that pointed to the unorderedComponent didn't exactly work because it messed up a lot of the linked list traversal methods. 
+        #
         ''' 
         After finishing the map configuration which creates all of the chambers and their componentsets, 
         as well as creates each of the edges and their Components, we need to connect the last edge Component 
@@ -680,19 +686,20 @@ class Map:
         For the first edge component: set prevval to chamber v1's ComponentSet 
         For the last edge component: set nextval to chamber v2's ComponentSet
         '''
+        
         for edge in self.edges: 
 
             # chamber1 componentset .nextval --> edge .prevval  
-            edge.headval.prevval = self.get_chamber(edge.v1).headval 
-            self.get_chamber(edge.v1).headval.nextval = edge.headval.prevval 
+            # edge.headval.prevval = self.get_chamber(edge.v1).unorderedComponent # Chamber's Unordered Component will not have pointer to this interactable. 
+            edge.v1_unordered = self.get_chamber(edge.v1).unorderedComponent
 
             # chamber2 componentset .prevval --> edge .nextval 
-            component = edge.headval 
+            edge.v2_unordered = self.get_chamber(edge.v2).unorderedComponent 
+            '''component = edge.headval 
             while(component.nextval): # traverse to the last component in the edge 
                 component = component.nextval 
-            component.nextval = self.get_chamber(edge.v2).headval
-            self.get_chamber(edge.v2).headval.prevval = component.nextval 
-
+            component.nextval = self.get_chamber(edge.v2).unorderedComponent # Chamber's Unordered Component will not have pointer to this interactable. 
+            '''
 
 
     def set_dependent_interactables(self): 
@@ -914,7 +921,7 @@ class Map:
 
 
     def get_edge_chamber_path(self, start, goal): 
-        print(f'(Map, get_edge_chamber_path) args: start={start}, goal={goal}')
+        # (f'(Map, get_edge_chamber_path) args: start={start}, goal={goal}')
         '''Returns list of sequential EDGE AND CHAMBER objects that fall between the start Location and the goal location (inclusive list, so start and goal will also be apart of list)'''
 
         if start == goal: 
@@ -954,6 +961,20 @@ class Map:
         return path 
 
 
+    def get_component_path_within_edge(self, edge, start_component, goal_component): 
+        '''
+        basically just figures out if we need to reverse components on an edge or not. 
+        Using the start_component, it finds the quickest path to reach goal_compoennt
+        both components must exist on the same edge. 
+        '''
+        if start_component not in edge or goal_component not in edge: 
+            raise Exception(f'(Map.py, get_component_path_within_edge) Invalid Arguments: {start_component} and {goal_component} must be on {edge} to get a path within a single edge')
+        edge_component_list = edge.get_component_list()
+        if edge_component_list.index(start_component) > edge_component_list.index(goal_component): 
+            # reverse is true! 
+            return edge.get_component_list(reverse = True)
+        else: 
+            return edge_component_list
     def get_component_path(self, start_component, goal_component ): 
         ''' 
         arguments should be of component type 
@@ -1050,12 +1071,14 @@ class Map:
                 else: 
                     start = loc1
                     nxt_loc = loc2
+
                     if start.edge_or_chamber == 'chamber': 
                         # first location is a chamber, second location is an edge 
                         if start.id == nxt_loc.v1: 
                             reverse = False 
                         else: 
                             reverse = True 
+
                     else: 
                         # first location is an edge, second location is a chamber 
                         if nxt_loc.id == start.v2: 
@@ -1067,18 +1090,56 @@ class Map:
 
 
             # loop through the location path. At each location, retrieve the components and append to the component path 
-            # for each component on an edge, check if its interactable has already has been added to the component path. If yes, remove the existing component and replace it (at the same index) with the edge version.
-            # for each component in a chamber:check if its interactable has already been added to the component path. If yes, do not add this component. 
+            # for each component on an edge: 
+            #   edges have a simple way of figuring out how to order the components, as we will either reverse or not reverse them. 
+            #   check reversal for every edge location that we encounter. 
+            #   check if its interactable has already has been added to the component path. 
+            #   If yes, remove the existing component and replace it (at the same index) with the edge version.
+            # for each component in a chamber: 
+            #   chambers do not have a simple way of figuring out how to order the components, as we have a mix of ordered and unordered components. 
+            #   if the current chamber is coming after an edge, then check the most recently added component to see if it points us to a bridge?? 
+            #   see if we have a bridge component present to indicate the direction of components. 
+            #   if the current chamber is coming before an edge, then check to see if we have a bridge component present connecting with that edge to indicate a direction of components.
+            #       perform this check_for_bridge by examining the first and last interactable along the edge and seeing if any of them are an interactable assigned to the current chamber.
+            #       if it is, then locate this 
+            #            
+            #   If we have no bridge components with the previous or next edge, then that means we should ONLY add the chamber's UnorderedComponent to the component_path. 
+            #
+            #   check if its interactable has already been added to the component path. If yes, do not add this component. 
+
+
             for i in range(len(loc_path)): 
                 
-                loc = loc_path[i]
-                if (i+1) < (len(loc_path)-1): 
-                    reverse = checkReversal(loc, loc_path[i+1])
-                else: 
-                    # final location in the locaton path
-                    reverse = checkReversal(loc, loc_path[i-1], finalLocation = True)
-                curr_loc_components = loc.get_component_list(reverse = reverse) 
+                loc = loc_path[i] # set current location
 
+                if type(loc) is self.Edge: 
+                    if (i+1) <= (len(loc_path)-1): 
+                        reverse = checkReversal(loc, loc_path[i+1])
+                    else: 
+                        # final location in the location path
+                        reverse = checkReversal(loc, loc_path[i-1], finalLocation = True)
+                       
+                    curr_loc_components = loc.get_component_list(reverse = reverse) 
+                
+                else: 
+                    # Location is a Chamber! 
+                    # if we are on first location (i==0), then look forward to next edge to see if we can figure out a direction. 
+                    if i == 0: 
+                        # first location is a chamber. Figure out if a bridge component exists between the chamber and the next edge. 
+                        # RECURSIVE CALL 
+                        print('RECURSIVE CALL SECTION')
+                        nxt_edge = loc_path[i+1]
+                        within_chmbr_list = None
+                        for comp in nxt_edge: 
+                            if comp.interactable.edge_or_chamber == 'chamber' and comp.interactable.edge_or_chamber_id == loc.id: 
+                                within_chmbr_list = self.get_component_path(start_component, goal_component = comp)
+                                break 
+                        if within_chmbr_list is None: 
+                            # no bridge component for this edge. Only add the unordered set. 
+                            curr_loc_components = loc.unorderedComponent
+                        else: 
+                            print('\n\n(Map.py, get_component_path) RECURSIVE CALL RETURNED: ', within_chmbr_list) 
+                        
                 
                 # get the interactable version of the component path we are iterating/appending to
                 interactable_path = []
@@ -1218,7 +1279,6 @@ class Map:
             '''
             self.unorderedComponent.set_interactables(self.unorderedSet)
             self.unorderedComponent_isSet = True 
-
 
 
         def get_component_for_ordered_interactable(self, interactable): 

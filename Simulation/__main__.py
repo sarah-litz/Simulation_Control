@@ -26,6 +26,7 @@ from Simulation import modes # references Simulation/__init__ file to retrieve l
 # (TODO) Import your SimulationABC Implementations Here using the following syntax: from .Scripts.your_file_name import SimulationClassName
 from .Scripts.VoleTests import OperantMapVole
 from .Scripts.InteractableTests import LeverTests, ButtonTests, RfidSimulatedPings, DispenserTests
+from .Scripts.DynamicBoxSim import DynamicBoxSimulation
 
 
 # Helper Function for creating "checkpoints" throughout the experiments execution that wait for user input before continuing with experiment execution. 
@@ -38,23 +39,21 @@ sim_log('\n\n\n\n-----------------------------Simulation Package Started--------
 
 
 # (TODO) Instantiate the Simulation Classes that you want to run.
-operantSim = OperantMapVole( modes = modes ) # create simulation, pass list of modes as argument 
+SimulationScript = DynamicBoxSimulation( modes = modes ) # create simulation, pass list of modes as argument 
 
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-operantSim.simulation_func[ modes[0] ] = ( operantSim.chamberComponentSetTesting ) # left most chamber
-operantSim.simulation_func[ modes[1] ] = ( operantSim.voleInteractsWithDispenser ) # middle chamber
-operantSim.simulation_func[ modes[2] ] = ( operantSim.moveToChamber3 ) # right most chamber
-operantSim.simulation_func[ modes[3] ] = ( operantSim.moveToDoor1) # food_lever presses and pellet retrieval 
-operantSim.simulation_func[ modes[4] ] = ( operantSim.attemptMoveToChamber2 ) # nothing happens
+SimulationScript.simulation_func[ modes[0] ] = ( SimulationScript.vole1_AttemptMoveToChamber2 ) 
+SimulationScript.simulation_func[ modes[1] ] = ( SimulationScript.vole2_AttemptMoveToChamber2 ) 
+SimulationScript.simulation_func[ modes[2] ] = ( SimulationScript.vole1_AttemptMoveToChamber2 ) 
 
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 
 print(f'\n Double Check that the following Control/Simulation Pairings look correct...') 
 data = [ ['Control Mode', 'filepath', 'Simulation Scripts', 'filepath'] ]
 for m in modes: 
-    if m in operantSim.simulation_func.keys(): 
-        data.append( [m, ' ' + str(os.path.relpath(inspect.getfile(m.__class__))) , operantSim.simulation_func[m].__name__, ' ' + str(os.path.relpath(inspect.getfile(operantSim.__class__))) ])
+    if m in SimulationScript.simulation_func.keys(): 
+        data.append( [m, ' ' + str(os.path.relpath(inspect.getfile(m.__class__))) , SimulationScript.simulation_func[m].__name__, ' ' + str(os.path.relpath(inspect.getfile(SimulationScript.__class__))) ])
 
     else: 
         data.append( [m, 'None'] )
@@ -63,7 +62,7 @@ input_before_continue('')
 
 
 # Start Simulation 
-operantSim.run_sim() # starts running simulation in daemon thread ( this will transfer control between the simulation functions as the active control mode changes )
+SimulationScript.run_sim() # starts running simulation in daemon thread ( this will transfer control between the simulation functions as the active control mode changes )
 
 time.sleep(1) # Pause Before Starting Modes 
 

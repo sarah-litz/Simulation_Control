@@ -5,16 +5,6 @@ from ..Logging.logging_specs import sim_log
 from ..Classes.SimulationABC import SimulationABC
 
 
-# Map Instantiation 
-
-
-# Control Scripts (Modes)
-# (TODO) instantiate the modes that you want to run 
-from Control.Scripts.StaticBox import ClosedBox, OpenBox, BasicBox
-
-
-
-
 class OperantMapVole(SimulationABC): 
     
     
