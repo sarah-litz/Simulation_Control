@@ -12,6 +12,7 @@ formatter = logging.Formatter('%(asctime)s %(message)s') # To Display Level Name
 cwd = os.getcwd() 
 logging.basicConfig(filename=f'{cwd}/Logging/eventlogging.log' , level=logging.DEBUG, filemode='w'  )
 control_fp=cwd+'/Control/Logging/control.log'
+script_fp = cwd+'/Control/Logging/user_scripts.log'
 
 
 def setup_logger(name, log_file, level=logging.DEBUG):
@@ -28,6 +29,8 @@ def setup_logger(name, log_file, level=logging.DEBUG):
 
 
 control_logger = setup_logger('control_logger', control_fp, level = logging.debug)
+script_logger = setup_logger('script_logger', script_fp, level = logging.debug)
+
 
 def debug(message): 
     # this one uses the basicconfig filepath 
@@ -36,6 +39,11 @@ def debug(message):
 
 def control_log(message): 
     control_logger.debug(message)
+
+
+def script_log(message): 
+    script_logger.debug(message)
+
 
 
 

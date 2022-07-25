@@ -310,13 +310,13 @@ class Map:
         '''
         prints table to display the relationships between interactables ( parents and dependency )
         '''
-        row1 = ['Interactable', 'Requires Interaction With (Dependents)', 'Can Control (Parent)']
+        row1 = ['Interactable', 'Can Control (Parent)', 'Requires Interaction With (Dependents)']
         data = [row1]
         for i_name in self.instantiated_interactables.keys(): 
             dnames = ','.join([d.name for d in self.instantiated_interactables[i_name].dependents]) # makes list of names and converts list to string 
             pnames = ','.join([p.name for p in self.instantiated_interactables[i_name].parents]) 
-            data.append( [i_name, dnames, pnames] )
-        draw_table(data, cellwidth=50)
+            data.append( [i_name, pnames, dnames] )
+        draw_table(data, cellwidth=40)
         
 
 
@@ -659,49 +659,9 @@ class Map:
         for (cid, chamber) in self.graph.items(): 
             chamber._set_unordered_component()
 
-        print('Edges and Chambers before Setting Dependents/Parents: ')
-        self.draw_chambers()
-        self._connect_edges_and_chambers()
         self.set_dependent_interactables()
         self.set_parent_interactables() 
     
-
-    def _connect_edges_and_chambers(self):    
-        print('CONNECT_EDGES_AND_CHAMBERS fn running! ==> This function is not doing anything right now!! Come back if we need this! ')
-        return 
-
-        #
-        # Leaving Off Here:: Can I just use this syntax?? self.get_chamber(edge.v1).unorderedComponent
-        #
-
-        #
-        # The prev/next pointer that pointed to the unorderedComponent didn't exactly work because it messed up a lot of the linked list traversal methods. 
-        #
-        ''' 
-        After finishing the map configuration which creates all of the chambers and their componentsets, 
-        as well as creates each of the edges and their Components, we need to connect the last edge Component 
-        on each edge to its adjacent Chamber's ComponentSet!
-
-        for the first and last component along each edge, 
-        For the first edge component: set prevval to chamber v1's ComponentSet 
-        For the last edge component: set nextval to chamber v2's ComponentSet
-        '''
-        
-        for edge in self.edges: 
-
-            # chamber1 componentset .nextval --> edge .prevval  
-            # edge.headval.prevval = self.get_chamber(edge.v1).unorderedComponent # Chamber's Unordered Component will not have pointer to this interactable. 
-            edge.v1_unordered = self.get_chamber(edge.v1).unorderedComponent
-
-            # chamber2 componentset .prevval --> edge .nextval 
-            edge.v2_unordered = self.get_chamber(edge.v2).unorderedComponent 
-            '''component = edge.headval 
-            while(component.nextval): # traverse to the last component in the edge 
-                component = component.nextval 
-            component.nextval = self.get_chamber(edge.v2).unorderedComponent # Chamber's Unordered Component will not have pointer to this interactable. 
-            '''
-
-
     def set_dependent_interactables(self): 
 
         # if an interactable specified a "dependent" in its configuration file, then it gets an attribute "dependent_names" which serves as a string representation of the interactable
@@ -1358,9 +1318,8 @@ class Map:
             else: 
                 self.edgeReferences[edge] = [interactable]
 
-            print('Unordered Set: ', [i.name for i in self.unorderedSet])
-            print('Ordered Set', [i.name for i in self.orderedSet])
-            
+            # print('Unordered Set: ', [i.name for i in self.unorderedSet])
+            # print('Ordered Set', [i.name for i in self.orderedSet])    
             #for (k,v) in self.edgeReferences.items():
             #    print(f'Edge{k.id}->Chamber{self.id} References: {k} ---> {[i.name for i in v]}')
 

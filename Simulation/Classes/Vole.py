@@ -248,11 +248,12 @@ class Vole:
         vole_log(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
 
         location_visual = self.map.draw_location(location = self.curr_loc, voles = [self])
+        print('\n')
         vole_log(location_visual)
 
         #
         # BIG CHANGE HERE! LEAVING OFF HERE! MAKE SURE THIS IS OK!
-        # This is the Vole PASSING prev_component, meaning that we should reset its threshold to True so watch_for_threshold_event begins looping again to look for more threshold events. 
+        # This is the Vole PASSING prev_component, meaning that we should reset its threshold to False so watch_for_threshold_event begins looping again to look for more threshold events. 
         if self.prev_component is not None: 
             if type(self.prev_component) is self.map.Chamber.ComponentSet: 
                 # reset all interactables in the Unordered Set to have a False threshold 
