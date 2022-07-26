@@ -19,15 +19,6 @@ For example, within a door's open() function we write:
     else: 
         # door hardware is present, continue with normal execution...
 
-#### Dependents Loop
-
-    class interactableABC
-        def dependents_loop() 
-If an interactable has any dependents, then there must be a method dependents_loop defined in that interactable's class (overrides the interactableABC method). This method should do the following things:
-
-- set the interactables isIndependent attribute to True (results in the simulation side not directly setting this interactable's attribute to its goal_value, as this should instead be triggered by the interactable's dependents)
-- define how the interactable handles/interacts with its dependents.
-
 ## Map
 
 ## ModeABC

@@ -24,7 +24,7 @@ class SimulationABC:
 
     def __init__(self, modes): 
         
-        print(f'New Simulation Created: {self}')
+        print(f'\nSimulation Created: {self}')
 
         self.voles = []
         

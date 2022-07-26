@@ -22,13 +22,10 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 
 The terms specified below are 4 attributes assigned to every Interactable that classifies an interactables behavior. The attributes "dependents" and "parents" are lists that get added based on the information provided in map.json. The attributes "barrier" and "autonomous" are booleans that default to Fales, but can/should be specified as True for specific interactables when it applies.
 
-**dependents**
-: list containing the "child" interactables belonging to the current interactable. Dependents are specified in a particular object's configuration dictionary within the "dependents" field. The example below would be found in the configuration file door.json. Here, we have assigned 1 dependent to door1 called lever_door1. We assigned lever_door1 as a dependent to door1 because a vole does not go up to a door and open it itself. Rather, the door1 movement is *dependent* on lever_door1. The vole will need to press lever_door1 some number of times in order to have the effect of opening door1.
 
-    If an interactable has dependents assigned to it, all of its dependents must have already met their thresholds before the parent interactable can meet its own threshold. i.e. An interactable's dependents list should contain other interactables in the map that they depend on. 
 
 **parents** 
-: list containing the "parent" interactables belonging to the current interactable. Parents are the interacatables that the current interactable can control. If an interactable has no parent, then we have reached the "top" of this dependency chain. 
+: list containing the "parent" interactables belonging to the current interactable. Parents are the interacatables that the current interactable can control. If an interactable has no parent, then we have reached the "top" of this dependency chain.
 
 ~~~json 
 {
@@ -36,7 +33,7 @@ The terms specified below are 4 attributes assigned to every Interactable that c
     {
         "id":1, 
         "threshold_condition": { "attribute":"isOpen", "initial_value": null, "goal_value": true },
-        "dependents": ["lever_door1"] 
+        "parents": [] 
     } 
 }
 ~~~
@@ -47,16 +44,13 @@ The terms specified below are 4 attributes assigned to every Interactable that c
         "threshold_condition": { 
             "attribute": "pressed", 
             "initial_value":0, "goal_value": 4,
-            "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))"
+            "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))", 
+            "parents": ["door1"]
         }    
     }
 ~~~
 
     As we can see, the threshold condition for lever_door1 has an attribute "onThreshold_callback_fn" which gets called when lever_door1 meets its threshold_condition. We can see, that this onThreshold_callback_fn is further defining the lever's relationship with its parent interactable, door1, by specifying the callback function that calls open() on door1. 
-
-
-**parents** (list)
-: if an interactable is a dependent for another, then the object that it is a dependent for is placed in this list
 
 **barrier** (boolean)
 : defaults to False. Set to True if the interactable is a barrier to a voles movements. (This is set to True for Doors, since each time a vole passes a Door we need to check that the door is Open.)

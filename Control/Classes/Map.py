@@ -12,14 +12,10 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 
 
 # Standard Lib Imports 
-from code import interact
 from collections import deque
-import re
-from this import d
 import time
 import json 
 import os
-from tkinter import E
 
 # Local Imports 
 from .Timer import draw_table
@@ -310,12 +306,12 @@ class Map:
         '''
         prints table to display the relationships between interactables ( parents and dependency )
         '''
-        row1 = ['Interactable', 'Can Control (Parent)', 'Requires Interaction With (Dependents)']
+        row1 = ['Interactable', 'Can Control (Parent)']
         data = [row1]
         for i_name in self.instantiated_interactables.keys(): 
-            dnames = ','.join([d.name for d in self.instantiated_interactables[i_name].dependents]) # makes list of names and converts list to string 
+            # dnames = ','.join([d.name for d in self.instantiated_interactables[i_name].dependents]) # makes list of names and converts list to string 
             pnames = ','.join([p.name for p in self.instantiated_interactables[i_name].parents]) 
-            data.append( [i_name, pnames, dnames] )
+            data.append( [i_name, pnames] )
         draw_table(data, cellwidth=40)
         
 
@@ -401,8 +397,9 @@ class Map:
         # dynamically set any attributes that can be optionally added to an interactable's configurations
         if "check_threshold_with_fn" in objspec['threshold_condition'].keys(): 
             setattr(new_obj, 'check_threshold_with_fn', eval(objspec['threshold_condition']['check_threshold_with_fn']) ) # function for checking if the threshold condition has been met
-        if "dependents" in objspec.keys(): 
-            setattr( new_obj, 'dependent_names', objspec['dependents'] ) # interactable that the threshold is dependent on. Prevents a vole from directly interacting with the interactable, as the presence of any dependents specifies that the vole must directly interact with the dependents to trigger a threshold event.
+        # FISH --> delete once i confirm its ok to delete all dependents stuff!
+        # if "dependents" in objspec.keys(): 
+        #     setattr( new_obj, 'dependent_names', objspec['dependents'] ) # interactable that the threshold is dependent on. Prevents a vole from directly interacting with the interactable, as the presence of any dependents specifies that the vole must directly interact with the dependents to trigger a threshold event.
         if "parents" in objspec.keys(): 
             setattr( new_obj, 'parent_names', objspec['parents']) # interactables can call functions to control their parent behavior (e.g. if we want lever1 to control door1, then add door1 as lever1's parent )
         
@@ -457,7 +454,7 @@ class Map:
         '''loop thru the edges chmbr_interactable_lst and return True if the ordering of the references reflects the ordering provided in the chamber config''' 
 
         control_log(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
-        print(f'\n(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
+        print(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
 
         ## Before Adding Edge Components, Perform a One Time Check to Validate the Chamber Interactables That Are Optionally Specified on the Edge:      
             # argument is entire dictionary of edge components provided in the configuration file 
@@ -571,7 +568,7 @@ class Map:
         f.close() 
 
         # Iterate thru to chambers list to initalize the diff chambers and their interactables 
-        print('\n\nAdding Interactables To Chambers....')
+        print('Adding Interactables To Chambers....')
         for chmbr in data['chambers']: 
             
             # instantiate new chamber 
@@ -593,7 +590,7 @@ class Map:
                     if ans == 'n': exit() '''
         
         # Iterate thru edges list to make connections between the chambers 
-        print('\n\nAdding Interactabes to Edges.....')
+        print('Adding Interactabes to Edges.....')
         for edge in data['edges']: 
 
             if edge['type'] == 'shared': 
@@ -659,33 +656,9 @@ class Map:
         for (cid, chamber) in self.graph.items(): 
             chamber._set_unordered_component()
 
-        self.set_dependent_interactables()
+        # FISH)) DELETE ME)) self.set_dependent_interactables()
         self.set_parent_interactables() 
     
-    def set_dependent_interactables(self): 
-
-        # if an interactable specified a "dependent" in its configuration file, then it gets an attribute "dependent_names" which serves as a string representation of the interactable
-        # after all objects have been instantiated, we now want to assign the actual interactable objects rather than just their string representation
-
-        # loop thru all instantiated interactables and check for the attribute dependent_name 
-        for i_name in self.instantiated_interactables:
-            i = self.instantiated_interactables[i_name]
-            if hasattr(i, 'dependent_names'): 
-                # has dependents we need to add 
-                for dname in i.dependent_names:
-                    try: 
-                        i.dependents.append(self.instantiated_interactables[dname]) # assign parent its new dependent 
-                        # self.instantiated_interactables[dname].parents.append(i) # assign dependent its new parent
-
-                    except KeyError as e: 
-                        print(e)
-                        print(f' specified an unknown interactable {e} as a dependent for {i.name}. Double check the config files for {e} and for {i.name} to ensure they are correct, and ensure that {e} was added in the map config file as well.')
-                        ans = input(f' would you like to carry on the experiment without adding {e} as a dependent for {i.name}? (y/n)')
-                        if ans == 'n': exit()
-
-                
-                delattr(i, 'dependent_names')  # delete the dependent_names attribute since we don't need it anymore 
-
     def set_parent_interactables(self): 
         
         # if an interactable specified a "parent" in its configuration file, then it gets an attribute "parent_names" which serves as a string representation of the interactable

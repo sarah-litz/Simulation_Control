@@ -109,17 +109,17 @@
 
         The final functionality of this button, as defined by the threshold_condition, is whenever this button gets pressed, door1 will stop anything else that it is doing ( as defined by the override() function ), and immediately open. 
 
-3. **"hardware_specs"** is defining specifications for setting up a Button object. As we can see here, buttonInteractables do not need a Servo object to operate, so we only need to define the attributes for a Button object. 
+3. **"hardware_specs"** is defining specifications for setting up a Button object. As we can see here, buttonInteractables do not need a Servo object to operate, so we only need to define the attributes for a Button object.
 
-## door ## 
+## door ##
 
-### description ### 
+### description ###
 
-    doors are the doors in the box! Through the door configurations, we can allow for a large variety of door behaviors by altering a doors dependents.
-    By changing a doors dependents, we are changing what interactables have access to control the doors functionality. 
+    Doors are the doors in the box! Through the door configurations, we can allow for a large variety of door behaviors by altering which other interactables contain the door as their parent. 
+    By changing a doors parents, we are changing what interactables have access to control the doors functionality. 
 
-    If we want a door to sit idle for an experiment, we have 2 options that will both have the same effect: (1) we can get rid of certain (or all) dependents so nothing will trigger a change in the doors state. (2) from our experiment script, during mode setup, we can deactive the door so it will not be able to move until it gets reactivated. 
-    Each of these options has pros and cons. If we choose option #1, then we can get rid of certain dependents like a lever that opens the door, but leave the override buttons to allow for human control still. The con of this option is that once we change the configuration file, all of the modes that we are running will read in this same configuration file, so all of the modes will not have a lever that allows a vole to control the door, unless we manually add in this dependent at the start of each new mode script. 
+    If we want a door to sit idle for an experiment, we have 2 options that will both have the same effect: (1) we can get rid of certain (or all) interactables that control the door (referenced using teh parent attribute) so nothing will trigger a change in the doors state. (2) from our experiment script, during mode setup, we can deactive the door so it will not be able to move until it gets reactivated. 
+    Each of these options has pros and cons. If we choose option #1, then we can get rid of specific interactable's ability to open a door. For example, a lever would no longer open the door, but we could leave the override buttons to allow for human control still. The con of this option is that once we change the configuration file, all of the modes that we are running will read in this same configuration file, so all of the modes will not have a lever that allows a vole to control the door, unless we manually add in this dependent at the start of each new mode script. 
     If we choose option #2, there is much more flexibiltiy in how long the door sits in its idle state for, because we can just reactivate/deactivate a door as needed from our mode scripts. 
 
 ### configurations ### 

@@ -12,9 +12,9 @@
 2. simulate_vole_interactable_interaction : None 
 
     **i.** first calls methods and makes checks to ensure that simulating this interaction is valid.
-    - Dependent Check = does the interactable have dependents? (Vole does not simulate an interaction with an interactable that has dependents, as the vole needs to interact with the dependents in order to get the interactable's threshold set to True)
     - Active Check = is the designated interactable actively running? 
     - Physical Proximity Check = is the vole standing in front of the interactable? (calls the method at_location_of)
+    - Dependency Chain Check = Can simulate any non-barrier interactable. If the interactable is a barrier, can simulate if and only if that interactable is Autonomous.
 
     **ii.** Simulation (if interactable.isSimulation is True) Peforms a simulated interaction between a vole and a designated interactable
     - simulates by calling function specified by 'simulate_with_fn', *or* simulates by setting the threshold attribute to its goal value 

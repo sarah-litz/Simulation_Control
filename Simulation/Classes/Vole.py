@@ -37,7 +37,6 @@ class Vole:
 
         ## Vole Location Information ## 
         self.curr_loc = self.map.get_chamber(start_chamber)
-        print('start location is: ', self.curr_loc)
         self.prev_loc = None # object representing the voles previous location.
 
         # starting position between interactables is between chamber edge or wall and the first interactable in the chamber, if it exists
@@ -48,7 +47,7 @@ class Vole:
         try: self.curr_component = self.curr_loc.unorderedComponent # current interactable the vole is closest to ( when in a chamber, this can be a list of Unordered interactables! Vole is free to simulate with any of them )
         except AttributeError: self.curr_component = None # (interactable1, interactable2)
 
-        print(f'VOLE {self.tag} STARTING POSITION BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
+        print(f'VOLE {self.tag} STARTING IN {self.curr_loc.edge_or_chamber}{self.curr_loc.id}, POSITIONED BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
         vole_log(f'VOLE {self.tag} STARTING POSITION BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
 
 
@@ -56,16 +55,6 @@ class Vole:
     ## Simulating Interactable thru setting attribute value or thru function call
     ##
 
-
-
-
-
-    def pre_simulation_error_checks(self, interactable): 
-        ''' checks for a bunch of edge cases to ensure that the called simulation is valid '''
-    def simulate_autonomous_interactable(self, interactable): 
-        ''' really this just applies to rfids at the moment. '''
-        ''' any interactable that is classified as a Barrier interactable AND has no dependents is considered to be autonomous, and can be simulated by this quicker function. (skips all of the dependent loops and things) '''
-     
 
     def at_location_of(self, interactable): 
         ''' 
@@ -136,12 +125,13 @@ class Vole:
                 sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is a barrier and not autonomous. Interactables of this type do not allow for direct vole interactions. Vole must attempt simulating with {interactable.name} controllers ( interactables who have {interactable.name} as a parent )')
                 return 
 
+        ''' (FISH --> Delete once I confirm i don't need dependents attribute!)
         if len(interactable.dependents) > 0: 
             # a fully independent interacable means that it is dependent on the values of its dependents and independent of a vole's actions
             # i.e. it is pointless for the vole to interact directly with it. So return. (Doesn't mean we won't interact and simulate w/ its dependents tho)
             print(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} isDependent on dependents, not on a vole interaction.')
             sim_log(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} isDependent on dependents, not on a vole interaction.')
-            return 
+            return '''
 
 
 
@@ -572,15 +562,15 @@ class Vole:
 
 
         # false threshold, has dependents
-        if len(curr_interactable.dependents) > 0: # cannot simulate if dependent interactions are required first
+        '''if len(curr_interactable.dependents) > 0: # cannot simulate if dependent interactions are required first
             # component requires dependent interaction in order to get threshold to become True. This would require other movements, so exiting from this request 
             print(f'(Simulation/Vole{self.tag}, move_next_component) Movement from {self.curr_component}->{goal_component} cannot be completed because {self.curr_component} threshold is False, and would require interactions with its dependents in order to pass.')
-            return False 
+            return False '''
 
         # false threshold, not autonomous
-        elif not curr_interactable.autonomous: # cannot simulate if not autonomous 
+        if not curr_interactable.autonomous: # cannot simulate if not autonomous 
             # DOORs without dependents will fall into this, as they are a barrier and not autonomous, meaning they must be controlled by something else. 
-            print(f'(Simulation/Vole{self.tag}, move_next_component) Movement from {self.curr_component}->{goal_component} cannot be completed because {self.curr_component} has no dependents that were set to control it, and it is not an autonomous interactable so requires dependents to operate it.')
+            print(f'(Simulation/Vole{self.tag}, move_next_component) Movement from {self.curr_component}->{goal_component} cannot be completed because {self.curr_component} it is a barrier but not autonomous, so requires an interaction with its child interactables to operate it.')
             return False 
         
 
@@ -730,15 +720,16 @@ class Vole:
                 #
                 interactable = component.interactable
                 if not interactable.autonomous:
+                    '''FISH FISH
                     for dependent in interactable.dependents:
                         if dependent.threshold is False: 
-                            self.simulate_vole_interactable_interaction(dependent)
+                            self.simulate_vole_interactable_interaction(dependent)'''
                     
 
                     # # # Double Check This!!! # # # 
                     # # # Dependency Chain # # # 
-                    # If the component has no dependents and IS a dependent for a parent component (i.e., has at least one parent), then simulate. 
-                    if len(interactable.dependents) == 0 and len(interactable.parents) > 0: self.simulate_vole_interactable_interaction(interactable) # function call which simulates interaction thru function call or changing vals of specified attributes
+                    # If the component has control of some parent component (i.e., has at least one parent that is dependent on this interactable's value), then simulate. 
+                    if len(interactable.parents) > 0: self.simulate_vole_interactable_interaction(interactable) # function call which simulates interaction thru function call or changing vals of specified attributes
                     # # # # # # 
 
 

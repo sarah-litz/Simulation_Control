@@ -60,7 +60,7 @@ class interactableABC:
         self.threshold_event_queue = queue.Queue() # queue for tracking anytime a threshold condition is met 
 
         ## Dependency Chain Information ## 
-        self.dependents = [] # if an interactable is dependent on another one, then we can place those objects in this list. example, door's may have a dependent of 1 or more levers that control the door movements. These are interactables that are dependent on a vole's actions! 
+        # self.dependents = [] # if an interactable is dependent on another one, then we can place those objects in this list. example, door's may have a dependent of 1 or more levers that control the door movements. These are interactables that are dependent on a vole's actions! 
         self.parents = [] # if an interactable is a dependent for another, then the object that it is a dependent for is placed in this list. 
         self.barrier = False # set to True if the interactable acts like a barrier to a vole, meaning we require a vole interaction of somesort everytime a vole passes by this interactable. 
         self.autonomous = False # set to True if it is not dependent on other interactables OR on vole interactions (i.e. this will be True for RFIDs only )
@@ -288,7 +288,7 @@ class interactableABC:
         self.threshold = False # "resets" the interactable's threshold value so it'll check for a new threshold occurence
         self.active = True 
         self.watch_for_threshold_event() # begins continuous thread for monitoring for a threshold event
-        self.dependents_loop() 
+        # self.dependents_loop() 
         
 
     def deactivate(self): 
@@ -319,16 +319,6 @@ class interactableABC:
         raise Exception(f'must override add_new_threshold_event in class definition for {self.name}')
         self.threshold_event_queue.put()
 
-
-    def dependents_loop(self): 
-        ## DEPENDENTS LOOP ## 
-        ''' if interactable has dependents, then we can trigger a threshold event to occur for the interactable iff all of its dependents are true.'''
-
-        if len(self.dependents)>0: 
-            raise Exception(f'must override dependents_loop with logic for the cause/effect of an interactables dependents')
-        
-        else: 
-            return # don't need to run this function for interactable w/out dependents 
 
     @run_in_thread
     def watch_for_threshold_event(self): 
@@ -382,7 +372,9 @@ class interactableABC:
                     control_log(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
 
 
-
+                    '''
+                    FISH
+                    DELETE ME EVENTUALLY:: leaving this here to confirm that it rlly isn't needed. ( Part of process of deleting things having to do with dependents. )
                     if len(self.dependents) > 0: 
                         # sleep while dependents (if they exist) remain in goal state, meaning current interactable is also in its goal state.
                         # because interactable is not dependent on vole's actions, we can assume that it could potentially be sitting in its goal state for extended periods of time. 
@@ -391,7 +383,7 @@ class interactableABC:
                         while attribute == self.threshold_condition['goal_value'] and self.threshold == True: 
 
                             time.sleep(1) # wait for change in threshold or a change in the attribute's value to differ away from goal_value 
-
+                    '''
                     
                     # Since an event occurred, check if we should reset the attribute value to its inital value
                     ''' 
@@ -421,13 +413,7 @@ class interactableABC:
                         # wait for a change in the attribute value before starting to look for an event again #
                         
                         if attribute != self.threshold_condition['goal_value']: 
-                            # ISSUE 
-                            # when self.threshold = False is uncommented, simulation movement from to pass rfid does not work. 
-                            # When we comment out, then simulation movement from rfid->door does work. 
-                            # INTERACTABLE.THRESHOLD GETS SET TO FALSE IN 2 PLACES: 
-                            #   1. If the interactable is a dependent for another interactable, then the dependents loop resets it 
-                            #   2. Otherwise, the simulation software, Vole.py, resets it to False?? Does this make sense?! 
-                            # self.threshold = False # not in the threshold goal state anymore, so set threshold to False
+                            # Note: do not set interactable.threshold to False here! Threshold attribute is specifically for communication with Simulation. So the Simualtion is in charge of resetting the threshold value to false. ( we do so in update_location when a vole passes by an interactable. )
                             event_bool = False # reset event bool so we exit loop
                         
                         else: 
@@ -721,67 +707,12 @@ class door(interactableABC):
         return run 
 
 
-
-    @run_in_thread
-    def dependents_loop(self): 
-
-        ## Logic for How To Handle Door's Dependent(s) ## 
-
-        # if any one of door's dependents (i.e. one of the levers that is listed as its dependent) meets its threshold, then go ahead and 
-        # meet the door's threshold goal by opening or closing the door 
-
-        #
-        # LEAVING OFF HERE!!!!! 
-        # DOORS DONT WORK CORRECTLY IF THEY DONT HAVE A DEPENDENT!!!! 
-        # need to add something to the dependents loop that accounts for this.
-        #
-        if len(self.dependents) < 1: # No Dependents. 
-
-            return 
-
-        while self.active: 
-
-            for dependent in self.dependents: 
-
-                if dependent.threshold == True: 
-
-                    dependent.threshold = False # reset now that we have triggered an event occurrence
-
-                    # check self's threshold goal 
-                '''if self.threshold_condition['goal_value'] == True: 
-
-                        self.open() 
-
-                    elif self.threshold_condition['goal_value'] == False: 
-
-                        self.close() 
-                    
-                    else: 
-
-                        raise Exception(f'(Door, dependents_loop) did not recognize {self.name} threshold_condition[goal_value] of {self.threshold_condition["goal_value"]}')
-                    '''
-
-
-
     def add_new_threshold_event(self): 
         # appends to the threshold event queue 
         self.threshold_event_queue.put(f'{self.name} isOpen:{self.isOpen}')
         print("Door Threshold: ", self.threshold, "  Door Threshold Condition: ", self.threshold_condition)
         print(f'(Door(InteractableABC.py, add_new_threshold_event) {self.name} event queue: {list(self.threshold_event_queue.queue)}')
            
-
-        # (NOTE) if you don't want this component to be checking for a threhsold value the entire time, then deactivate here and re-activate when a new mode starts 
-        #    self.deactivate() # Since door will just sit in the goal_state, we only care to start checking again for a threshold event when it is opposite of whatever its goal_state is to ensure we only count one threshold eent per open/close.
-        
-        #    (NOTE TO SELF) thinking I don't actually need to deactivate?? Cause shouldn't a door threshold only occur if the lever.pressed==goal_value? And we are resetting the lever.pressed immediately after it reaches the goal value. 
-        #                   except in the scenario of an open cage where the lever is inactive, then the door rlly isnt dependent on the lever in this round. 
-        #                   so rlly we shouldn't leave an interactable dependent on some value of their dependent, because their dependents can change and become inactive. 
-        #                   so door needs to independently have a way of only adding one event to its threshold event queue that doesn't rely on anythign else, even its own dependent. 
-
-        # if door ever goes back to the state that is opposite than that of its goal_state, then we should reactivate it with a call to activate() 
-        # maybe we can have this check w/in the open/close functions?? Or we could put w/in the isOpen() check?? 
-
-
     #@threader
     def close(self):
         """This function closes the doors fully"""
@@ -1078,10 +1009,6 @@ class dispenser(interactableABC):
             control_log(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
             print(f'(InteratableABC.py, {self}, add_new_threshold_event)not monitoring for retrieval at the moment')
             return
-
-    def dependents_loop(self):
-        print('COME BACK (TODO) --> idk if i need the dependents loop to be a required override method at this point. Door is the only one using it and not sure it actually does anything.')
-        return 
         
     def start(self): 
         self.servoObj.servo.throttle = self.dispense_speed 
