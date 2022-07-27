@@ -241,17 +241,20 @@ class Vole:
         print('\n')
         vole_log(location_visual)
 
-        #
+        # 
+        # LEAVING OFF HERE 
+        # FISH FISH FISH 
         # BIG CHANGE HERE! LEAVING OFF HERE! MAKE SURE THIS IS OK!
         # This is the Vole PASSING prev_component, meaning that we should reset its threshold to False so watch_for_threshold_event begins looping again to look for more threshold events. 
-        if self.prev_component is not None: 
+        '''if self.prev_component is not None: 
             if type(self.prev_component) is self.map.Chamber.ComponentSet: 
                 # reset all interactables in the Unordered Set to have a False threshold 
                 for i in self.prev_component.interactableSet: 
-                    i.threshold = False 
+                    #i.threshold = False 
+                    pass
             else: 
-                self.prev_component.interactable.threshold = False # threshold back to False now that we used the threshold for a vole to pass! 
-            
+                #self.prev_component.interactable.threshold = False # threshold back to False now that we used the threshold for a vole to pass! 
+                pass'''
     
     def move_to_interactable(self, goal_interactable): 
         '''

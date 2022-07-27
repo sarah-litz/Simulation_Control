@@ -397,6 +397,7 @@ class interactableABC:
                     else:''' 
                     # if we are not resetting the value, then to ensure that we don't endlessly count threshold_events
                     # we want to wait for some kind of state change ( a change in its attribute value ) before again tracking a threshold event 
+                    
                     #
                     # Sleep To Avoid Double Counting Threshold Events!
                     #
@@ -411,10 +412,24 @@ class interactableABC:
                             attribute = getattr(self, threshold_attr_name) # necessary for lever_food w/ dispenser as its parent
 
                         # wait for a change in the attribute value before starting to look for an event again #
-                        
                         if attribute != self.threshold_condition['goal_value']: 
-                            # Note: do not set interactable.threshold to False here! Threshold attribute is specifically for communication with Simulation. So the Simualtion is in charge of resetting the threshold value to false. ( we do so in update_location when a vole passes by an interactable. )
+                            # Note: do not set interactable.threshold to False here! Threshold attribute is specifically for communication with Simulation. So the Simulation is in charge of resetting the threshold value to false. ( we do so in update_location when a vole passes by an interactable. )
                             event_bool = False # reset event bool so we exit loop
+                            self.threshold = False # BIG CHANGE!!! FISH
+
+                        # 2nd reason to start looking for an event: if the threshold_event_queue is emptied, meaning a Control side script used some threshold event in its logic
+                        elif len(self.threshold_event_queue.queue) == 0: # isEmpty! 
+                            event_bool = False # reset event bool so we exit loop 
+
+                        # 3rd reason to start looking for an event: if the threshold has been set to False, but the attribute still == self.threshold_condition['goal_value'], 
+                        # meaning we successfully communicated to a vole that there was a threshold reached, and because the vole passed by this interactable it set the threshold to False 
+                        # when it passed by the interactable. 
+                        #
+                        # LEAVING OFF HERE::: THIS SEEMS ODD 
+                        #
+                        # i still don't love that we set the threshold to false when we pass by it! 
+                        #
+
                         
                         else: 
 

@@ -168,6 +168,18 @@ class ReactiveBox(modeABC):
                     for r in rfid_list: 
 
                         if len(r.threshold_event_queue.queue) > 0: 
+                            
+                            
+                            def retrieve_queue_contents(q):
+
+                                ''' only remove from the queue if all three queues have an item that we can remove '''
+                                # if len(q1.queue) > 0 and len(q2.queue) > 0 and len(q3.queue) > 0:
+                                #    return ( q1.get_nowait(), q2.get_nowait(), q3.get_nowait() )
+                                
+                                # else: return  
+
+                                try: print('FOUND: ', q.get_nowait())
+                                except queue.Empty: raise Exception(f'Odd discrepency?? Queue contents: {list(q.queue)}')
 
                             # event! 
                             if r.ID < 3: 
@@ -182,10 +194,11 @@ class ReactiveBox(modeABC):
                                         door1.close() 
 
                                         # Remove the threshold events so we don't count it twice 
-                                        rfid1.threshold_event_queue.get()
-                                        door1.threshold_event_queue.get() 
-                                        rfid2.threshold_event_queue.get() 
-                                
+                                        retrieve_queue_contents(rfid1.threshold_event_queue) # , door1.threshold_event_queue, rfid2.threshold_event_queue)
+                                        retrieve_queue_contents(door1.threshold_event_queue)
+                                        retrieve_queue_contents(rfid2.threshold_event_queue)
+                                        break; 
+
                                 else: 
                                     # At Door 1 
                                     # Vole passed rfid2. Check rfid1 for a threshold event 
@@ -195,10 +208,10 @@ class ReactiveBox(modeABC):
                                         door1.close() 
 
                                         # Remove the threshold events so we don't count it twice 
-                                        rfid1.threshold_event_queue.get()
-                                        door1.threshold_event_queue.get() 
-                                        rfid2.threshold_event_queue.get() 
-
+                                        retrieve_queue_contents(rfid2.threshold_event_queue)
+                                        retrieve_queue_contents(door1.threshold_event_queue)
+                                        retrieve_queue_contents(rfid1.threshold_event_queue)
+                                        break; 
                             
                             else: # rfid ID is either 3 or 4, meaning we are watching for the vole to pass thru door2
 
@@ -213,9 +226,10 @@ class ReactiveBox(modeABC):
                                         door2.close() 
 
                                         # Remove the threshold events so we don't count it twice 
-                                        rfid3.threshold_event_queue.get()
-                                        door2.threshold_event_queue.get() 
-                                        rfid4.threshold_event_queue.get()     
+                                        retrieve_queue_contents(rfid3.threshold_event_queue)
+                                        retrieve_queue_contents(door2.threshold_event_queue)
+                                        retrieve_queue_contents(rfid4.threshold_event_queue)
+                                        break; 
                                 else: 
 
                                     # vole already passed rfid4, so check rfid3 for threshold event 
@@ -226,9 +240,10 @@ class ReactiveBox(modeABC):
                                         door2.close() 
 
                                         # Remove the threshold events so we don't count it twice 
-                                        rfid4.threshold_event_queue.get()
-                                        door2.threshold_event_queue.get() 
-                                        rfid3.threshold_event_queue.get()  
+                                        retrieve_queue_contents(rfid4.threshold_event_queue)
+                                        retrieve_queue_contents(door2.threshold_event_queue)
+                                        retrieve_queue_contents(rfid3.threshold_event_queue)
+                                        break; 
                                 
 
                                 # LEAVING OFF HERE!!! # 
