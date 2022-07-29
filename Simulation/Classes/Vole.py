@@ -620,6 +620,10 @@ class Vole:
         print(f'(Vole{self.tag}, attempt_move) Attempting move from {self.curr_loc.edge_or_chamber}{self.curr_loc.id} -> Chamber{destination}.')
         vole_log(f'(Vole{self.tag}, attempt_move) Attempting move from {self.curr_loc.edge_or_chamber}{self.curr_loc.id} -> Chamber{destination}.')
 
+        if self.curr_loc == destination: 
+            print(f'(Vole{self.tag}, attempt_move) Start Location and Goal Location are the same. ( {self.curr_loc.edge_or_chamber}{self.curr_loc.id} -> Chamber{destination} ).')
+            vole_log(f'(Vole{self.tag}, attempt_move) Start Location and Goal Location are the same. ( {self.curr_loc.edge_or_chamber}{self.curr_loc.id} -> Chamber{destination} ).')
+        
         if validity_check: 
 
             if not self.is_move_valid(destination): 

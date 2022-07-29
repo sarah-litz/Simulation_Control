@@ -17,7 +17,53 @@ class OperantMapVole(SimulationABC):
     def __str__(self): 
 
         return 'OperantMapVole'
-   
+
+    def testing_get_component_path(self): 
+        
+        # Interactables
+        lever_door1 = self.map.instantiated_interactables['lever_door1']
+        lever_door2 = self.map.instantiated_interactables['lever_door2']
+        door1 = self.map.instantiated_interactables['door1']
+        rfid2 = self.map.instantiated_interactables['rfid2']
+        door2 = self.map.instantiated_interactables['door2']
+        rfid1 = self.map.instantiated_interactables['rfid1']
+        rfid3 = self.map.instantiated_interactables['rfid3']
+        
+        # Components
+        ldc2 = self.map.get_location_object(lever_door2).get_component_from_interactable(lever_door2)
+        ldc1 = self.map.get_location_object(lever_door1).get_component_from_interactable(lever_door1)
+        dc1 = self.map.get_location_object(door1).get_component_from_interactable(door1)
+        rc2 = self.map.get_location_object(rfid2).get_component_from_interactable(rfid2)
+        rc3 = self.map.get_location_object(rfid3).get_component_from_interactable(rfid3)
+        rc1 = self.map.get_location_object(rfid1).get_component_from_interactable(rfid1)
+
+        # Tests
+        print('\n\n rfid 1 -> rfid 3')
+        result = self.map.get_component_path(rc1, rc3)
+        print('RFID1 -> RFID3 RESULT: ', *(str(r) for r in result))
+
+
+        print('\n\nlever door 2 -> lever door 1 ')
+        result = self.map.get_component_path(ldc2, ldc1)
+        print('LEVERDOOR2->LEVERDOOR1 RESULT: ', *(str(r) for r in result))
+
+
+        print('\n\nlever door 1 -> door 1')
+        result = self.map.get_component_path(ldc1, dc1)
+        print('LEVERDOOR1 -> DOOR1 RESULT: ', *(str(r) for r in result))
+
+        print('\n\n lever door 1 -> rfid 2')
+        result = self.map.get_component_path(ldc1, rc2)
+        print('LEVERDOOR1 -> RFID2 RESULT: ', *(str(r) for r in result))
+
+        print('\n\nlever door 2 -> door 1')
+        result = self.map.get_component_path(ldc2, dc1)
+        print('LEVERDOOR2 -> DOOR1', *(str(r) for r in result))
+
+        return 
+
+        
+          
     def chamberComponentSetTesting(self): 
         
         

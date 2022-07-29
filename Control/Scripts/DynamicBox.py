@@ -1,6 +1,8 @@
 import time 
 import queue
 
+from Control.Classes.InteractableABC import rfid
+
 from ..Classes.Timer import countdown
 from ..Classes.Map import Map
 from ..Classes.ModeABC import modeABC
@@ -158,12 +160,56 @@ class ReactiveBox(modeABC):
                     lever_list.remove(l)
         
             
-        for d in door_list: 
-                
-                if len(d.threshold_event_queue.queue) > 0: # a door is open!
+            for d in door_list: 
+                    
+                if d.isOpen: # a door is open!
 
                     # Wait for a vole to pass thru this door! ( perform rfid checks )
 
+                    # grab the rfids that exist on the same edge as the current door. Check them both to see if they both are pinged, meaning a vole passed by them both
+                    e = self.map.get_location_object(d) # gets the edge that the chamber is on 
+                    doors_rfids = [] 
+                    for c in e: 
+                        if type(c) is self.map.Edge.Component: 
+                            if type(c.interactable) is rfid: 
+                                doors_rfids.append(c.interactable)
+                    
+
+                    vole_passed = False 
+                    while self.active and vole_passed is False: 
+                        for r in doors_rfids: 
+
+                            # if ALL rfids have recorded at least one new ping, then we can assume the vole passed thru the door. 
+                            if len(r.threshold_event_queue.queue) > 0: 
+
+                                vole_passed = True 
+                            
+                            else: 
+
+                                vole_passed = False 
+                        
+                        if vole_passed: 
+
+                            # Vole passed through the door 
+                            script_log(f'Vole passed through {d}! Closing {d}.')
+                            print(f'Vole passed through {d}! Closing {d}.')
+
+                            d.close() 
+
+                            # retrieve the rfid pings 
+                            for r in doors_rfids: 
+
+                                r.threshold_event_queue.get_nowait() 
+
+                    if not self.active: 
+
+                        return # escape route so it doesn't finish looping thru the doors 
+
+
+
+
+
+                    '''
                     # check which rfid recieved threshold event ( this also determines which door we are watching for the vole to pass through )
                     for r in rfid_list: 
 
@@ -172,7 +218,7 @@ class ReactiveBox(modeABC):
                             
                             def retrieve_queue_contents(q):
 
-                                ''' only remove from the queue if all three queues have an item that we can remove '''
+                                # only remove from the queue if all three queues have an item that we can remove
                                 # if len(q1.queue) > 0 and len(q2.queue) > 0 and len(q3.queue) > 0:
                                 #    return ( q1.get_nowait(), q2.get_nowait(), q3.get_nowait() )
                                 
@@ -243,7 +289,7 @@ class ReactiveBox(modeABC):
                                         retrieve_queue_contents(rfid4.threshold_event_queue)
                                         retrieve_queue_contents(door2.threshold_event_queue)
                                         retrieve_queue_contents(rfid3.threshold_event_queue)
-                                        break; 
+                                        break; '''
                                 
 
                                 # LEAVING OFF HERE!!! # 
