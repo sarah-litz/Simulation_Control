@@ -38,8 +38,13 @@ class OperantMapVole(SimulationABC):
         rc1 = self.map.get_location_object(rfid1).get_component_from_interactable(rfid1)
 
         # Tests
+
         print('\n\n rfid 1 -> rfid 3')
         result = self.map.get_component_path(rc1, rc3)
+        print('RFID1 -> RFID3 RESULT: ', *(str(r) for r in result))
+
+        print('\n\n rfid 3 -> rfid 1')
+        result = self.map.get_component_path(rc3, rc1)
         print('RFID1 -> RFID3 RESULT: ', *(str(r) for r in result))
 
 
@@ -47,6 +52,13 @@ class OperantMapVole(SimulationABC):
         result = self.map.get_component_path(ldc2, ldc1)
         print('LEVERDOOR2->LEVERDOOR1 RESULT: ', *(str(r) for r in result))
 
+        print('\n\nlever door 1 -> lever door 2')
+        result = self.map.get_component_path(ldc1, ldc2)
+        print('LEVERDOOR1->LEVERDOOR2 RESULT: ', *(str(r) for r in result))
+
+        print('\n\n rfid2 -> lever door 1')
+        result = self.map.get_component_path(rc2, ldc1)
+        print('RFID2 -> LEVERDOOR1 RESULT: ', *(str(r) for r in result))
 
         print('\n\nlever door 1 -> door 1')
         result = self.map.get_component_path(ldc1, dc1)

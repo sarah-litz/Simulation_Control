@@ -33,8 +33,9 @@ class DynamicBoxSimulation(SimulationABC):
         rfid1 = self.map.instantiated_interactables['rfid1']
         rfid3 = self.map.instantiated_interactables['rfid3']
 
-
-        vole1.move_to_interactable(lever_door1)
+        print('Vole 1 Moving to Lever Door 1')
+        vole1.move_to_interactable(lever_door1) # breaking here!
+        print('Vole 1 Interacting with Lever Door 1')
         vole1.simulate_vole_interactable_interaction(lever_door1)
         print('ATTEMPT MOVE')
         vole1.attempt_move(2)
@@ -51,8 +52,9 @@ class DynamicBoxSimulation(SimulationABC):
         vole2 = self.get_vole(2)
         lever_door1 = self.map.instantiated_interactables['lever_door1']
 
-        
+        print('Move To Lever Door 1') 
         vole2.move_to_interactable(lever_door1)
+        print('Simulating')
         vole2.simulate_vole_interactable_interaction(lever_door1)
         vole2.attempt_move(2)
 

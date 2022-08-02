@@ -426,7 +426,7 @@ class interactableABC:
                         # when it passed by the interactable. 
                         #
                         # LEAVING OFF HERE::: THIS SEEMS ODD 
-                        #
+                        # FISH
                         # i still don't love that we set the threshold to false when we pass by it! 
                         #
 

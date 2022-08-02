@@ -11,7 +11,9 @@ description:this file links a specified simulation class (a file w/in the Simula
 
 # Imports
 import inspect
-import os 
+import os
+
+import Simulation 
 cwd = os.getcwd() # current working directory
 import time
 from .Logging.logging_specs import sim_log
@@ -39,13 +41,14 @@ sim_log('\n\n\n\n-----------------------------Simulation Package Started--------
 
 
 # (TODO) Instantiate the Simulation Classes that you want to run.
-SimulationScript = DynamicBoxSimulation( modes = modes ) # create simulation, pass list of modes as argument 
-
+# SimulationScript = DynamicBoxSimulation( modes = modes ) # create simulation, pass list of modes as argument 
+SimulationScript = OperantMapVole( modes = modes )
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-SimulationScript.simulation_func[ modes[0] ] = ( SimulationScript.vole1_AttemptMoveToChamber2 ) 
-SimulationScript.simulation_func[ modes[1] ] = ( SimulationScript.vole2_AttemptMoveToChamber2 ) 
-SimulationScript.simulation_func[ modes[2] ] = ( SimulationScript.vole1_AttemptMoveToChamber2 ) 
+# SimulationScript.simulation_func[ modes[0] ] = ( SimulationScript.vole1_AttemptMoveToChamber2 ) 
+# SimulationScript.simulation_func[ modes[1] ] = ( SimulationScript.vole2_AttemptMoveToChamber2 ) 
+# SimulationScript.simulation_func[ modes[2] ] = ( SimulationScript.vole1_AttemptMoveToChamber2 ) 
+SimulationScript.simulation_func[ modes[0] ] = ( SimulationScript.testing_get_component_path )
 
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 
