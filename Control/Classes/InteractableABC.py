@@ -110,6 +110,7 @@ class interactableABC:
             return self.isPressed
 
         def _setup_gpio(self): 
+
             try: 
                 if self.pullup_pulldown == 'pullup':
                     GPIO.setup(self.pin_num, GPIO.IN, pull_up_down = GPIO.PUD_UP)
@@ -270,8 +271,9 @@ class interactableABC:
 
     def activate_inner_objects(self): 
         ''' 
-        if interactable contains any inner objects (buttons and servos), this function is called to 
-        ensure that they are activated for each mode 
+        if interactable contains any inner objects (buttons and servos)
+        this function is called to ensure that they are activated for each mode
+        also to check that we are simulated both the buttons and the servos in the scenario that the user is running a simulation and their parent object is being simulated
         '''
         pass 
 
@@ -287,6 +289,7 @@ class interactableABC:
         
         self.threshold = False # "resets" the interactable's threshold value so it'll check for a new threshold occurence
         self.active = True 
+        # self.activate_inner_objects()
         self.watch_for_threshold_event() # begins continuous thread for monitoring for a threshold event
         # self.dependents_loop() 
         
@@ -998,8 +1001,12 @@ class dispenser(interactableABC):
         return run    
 
     def validate_hardware_setup(self): 
+        
         if self.isSimulation: 
-            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
+            # we should make sure that the button and servo will also be simulated! 
+            # Basically checks to make sure that they were not properly set up! 
+            self.isPressed = self.threshold_condition['initial_value'] # ensures that we wont access the button object value version of the button gpio!
+
             return 
         
         else: 
@@ -1014,6 +1021,11 @@ class dispenser(interactableABC):
                 raise Exception(f'(Dispenser, validate_hardware_setup) {self} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
             return 
 
+    def activate_inner_objects(self): 
+        ''' overriding the function from InteractableABC! 
+            this method gets called upon interactable activation 
+            we are able to handle 
+        '''
     def add_new_threshold_event(self):
         if self.monitor_for_retrieval: 
             self.threshold_event_queue.put(f'Pellet Retrieval')
