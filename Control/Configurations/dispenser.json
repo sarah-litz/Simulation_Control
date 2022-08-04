@@ -6,7 +6,6 @@
             "attribute":"isPressed", 
             "initial_value": true, "goal_value": false },
 
-        "dependents": [], 
         "hardware_specs": {
             "button_specs": { 
                 "button_pin": 24, 

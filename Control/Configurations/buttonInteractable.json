@@ -16,7 +16,6 @@
             "children": [ ]  
         },  
         "parents":["door1"], 
-        "dependents":[], 
 
         "hardware_specs": {
             "button_specs": { 
@@ -40,7 +39,6 @@
         },
 
         "parents":["door1"], 
-        "dependents":[], 
 
         "hardware_specs": { 
             "button_specs": { 
@@ -64,7 +62,6 @@
         },
 
         "parents":["door2"], 
-        "dependents":[],
 
         "hardware_specs": {
             "button_specs": { 
@@ -73,6 +70,8 @@
             }
         }
     }, 
+
+    
     "close_door2_button": 
     {
         "id":4, 
@@ -85,7 +84,6 @@
         },
 
         "parents":["door2"], 
-        "dependents":[], 
 
         "hardware_specs": { 
             "button_specs": { 

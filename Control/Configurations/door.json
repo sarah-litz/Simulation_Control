@@ -29,7 +29,6 @@
     {
         "id":2, 
         "threshold_condition": { "attribute":"isOpen", "initial_value": false, "goal_value":true }, 
-        "dependents": [ ],
         "hardware_specs": { 
             "button_specs": { 
                 "button_pin":17, 
@@ -50,7 +49,6 @@
     {
         "id":3,
         "threshold_condition": {"attribute":"isOpen", "initial_value":false, "goal_value":true}, 
-        "dependents": [], 
         "hardware_specs": { }
         
     }

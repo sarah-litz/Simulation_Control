@@ -10,9 +10,8 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 
 # Standard Lib Imports 
 from itertools import count
-import random
 from re import I
-import time 
+import time, random
 
 # Local Imports 
 from ..Logging.logging_specs import sim_log, vole_log

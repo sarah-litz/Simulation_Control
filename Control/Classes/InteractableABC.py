@@ -849,11 +849,13 @@ class rfid(interactableABC):
     def add_new_threshold_event(self): 
         '''New Ping was added to rfidQ. Retrieve its value and append to the threshold event queue '''
         try: 
-            ping = self.rfidQ.get() 
+            ping1 = self.rfidQ.get() 
+            ping2 = self.rfidQ.get() 
+            latency = ping2[2] - ping1[2] # calculates time difference between the 1st and 2nd ping
         except queue.Empty as e: 
             raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the rfidQ for {self.name}')
 
-        self.threshold_event_queue.put(ping)
+        self.threshold_event_queue.put((ping1,ping2,latency))
 
         # do not deactivate the rfids. always monitoring for pings. 
     
@@ -964,26 +966,23 @@ class dispenser(interactableABC):
         self.stop_speed = hardware_specs['servo_specs']['stop_speed']
         self.dispense_speed = hardware_specs['servo_specs']['dispense_speed']
         self.dispense_time = hardware_specs['dispense_time']
-            # ( Threshold Tracking ) #
-        if self.buttonObj.pressed_val < 0: 
-            # simulating gpio connection, simulate the isPressed Value
+            
+        # Threshold Tracking with isPressed attribute #
+        if self.buttonObj.pressed_val < 0:  # simulating gpio connection, simulate the isPressed Value
             self.isPressed = self.threshold_condition['initial_value'] 
-        else: 
-            # not simulating, use the actual buttonObj i/o value to get current state 
+        else: # not simulating, use the actual buttonObj i/o value to get current state  
             self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
 
-        if self.isPressed: 
-            # pellet is already present
+        '''if self.isPressed: # pellet is already present
             self.pellet_state = True 
-            self.monitor_for_retrieval = True 
+            self.monitor_for_retrieval = True '''
 
-        ## Threshold Attribute ## 
-        if self.isPressed: 
+        ## Use the Threshold Attribute to set pellet_state and monitor_for_retrieval ## 
+        if self.isPressed: # pellet is already present
             initial = True 
         else: initial = False 
         self.pellet_state =  initial # True if pellet is in trough 
         self.monitor_for_retrieval = initial # gets set to True only once we first confirm that a pellet is present in the trough. When we set this True, then we will start recording threshold events ( i.e. waiting for the pellet state to get set back to false, due to a vole retrieval ) If trough is initially empty, this prevents watch_for_threshold_event from recording this empty state as the occurrence of a pellet retrieval.
-
 
         ## Dependency Chain ## 
         self.barrier = False # does not block a voles movement 
