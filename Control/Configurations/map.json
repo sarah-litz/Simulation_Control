@@ -7,7 +7,7 @@
                 { "interactable_name":"lever_door1", "type":"lever"}, 
                 { "interactable_name":"lever_food", "type":"lever"}, 
                 { "interactable_name":"food_trough", "type":"dispenser"},
-                { "interactable_name":"lever_door2", "type":"lever" }
+                { "interactable_name":"lever_door3", "type":"lever" }
             ] 
         }, 
 
@@ -15,7 +15,7 @@
             "id": 2, 
             "descriptive_name": "Chamber 2", 
             "components": [
-
+                {"interactable_name":"lever_door2", "type":"lever"}
             ]
         }, 
 
@@ -23,7 +23,7 @@
             "id": 3, 
             "descriptive_name": "Chamber 3 ",
             "components": [
-
+                {"interactable_name":"lever_door4", "type":"lever"}
             ]
         }, 
 
@@ -34,7 +34,7 @@
                 { "interactable_name":"open_door1_button", "type":"buttonInteractable" }, 
                 { "interactable_name":"open_door2_button", "type":"buttonInteractable" }, 
                 { "interactable_name":"close_door1_button", "type":"buttonInteractable" }, 
-                { "interactable_name":"close_door2_button", "type":"buttonInteractable" }
+                { "interactable_name":"close_door2_button", "type":"buttonInteractable" }            
             ]
         }
     
@@ -48,9 +48,10 @@
             "type":"shared", 
             "components":[
                 { "chamber_interactable": "lever_door1" },
-                { "interactable_name":"rfid1", "type":"rfid" }, 
                 { "interactable_name":"door1", "type":"door" },
-                { "interactable_name":"rfid2", "type":"rfid" }
+                { "interactable_name":"rfid1", "type":"rfid" }, 
+                { "interactable_name":"door2", "type":"door" }, 
+                { "chamber_interactable": "lever_door2" }
             ]
         }, 
 
@@ -60,11 +61,20 @@
             "id": 13, 
             "type":"shared", 
             "components":[
-                { "chamber_interactable": "lever_door2"}, 
-                { "interactable_name":"rfid3", "type":"rfid"}, 
-                { "interactable_name":"door2", "type":"door" },
-                { "interactable_name":"rfid4", "type":"rfid"}
+                { "chamber_interactable": "lever_door3"}, 
+                { "interactable_name":"door3", "type":"door" },
+                { "interactable_name":"rfid2", "type":"rfid"}, 
+                { "interactable_name":"door4", "type":"door"}, 
+                { "chamber_interactable": "lever_door4", "type":"lever"}
             ]
         }
+    ], 
+
+    "voles": [
+
+        { "tag":1, "start_chamber":1 }, 
+        { "tag":2, "start_chamber":1 }, 
+        { "tag":3, "start_chamber":1 }
+        
     ]
 }

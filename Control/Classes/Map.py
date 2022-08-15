@@ -22,7 +22,7 @@ from .Timer import draw_table
 from Logging.logging_specs import control_log, sim_log
 from .ModeABC import modeABC 
 from . import InteractableABC
-from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser
+from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser, laser
 
 class Map: 
     def __init__(self, config_directory, map_file_name = None ): 
@@ -34,12 +34,15 @@ class Map:
 
         self.instantiated_interactables = {} # dict of (interactable name: interactable object ) to represent every object of type interactableABC that has been created to avoid repeats
         
+        self.voles = [] # list of Vole objects to allow the map to perform basic vole location tracking
+
         self.config_directory = config_directory # directory containing all of the configuration files 
 
         if map_file_name is not None: 
             self.configure_setup(config_directory + f'/{map_file_name}')
         else: self.configure_setup(config_directory + '/map.json')
 
+ 
 
     #
     # Map Visualization Methods
@@ -388,6 +391,16 @@ class Map:
 
             try: new_obj = dispenser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name)
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
+        
+        elif type == 'laser': 
+            print(data.keys())
+            print('\n')
+            print(objspec)
+            try: dutycycle_definitions = data['dutycycle_definitions']
+            except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
+            
+            try: new_obj = laser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, dutycycle_definitions = dutycycle_definitions)
+            except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
         else: 
 
@@ -511,7 +524,7 @@ class Map:
 
         if chmbr2id > 0: 
             chmbr2obj = self.get_chamber(chmbr2id)
-            chamber2_interactable_lst = [interactable for interactable in chmbr2obj.interactableSet]
+            chamber2_interactable_lst = [interactable for interactable in chmbr2obj.allChamberInteractables]
             chamber2_bridge_interactable = chmbr2references[len(chmbr2references)-1]
             print(f'edge {new_edge.id} references the following interactables assigned to chamber {chmbr2id}:', [ *(ele.name for ele in chmbr2references) ] )
             # Ensure that the Bridges are on an End of the Chamber Interactables
@@ -658,6 +671,11 @@ class Map:
 
         # FISH)) DELETE ME)) self.set_dependent_interactables()
         self.set_parent_interactables() 
+
+
+        # Finally, create Vole objects! 
+        self._setup_voles(data = data)
+
     
     def set_parent_interactables(self): 
         
@@ -1141,7 +1159,6 @@ class Map:
             if type(c) is self.Chamber.ComponentSet: 
                 interactable_path.extend([i for i in c.interactableSet])
             else: 
-                print('HUH: ', str(c))
                 interactable_path.append(c.interactable)
 
         start_idx = component_path.index(start_component)
@@ -1706,3 +1723,68 @@ class Map:
             component.nextval = newComp # update list w/ new Component
             newComp.prevval = component # set new Component's previous component to allow for backwards traversal     
             return newComp
+
+
+
+    class Vole: 
+
+        ''' allows map to perform some basic vole tracking '''
+
+        def __init__(self, tag, start_chamber, map): 
+            
+            self.tag  = tag 
+
+            ## Vole Location Information ## 
+            self.curr_loc = map.get_chamber(start_chamber)
+            self.prev_loc = None # object representing the voles previous location.
+        
+
+    def _setup_voles(self, data): 
+        # uses data in the map config file to create voles and set their start location
+        for v in data['voles']: 
+            self.new_vole(v['tag'], v['start_chamber'])
+
+    def update_vole_location(self, tag, loc): 
+        ''' retrieves the vole object specified by <tag> and updates its location to <loc> '''
+        v = self.get_vole(tag)
+        v.prev_loc = v.curr_loc 
+        v.curr_loc = loc 
+
+    def get_vole(self, tag): 
+        # searches list of voles and returns vole object w/ the specified tag 
+        for v in self.voles: 
+            if v.tag == tag: return v  
+        return None
+
+    def new_vole(self, tag, start_chamber): 
+        
+        ''' creates a new Vole object and adds it to the list of voles. Returns Vole object on success '''
+
+        # ensure vole does not already exist 
+        if self.get_vole(tag) is not None: 
+            sim_log(f'vole with tag {tag} already exists')
+            print(f'you are trying to create a vole with the tag {tag} twice')
+            input(f'Would you like to skip the creating of this vole and continue running the experiment? If no, the experiment will stop running immediately. Please enter: "y" or "n". ')
+            if 'y': return 
+            if 'n': exit() 
+        
+        # ensure that start_chamber exists in map
+        chmbr = self.get_chamber(start_chamber) 
+        if chmbr is None: 
+            control_log(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
+            print(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
+            print(f'existing chambers: ', self.graph.keys())
+            while chmbr is None: 
+                ans = input(f'enter "q" if you would like to exit the experiment, or enter the id of a different chamber to place this vole in.\n')
+                if ans == 'q': exit() 
+                try: 
+                    start_chamber = int(ans)
+                    chmbr = self.get_chamber(int(start_chamber)) 
+                except ValueError as e: print(f'invalid input. Must be a number or the letter q. ({e})')            
+
+                
+
+        # Create new Vole 
+        newVole = self.Vole(tag, start_chamber, self)
+        self.voles.append(newVole)
+        return newVole

@@ -290,4 +290,39 @@ class DispenserTests(modeABC):
         # Goal: Dispense a Pellet 
         food_dispenser = self.map.instantiated_interactables['food_dispenser']
         food_dispenser.dispense() 
+
+
+
+class LaserTests(modeABC): 
+
+    '''
+    used for testing basic functionality of the Lasers throughout its code building process!
+    '''
+
+    def __init__(self, timeout, map): 
+        super().__init__(timeout,map)
     
+    def __str__(self): 
+        return 'Laser Tests'
+    
+    def setup(self): 
+        
+        # Assign Lasers to patterns that we want to run for this control mode! 
+
+        laser1 = self.map.instantiated_interactables['laser_1']
+        laser1.set_dutycycle_pattern = laser1.dutycycle_patterns['cycle1'] # sets the dutycyle pattern that we want to run in the coming mode 
+
+        #laser2 = self.map.instantiated_interactables['laser_2']
+        #laser2.set_dutycycle_pattern = laser2.dutycycle_patterns['cycle1']
+
+    def run(self): 
+
+        # Goal: mess with how we can do the dutycycle_pattern pairing with a mode
+
+        # This Script is aware of what mode we are in! 
+
+        # When do we want to trigger these laser events?? 
+
+        print(f'{self} control mode is running!')
+
+

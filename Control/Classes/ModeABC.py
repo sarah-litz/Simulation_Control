@@ -147,7 +147,6 @@ class modeABC:
     def rfidListener(self):
         """This method listens to the rfid queue and waits until something is added there. (running as daemon thread)
         """
-        # TEST ME!!! 
         rfid_objects = {} # dictionary to store all of the rfid objects { tag : object } that were added to Map 
 
         # Get RFID Objects # 
@@ -194,11 +193,15 @@ class modeABC:
                 # # ping added to shared queue. send to specific rfid object # # 
 
                 print('\nPING: ', ping)
-                id = ping[1] # parse the ping information (NOTE: come back to ensure I am parsing correctly)
+                id = ping[1] # parse the ping information 
 
                 rfid_interactable = rfid_objects[id] # retrieve the corresponding rfid object 
 
                 rfid_interactable.rfidQ.put( (ping) ) 
+
+                # # # the Map's Vole Location Tracking relies on the RFIDs for making any location updates # # # 
+                # # Make Updates to Voles Location in the Map Class # # 
+                self.map.update_vole_location( tag = ping[0], loc = self.map.get_location_object(rfid_interactable) )
             
 
    #

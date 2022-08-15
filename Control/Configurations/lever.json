@@ -78,6 +78,52 @@
             "initial_value":0, "goal_value":1, 
             "onThreshold_callback_fn": ["list(map(lambda p: p.open(), self.parents))", "self.reset_press_count()"]
         }
+    }, 
+
+    "lever_door3": 
+    { 
+        "id":4, 
+        "parents":["door3"], 
+        "hardware_specs": { 
+            "button_specs": {
+                "button_pin":22, 
+                "pullup_pulldown":"pullup"
+            }, 
+            "servo_specs": { 
+                "servo_type":"positional", 
+                "servo_pin":12,
+                "extended_angle":15, 
+                "retracted_angle":98 
+            }
+        }, 
+        "threshold_condition": { 
+            "attribute": "num_pressed", 
+            "initial_value":0, "goal_value":1, 
+            "onThreshold_callback_fn": ["list(map(lambda p: p.open(), self.parents))", "self.reset_press_count()"]
+        }
+    }, 
+
+    "lever_door4": 
+    { 
+        "id":5, 
+        "parents":["door4"], 
+        "hardware_specs": { 
+            "button_specs": {
+                "button_pin":22, 
+                "pullup_pulldown":"pullup"
+            }, 
+            "servo_specs": { 
+                "servo_type":"positional", 
+                "servo_pin":12,
+                "extended_angle":15, 
+                "retracted_angle":98 
+            }
+        }, 
+        "threshold_condition": { 
+            "attribute": "num_pressed", 
+            "initial_value":0, "goal_value":1, 
+            "onThreshold_callback_fn": ["list(map(lambda p: p.open(), self.parents))", "self.reset_press_count()"]
+        }
     }
 
 

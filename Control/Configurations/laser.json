@@ -1,0 +1,48 @@
+
+{
+
+    "laser_1": { 
+
+        "id": 1, 
+        "vole_tag": 1, 
+        "hardware_specs": {
+            "pin_num":-1,
+            "high_voltage":3.3, 
+            "low_voltage":0,
+
+            "dutycycle_patterns": { 
+                "cycle1": [ "p1", "p2", "always_off_pattern", "p1" ], 
+                "cycle2": [ "always_on_pattern" ]
+            }
+
+        },
+        "parents": [], 
+
+        "threshold_condition":{ "something that checks which mode we are in maybe??":"something!"} 
+        
+
+    },
+    "dutycycle_definitions": { 
+        "p1": {  
+            "high_time":5, 
+            "low_time":3, 
+            "repeat_num":6
+        }, 
+        "p2": { 
+            "high_time":3, 
+            "low_time":3, 
+            "repeat_num":2
+        },
+        "always_off_pattern": {
+            "high_time":0, 
+            "low_time":100, 
+            "repeat_num":1
+        }, 
+        "always_on_pattern": { 
+            "high_time":100, 
+            "low_time":0,
+            "repeat_num":1
+        }
+    }
+}
+

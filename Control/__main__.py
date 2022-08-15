@@ -7,9 +7,10 @@ from .Classes.Map import Map
 
 # (TODO) Import Your ModeABC Implementations here using the following syntax: from Scripts.your_file_name import mode_name_1, mode_name_2, etc.
 from .Scripts.ModeScripts1 import mode1, mode2 
-from .Scripts.HardwareTesting import LeverTests, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests, DispenserTests
+from .Scripts.HardwareTesting import LaserTests, LeverTests, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests, DispenserTests
 from .Scripts.StaticBox import ClosedBox, OpenBox, SimpleBox
 from .Scripts.DynamicBox import WaitFiveSecondsBeforeRetractOrClose, IteratorBox, ReactiveBox
+from .Scripts.AirLockBox import AirLockDoorLogic
 
 def main(): 
 
@@ -27,12 +28,13 @@ def main():
 
 
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
+    airlockBox = AirLockDoorLogic(timeout = 20, map = map)
     intervalBox = WaitFiveSecondsBeforeRetractOrClose(timeout = 15, map = map)
     iteratorBox = IteratorBox(timeout = 15, map = map)
     reactiveBox = ReactiveBox(timeout = 30, map = map )
 
     # (TODO) Update the list of control mode scripts with each of the scripts you want to run, in the order that you want them to run in! 
-    mode_scripts = [ intervalBox, iteratorBox, reactiveBox ]
+    mode_scripts = [ airlockBox, intervalBox, iteratorBox, reactiveBox ]
 
 
     if __name__ != '__main__': # falls into this if the simulation package imported this module

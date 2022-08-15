@@ -29,6 +29,7 @@ from Simulation import modes # references Simulation/__init__ file to retrieve l
 from .Scripts.VoleTests import OperantMapVole
 from .Scripts.InteractableTests import LeverTests, ButtonTests, RfidSimulatedPings, DispenserTests
 from .Scripts.DynamicBoxSim import DynamicBoxSimulation
+from .Scripts.AirLockDoorsSim import AirLockDoorsSim
 
 
 # Helper Function for creating "checkpoints" throughout the experiments execution that wait for user input before continuing with experiment execution. 
@@ -41,12 +42,12 @@ sim_log('\n\n\n\n-----------------------------Simulation Package Started--------
 
 
 # (TODO) Instantiate the Simulation Classes that you want to run.
-SimulationScript = DynamicBoxSimulation( modes = modes ) # create simulation, pass list of modes as argument 
+SimulationScript = AirLockDoorsSim( modes = modes ) # create simulation, pass list of modes as argument 
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-SimulationScript.simulation_func[ modes[0] ] = ( SimulationScript.vole1_AttemptMoveToChamber2 ) 
-SimulationScript.simulation_func[ modes[1] ] = ( SimulationScript.vole2_AttemptMoveToChamber2 ) 
-SimulationScript.simulation_func[ modes[2] ] = ( SimulationScript.vole1_AttemptMoveToChamber2 ) 
+SimulationScript.simulation_func[ modes[0] ] = ( SimulationScript.vole1_move_to_chamber2 ) 
+SimulationScript.simulation_func[ modes[1] ] = ( SimulationScript.vole2_move_to_chamber2 ) 
+SimulationScript.simulation_func[ modes[2] ] = ( SimulationScript.vole1_move_to_chamber2 ) 
 
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 

@@ -166,6 +166,8 @@ class RfidSimulatedPings(SimulationABC):
         pass 
 
 
+class LaserTests(SimulationABC): 
+    ''' for testing the control mode LaserTest  '''
 class DispenserTests(SimulationABC): 
 
     '''testing a vole interaction with dispenser and/or dispenser dependent '''

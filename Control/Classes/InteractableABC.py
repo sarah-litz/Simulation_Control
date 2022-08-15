@@ -884,73 +884,6 @@ class rfid(interactableABC):
             return 
 
 
-class buttonInteractable(interactableABC):
-    ''' **this class should not be confused with the Button class which connects with/operates the GPIO boolean pins** 
-        buttonInteractable is used for the buttons that control the open/closing of doors; if a door is in movement, these buttons override that movement immediately 
-    '''
-
-    def __init__(self, ID, threshold_condition, hardware_specs, name ): 
-         # Initialize the parent class
-        super().__init__(threshold_condition, name)
-
-        # Initialize the given properties
-        self.ID = ID 
-
-        # Button # 
-        self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
-
-        ## Threshold Condition Tracking ## 
-        # self.pressed is a property method to ensure that num_pressed updates 
-        self.buttonQ = queue.Queue()
-        # we want Button to be updating the num_pressed value. notify 
-
-        if self.buttonObj.pressed_val < 0: # simulating gpio connection
-            self.isPressed = None 
-        else: 
-            self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
-    
-    # (NOTE - don't think i need this, as this should be handled by Button class now.)
-    # @property
-    # def pressed(self): 
-    #    '''returns the current number of presses that button object has detected'''
-    #    return self.buttonObj.num_pressed
-
-    def activate(self): 
-        ''' activate button as usual, and once it is active we can begin the button object listening '''
-        interactableABC.activate(self)
-        self.buttonObj.listen_for_event()
-
-    def validate_hardware_setup(self):
-        
-        if self.isSimulation: 
-            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
-            return 
-        
-        else: 
-            # not simulating door, check that the doors Movement Controllers (button and servo) have been properly setup 
-            if self.buttonObj.pressed_val < 0: 
-                
-                errorMsg = []
-                # problem with both button and/or servo. figure out which have problems
-                if self.buttonObj.pressed_val < 0: 
-                    errorMsg.append('buttonObj')
-                
-                raise Exception(f'(buttonInteractable, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
-
-            return 
-    
-    def add_new_threshold_event(self):
-        '''New [Press] was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
-        try: 
-            press = self.buttonObj.buttonQ.get() 
-        except queue.Empty as e: 
-            raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the buttonQ for {self.name}')
-
-        # append to event queue 
-        self.threshold_event_queue.put(press)
-    
-
-
 
 class dispenser(interactableABC): 
 
@@ -1088,6 +1021,173 @@ class dispenser(interactableABC):
         print(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
         control_log(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
         return 
+
+
+class buttonInteractable(interactableABC):
+    ''' **this class should not be confused with the Button class which connects with/operates the GPIO boolean pins** 
+        buttonInteractable is used for the buttons that control the open/closing of doors; if a door is in movement, these buttons override that movement immediately 
+    '''
+
+    def __init__(self, ID, threshold_condition, hardware_specs, name ): 
+         # Initialize the parent class
+        super().__init__(threshold_condition, name)
+
+        # Initialize the given properties
+        self.ID = ID 
+
+        # Button # 
+        self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
+
+        ## Threshold Condition Tracking ## 
+        # self.pressed is a property method to ensure that num_pressed updates 
+        self.buttonQ = queue.Queue()
+        # we want Button to be updating the num_pressed value. notify 
+
+        if self.buttonObj.pressed_val < 0: # simulating gpio connection
+            self.isPressed = None 
+        else: 
+            self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
+    
+    # (NOTE - don't think i need this, as this should be handled by Button class now.)
+    # @property
+    # def pressed(self): 
+    #    '''returns the current number of presses that button object has detected'''
+    #    return self.buttonObj.num_pressed
+
+    def activate(self): 
+        ''' activate button as usual, and once it is active we can begin the button object listening '''
+        interactableABC.activate(self)
+        self.buttonObj.listen_for_event()
+
+    def validate_hardware_setup(self):
+        
+        if self.isSimulation: 
+            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
+            return 
+        
+        else: 
+            # not simulating door, check that the doors Movement Controllers (button and servo) have been properly setup 
+            if self.buttonObj.pressed_val < 0: 
+                
+                errorMsg = []
+                # problem with both button and/or servo. figure out which have problems
+                if self.buttonObj.pressed_val < 0: 
+                    errorMsg.append('buttonObj')
+                
+                raise Exception(f'(buttonInteractable, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
+
+            return 
+    
+    def add_new_threshold_event(self):
+        '''New [Press] was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
+        try: 
+            press = self.buttonObj.buttonQ.get() 
+        except queue.Empty as e: 
+            raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the buttonQ for {self.name}')
+
+        # append to event queue 
+        self.threshold_event_queue.put(press)
+
+
+
+class laser(interactableABC): 
+
+    def __init__(self, ID, threshold_condition, hardware_specs, name, dutycycle_definitions ): 
+
+         # Initialize the parent class
+        super().__init__(threshold_condition, name)
+
+        self.ID = ID    
+
+        self.pin_num = hardware_specs['pin_num']
+
+        self.pi = self._setup_pigpio()
+
+        # Dutycycle # 
+        # Attributes for managing how the laser should distribute its time being On vs Off 
+        self.dutycycle_pattern_definitions = dutycycle_definitions # breakdown of what each pattern is in its HIGH/LOW voltage format
+        self.dutycycle_patterns = hardware_specs['dutycycle_patterns'] # patterns chained together
+        
+
+    
+    #
+    # Initializing Laser Object Methods
+    #
+    def _setup_pigpio(self): 
+        ''' method for setting up access to the local pi's GPIO '''
+        try: 
+            return pigpio.pi()         
+        except AttributeError as e: 
+            # attribute error raised 
+            control_log(f'(InteractableABC,py, Laser) {self}: simulating pigpio connection. ErrMssg: {e}')
+            self.messagesReturnedFromSetup += f'simulating pigpio connection. '
+            return None
+        
+    def validate_hardware_setup(self):  
+        # if laser is being simulated, doesn't matter if the hardware has been setup or not if we are simulating the interactable     
+        if not self.isSimulation: # laser is NOT simulated; ensure that we were able to access the pigpio library and access the laser's gpio pin 
+            if self.pi is None: 
+                raise Exception(f'(Laser, validate_hardware_setup) {self} failed to setup correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
+        return 
+    
+    def validate_dutycycle_patterns(self): 
+
+        ''' ensures that the configuration file contains valid entries for the dutycycle fields '''
+
+        # confirm that any pattern that is referenced in dutycycle_patterns can be found in the dutycycle_pattern_defintions 
+
+        for (patternName, patternList) in self.dutycycle_patterns: 
+
+            for dutycycle in patternList: 
+
+                if dutycycle not in self.dutycycle_pattern_definitions: 
+
+                    raise Exception(f'(Laser, validate_dutycycle_patterns) {self} contains an unknown reference within {patternName}, to the dutycycle: {dutycycle}')
+
+
+        # confirm that a single mode isn't assigned a pattern chain more than once 
+
+        # confirm that the referenced modes exist
+
+        # 
+
+
+
+    #
+    # Simple Methods to turn laser On/Off 
+    #
+    def turn_on_and_wait(self, wait_time): 
+        ''' turns the laser on and waits for specified number of seconds and then returns '''
+        self.turn_on()
+        time.sleep(wait_time)
+        return 
+    def turn_off_and_wait(self, wait_time): 
+        ''' turns the laser off and waits for specified number of seconds and then returns '''
+        self.turn_off() 
+        time.sleep(wait_time)
+        return 
+
+    def turn_on(self): 
+        ''' sets laser to high voltage '''
+        if not self.isSimulation: self.pi.set_PWM_dutycycle(self.pin_num, 3.3)
+    def turn_off(self): 
+        ''' sets laser to low voltage '''
+        if not self.isSimulation: self.pi.set_PWM_dutycycle(self.pin_num, 0)
+    
+
+    #
+    # Dutycycle Pattern Execution 
+    #
+    def play_pattern(pattern): 
+        ''' executes the passed in pattern. Pattern in a dictionary of strings. We can reference the pattern definitions '''
+    
+
+
+    
+
+
+    
+
 
 
 
