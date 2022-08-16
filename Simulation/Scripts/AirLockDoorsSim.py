@@ -16,7 +16,7 @@ class AirLockDoorsSim(SimulationABC):
     def __str__(self): 
 
         return 'Simulation for running with the Map Containing a 2-door Airlock System'
-    
+
 
     
     def vole1_move_to_chamber2(self): 
@@ -25,11 +25,16 @@ class AirLockDoorsSim(SimulationABC):
         # leaving off here --> next test should be with threaded voles, where 2 voles are attempting at the same time!! 
         # can maybe start by getting both voles to just go sit in front of door2 to see if the code works. 
         #
+
+        print(self.map.door1)
+        self.map.door1.open()
+        print('wahoo')
+        return 
         vole1 = self.get_vole(1)
 
         vole2 = self.get_vole(2)
 
-        vole1.attempt_move(2)
+        vole1.move_to_interactable()
 
         vole2.attempt_move(2)
 

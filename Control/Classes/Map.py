@@ -676,6 +676,11 @@ class Map:
         # Finally, create Vole objects! 
         self._setup_voles(data = data)
 
+        # Lastly, set attributes for convenient access to all of the hardware components 
+        for (name, interactable) in self.instantiated_interactables.items(): 
+
+            setattr( self, name, interactable )
+
     
     def set_parent_interactables(self): 
         
