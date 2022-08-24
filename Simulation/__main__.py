@@ -45,9 +45,9 @@ sim_log('\n\n\n\n-----------------------------Simulation Package Started--------
 SimulationScript = AirLockDoorsSim( modes = modes ) # create simulation, pass list of modes as argument 
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-SimulationScript.simulation_func[ modes[0] ] = ( SimulationScript.vole1_move_to_chamber2 ) 
-SimulationScript.simulation_func[ modes[1] ] = ( SimulationScript.vole2_move_to_chamber2 ) 
-SimulationScript.simulation_func[ modes[2] ] = ( SimulationScript.vole1_move_to_chamber2 ) 
+SimulationScript.simulation_func[ modes[0] ] = ( SimulationScript.threaded_vole_movements ) 
+SimulationScript.simulation_func[ modes[1] ] = ( SimulationScript.non_threaded_vole_movements ) 
+SimulationScript.simulation_func[ modes[2] ] = ( SimulationScript.non_threaded_vole_movements ) 
 
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 

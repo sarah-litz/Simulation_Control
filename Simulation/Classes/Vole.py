@@ -133,8 +133,6 @@ class Vole:
             return '''
 
 
-
-
         #
         # Simulate
         #
@@ -163,13 +161,14 @@ class Vole:
                 # sim_log(f'{interactable.name}, manual attribute check: {interactable.buttonObj}')
                 sim_log(f"(Vole.py, attempt_move) {interactable.name}, attribute result: {newattrval}")
             
-            # countdown(5, f'simulating vole{self.tag} interaction with {interactable.name}')
-    
+            # countdown(5, f'simulating vole{self.tag} interaction with {interactable.name}') 
+            time.sleep(2) # gives the threshold listener a chance to react to the simulation
+            return 
         
         else:  # component should not be simulated, as the hardware for this component is present. 
             # assumes that there is a person present to perform a lever press, interrupt the rfid reader so it sends a ping, etc. 
             print ( f'\nif testing the hardware for {interactable.name}, take any necessary actions now.')
-            # countdown(10, f'remaining to perform interactions to trigger a threshold event for {interactable.name}')
+            time.sleep(5)
             
     
     

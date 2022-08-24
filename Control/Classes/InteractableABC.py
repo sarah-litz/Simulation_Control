@@ -358,8 +358,8 @@ class interactableABC:
                     # Handle Event 
                     self.threshold = True
 
-                    self.add_new_threshold_event() 
-                
+                    self.add_new_threshold_event()
+                    
                     #
                     # Callback Function (OnThresholdEvent)
                     if "onThreshold_callback_fn" in self.threshold_condition: 
@@ -373,23 +373,17 @@ class interactableABC:
 
                     print(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
                     control_log(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
+                else: 
+                    # not active, don't record the threshold event 
+                    pass 
+            else: 
+                # no threshold event, ensure that threshold is False 
+                self.threshold = False # BIG CHANGE!!! FISH
 
 
-                    '''
-                    FISH
-                    DELETE ME EVENTUALLY:: leaving this here to confirm that it rlly isn't needed. ( Part of process of deleting things having to do with dependents. )
-                    if len(self.dependents) > 0: 
-                        # sleep while dependents (if they exist) remain in goal state, meaning current interactable is also in its goal state.
-                        # because interactable is not dependent on vole's actions, we can assume that it could potentially be sitting in its goal state for extended periods of time. 
-                        # as a result, we want to sleep until it is out of its goal state ( or until threshold gets set to false by simulation ).
 
-                        while attribute == self.threshold_condition['goal_value'] and self.threshold == True: 
-
-                            time.sleep(1) # wait for change in threshold or a change in the attribute's value to differ away from goal_value 
-                    '''
-                    
                     # Since an event occurred, check if we should reset the attribute value to its inital value
-                    ''' 
+            ''' 
                     NOT SURE THAT reset_value SHOULD EVER BE AN OPTION BECAUSE FOR EVERY INTERACTABLE THAT HAS A THRESHOLD THAT REQUIRES 'check_threshold_with_fn', that means it probs doesnt make much sense to try to directly SET the threshold attribute. 
                     if ('reset_value' in self.threshold_condition.keys() and self.threshold_condition['reset_value'] is True): 
 
@@ -405,7 +399,10 @@ class interactableABC:
                     # Sleep To Avoid Double Counting Threshold Events!
                     #
                     # LEAVING OFF HERE!!!!!! 
-                    while event_bool: 
+                    #
+                    # I BELIEVE THIS IS WHERE THE RFIDs ARE GETTING STUCK SINCE OF COURSE WHEN WE ADD A BUNCH OF THINGS TO THE RFIDQ, IT NEVER REACHES A STATE WHERE THE 
+                    # RFIDQ IS EMPTY AGAIN (i.e. the threshold is stuck in a true state, and we are sitting here waiting for it to go back to its false state before checking for more threshold events.)
+            '''while event_bool: 
 
                         # repeatedly upate the current value of the threshold attribute so we can check for changes in its value #
                         # check for attributes that may have been added dynamically 
@@ -436,17 +433,9 @@ class interactableABC:
                         
                         else: 
 
-                            time.sleep(0.1)
+                            time.sleep(0.1)'''
 
-                else: 
-                    # no threshold event 
-                    pass 
-            else: 
-                # no threshold event
-                pass 
                 
-            
-            time.sleep(0.75)
             
 
 
@@ -727,9 +716,19 @@ class door(interactableABC):
 
     def add_new_threshold_event(self): 
         # appends to the threshold event queue 
+        state = self.isOpen
         self.threshold_event_queue.put(f'{self.name} isOpen:{self.isOpen}')
         print("Door Threshold: ", self.threshold, "  Door Threshold Condition: ", self.threshold_condition)
         print(f'(Door(InteractableABC.py, add_new_threshold_event) {self.name} event queue: {list(self.threshold_event_queue.queue)}')
+
+        # To avoid overloading a door with threshold events, we can sleep here until a state change occurs 
+        while self.isOpen == state and self.active: 
+            if len(self.threshold_event_queue.queue) == 0: # isEmpty!
+                # simulation side "used" the added threshold event, so even if there hasn't been a state change, break out of while loop so we can add another threshold event 
+                return  
+            time.sleep(.5)
+        return 
+        
            
     #@threader
     def close(self):
@@ -740,6 +739,7 @@ class door(interactableABC):
             # If door is being simulated, then rather than actually closing a door we can just set the state to False (representing a Closed state)
             print(f'(Door(InteractableABC), close()) {self.name} is being simulated. Setting state to Closed and returning.')
             self.isOpen = False 
+            # time.sleep(2) # simulate time passed before the door actually closes 
             return 
 
         # check if the door is already closed 
@@ -784,6 +784,7 @@ class door(interactableABC):
             # If door is being simulated, then rather than actually opening a door we can just set the state to True (representing an Open state)
             print(f'(Door(InteractableABC), open()) {self.name} is being simulated. Setting switch val to Open (True) and returning.')
             self.isOpen = True 
+            # time.sleep(2) # simulate the time passed before the door is actually open
             return 
         
         # check if door is already open
@@ -843,22 +844,71 @@ class rfid(interactableABC):
         self.ID = ID 
         self.rfidQ = queue.Queue()
 
+        self.ping_history = [] # exhaustive list of all the pings that have occurred, independent of phase/mode 
 
         self.barrier = False # if rfid doesnt reach threshold, it wont prevent a voles movement
         self.autonomous = True # operates independent of direct interaction with a vole or other interactales. This will ensure that vole interacts with rfids on every pass. 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
 
+    class Ping: 
+        ''' class for packaging rfid pings into pairs in order to represent the time that a vole first scanned an the rfid reader, 
+        to the time that the vole left that rfid reader '''
+        def __init__(self, ping1, ping2 = None, latency = None): 
+            self.vole_tag = ping1[0]
+            self.rfid_id = ping1[1]
+            self.ping1 = ping1
+            self.ping2 = ping2
+            self.latency = latency 
+        
+        def set_ping2(self, ping2): 
+            ''' updates ping2 with new ping2 value, and sets the threshold value '''
+            if self.ping2 is not None: 
+                raise Exception(f'(InteractableABC.py) rfid{self.rfid_id} already contains a value for ping2')
+            else: 
+                self.ping2 = ping2
+                self.latency = ping2[2] - self.ping1[2]
+        
+        def __str__(self): 
+            return f'({self.vole_tag}, {self.rfid_id}, {self.latency})'
+    
+        
     def add_new_threshold_event(self): 
         '''New Ping was added to rfidQ. Retrieve its value and append to the threshold event queue '''
         try: 
-            ping1 = self.rfidQ.get() 
-            ping2 = self.rfidQ.get() 
-            latency = ping2[2] - ping1[2] # calculates time difference between the 1st and 2nd ping
+            ping = self.rfidQ.get() 
+            print('PING: ', ping)
+            # Check if the new ping is the 2nd ping ( a vole leaving an rfid reader ) or a first ( a vole arriving at the rfid reader )
+            # Starting at the end of the end of the ping history list ( so the most recent pings ), look for a ping from this vole
+            voletag = ping[0]
+            newEntry = True 
+            for idx in range(len(self.ping_history)-1, -1, -1): 
+                p = self.ping_history[idx]
+                if p.vole_tag == voletag: 
+                    # check to see if a 2nd ping was recorded 
+                    if p.ping2 is None: 
+                        # The new ping should be recorded as the 2nd ping in this Ping Object! Do not add a new threshold event. 
+                        # Update Existing Ping Object
+                        p.set_ping2(ping) # sets ping2 and calculates latency 
+                        newEntry = False 
+                        break 
+                    else: 
+                        break 
+
+            if newEntry: 
+                # create new Ping object and add to threshold event queue! 
+                '''try: # Checks to see if there is already a second ping
+                    ping2 = self.rfidQ.get_nowait() 
+                    latency = ping2[2] - ping[2] # calculates time difference between the 1st and 2nd ping
+                except queue.Empty: '''
+                ping2 = None
+                latency = None 
+                newPing = self.Ping(ping, ping2, latency)
+                self.ping_history.append(newPing)
+                self.threshold_event_queue.put((newPing.vole_tag, newPing.rfid_id, newPing.latency))
+
         except queue.Empty as e: 
             raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the rfidQ for {self.name}')
-
-        self.threshold_event_queue.put((ping1,ping2,latency))
 
         # do not deactivate the rfids. always monitoring for pings. 
     

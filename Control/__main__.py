@@ -28,7 +28,7 @@ def main():
 
 
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-    airlockBox = AirLockDoorLogic(timeout = 20, map = map)
+    airlockBox = AirLockDoorLogic(timeout = 30, map = map)
     intervalBox = WaitFiveSecondsBeforeRetractOrClose(timeout = 15, map = map)
     iteratorBox = IteratorBox(timeout = 15, map = map)
     reactiveBox = ReactiveBox(timeout = 30, map = map )

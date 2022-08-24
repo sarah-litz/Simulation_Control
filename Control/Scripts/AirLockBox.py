@@ -57,7 +57,7 @@ class AirLockDoorLogic(modeABC):
 
         for l in lever_list: 
             setattr(self, str(l), l)
-            l.deactivate() # we don't want levers to effect door states for this round.
+            # l.deactivate() # we don't want levers to effect door states for this round.
 
         rfid1 = self.map.instantiated_interactables['rfid1']
         rfid2 = self.map.instantiated_interactables['rfid2']
@@ -97,7 +97,7 @@ class AirLockDoorLogic(modeABC):
             count = 0
             for e in list(rfid.threshold_event_queue.queue): 
 
-                if e[0][0] == vole_tag: 
+                if e[0] == vole_tag: 
 
                     count += 1 
             
@@ -111,6 +111,16 @@ class AirLockDoorLogic(modeABC):
             # for each rfid, tally up how many each vole has caused
             
             for r in rfid_list: 
+                
+                if len(r.threshold_event_queue.queue) == 0: 
+
+                    # No Pings Detected. Move onto next rfid
+                    break 
+                    
+                else: 
+
+                    print('THRESHOLD EVENT QUEUE CURRENTLY:')
+                    print(list(r.threshold_event_queue.queue))
 
                 voles_in_edge = []
                 for v in self.map.voles: 
@@ -119,7 +129,7 @@ class AirLockDoorLogic(modeABC):
 
                     number = num_pings_by_vole(r, v.tag)
 
-                    if number%2 != 0: 
+                    if (number%2) != 0: # Odd Number of Pings => Vole in Edge
 
                         voles_in_edge.append(v)
                 
@@ -154,8 +164,13 @@ class AirLockDoorLogic(modeABC):
                             self.door4.close() 
                             next_door_to_open = self.door3
                     
-                    #
+                    # current issue: Recheck is begginning BEFORE the second PING (by vole2) is processed by the rfidListener in Mode.py, which grabs from the shared rfid Q and adds pings to the specific rfids threshold_event_queue
+                    time.sleep(3) # Pause Before Recheck to ensure Accuracy 
                     # Recheck this rfid that only one vole is in each edge by re-checking the number of rfid pings each vole has caused for this particular rfid
+                    print('R E C H E C K')
+                    print('THRESHOLD EVENT QUEUE FOR THE RECHECK:')
+                    print(list(r.threshold_event_queue.queue))
+                    time.sleep(5)
                     voles_in_edge = []
                     for v in self.map.voles: 
                         
@@ -170,25 +185,27 @@ class AirLockDoorLogic(modeABC):
                     if len(voles_in_edge) != 1: 
 
                         # Failed the Recheck. Reset 
+                        print('FAILED THE RECHECK! MORE THAN ONE VOLE GOT INTO THE EDGE OR 0 VOLES IN EDGE. RESET.')
                         set_to_start_state() 
                     
                     else: 
 
                         # Passed the Recheck. Procede with opening the next door.
+                        print(f'PASSED THE RECHECK! voles_in_edge: {[*(v.tag for v in voles_in_edge)]}')
                         next_door_to_open.open()
 
                         # Return now that we have separated the voles. 
                         return 
 
 
-                elif len(voles_in_edge): 
+                else: 
 
                     # Either No Voles are in the edge, or more than one vole are in the edge. Open the door to allow voles back into initial chamber. 
 
                     # Reset to the Start State where door1 and door3 are open, and door2&door4 are closed.
                     set_to_start_state()
 
-
+                    print('(Control/Scripts/AirLockBox.py) more than one vole was in the edge. setting to start state and looping. ')
 
                     # # At This Point, we have hopefully trapped a single vole in between 2 doors. 
                     # # # Double check this by looping once more 
