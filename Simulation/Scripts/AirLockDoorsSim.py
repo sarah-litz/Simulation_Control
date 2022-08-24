@@ -45,11 +45,6 @@ class AirLockDoorsSim(SimulationABC):
         vole1 = self.get_vole(1)
         vole2 = self.get_vole(2)
         
-        vole1.move_to_interactable(self.map.lever_door1)
-        vole1.simulate_vole_interactable_interaction(self.map.lever_door1)
-        vole1.simulate_vole_interactable_interaction(self.map.lever_door1)
-        print('lever_door1 THRESHOLD QUEUE after 2 interactions with lever_door1: ', self.map.lever_door1.threshold_event_queue.queue)
-        
         #
         # Voles will attempt to make a move at the same time.
         #

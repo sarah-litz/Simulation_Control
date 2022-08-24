@@ -97,7 +97,7 @@ class AirLockDoorLogic(modeABC):
             count = 0
             for e in list(rfid.threshold_event_queue.queue): 
 
-                if e[0] == vole_tag: 
+                if e.vole_tag == vole_tag: 
 
                     count += 1 
             
@@ -120,7 +120,7 @@ class AirLockDoorLogic(modeABC):
                 else: 
 
                     print('THRESHOLD EVENT QUEUE CURRENTLY:')
-                    print(list(r.threshold_event_queue.queue))
+                    print([*(str(ele) for ele in r.threshold_event_queue.queue)])
 
                 voles_in_edge = []
                 for v in self.map.voles: 

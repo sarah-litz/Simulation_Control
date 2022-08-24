@@ -871,6 +871,12 @@ class rfid(interactableABC):
         
         def __str__(self): 
             return f'({self.vole_tag}, {self.rfid_id}, {self.latency})'
+        
+        def __repr__(self): 
+            return f'({self.vole_tag}, {self.rfid_id}, {self.latency})'
+        
+        def __iter__(self): 
+            return [{self.vole_tag}, {self.rfid_id}, {self.latency}]
     
         
     def add_new_threshold_event(self): 
@@ -891,8 +897,10 @@ class rfid(interactableABC):
                         # Update Existing Ping Object
                         p.set_ping2(ping) # sets ping2 and calculates latency 
                         newEntry = False 
-                        break 
+                        print('UPDATED A PREVIOUSLY RECORDED PING')
+                        return 
                     else: 
+                        newEntry = True 
                         break 
 
             if newEntry: 
@@ -905,7 +913,7 @@ class rfid(interactableABC):
                 latency = None 
                 newPing = self.Ping(ping, ping2, latency)
                 self.ping_history.append(newPing)
-                self.threshold_event_queue.put((newPing.vole_tag, newPing.rfid_id, newPing.latency))
+                self.threshold_event_queue.put(newPing)
 
         except queue.Empty as e: 
             raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the rfidQ for {self.name}')
