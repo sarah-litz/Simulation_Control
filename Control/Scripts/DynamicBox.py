@@ -22,6 +22,11 @@ class WaitFiveSecondsBeforeRetractOrClose(modeABC):
         setattr(self, 'door1', self.map.instantiated_interactables['door1'])
         setattr(self, 'lever_door1', self.map.instantiated_interactables['lever_door1'])
 
+        door_list = [self.map.door1, self.map.door2, self.map.door3, self.map.door4]
+        for d in door_list: 
+            if d.isOpen: 
+                d.close() # begin with all doors closed!
+
     def run(self):
 
         script_log(f'------------------------\n\n{self} is Running!')        

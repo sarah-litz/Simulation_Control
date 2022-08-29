@@ -22,6 +22,7 @@
     "rfid3":
     {
         "id":3,
+        "parents":[],
         "threshold_condition": { 
             "attribute":"check_threshold_with_fn", 
             "initial_value":true, 

@@ -16,9 +16,10 @@ from collections import deque
 import time
 import json 
 import os
+import threading
 
 # Local Imports 
-from .Timer import draw_table
+from .Timer import draw_table, PRINTING_MUTEX
 from Logging.logging_specs import control_log, sim_log
 from .ModeABC import modeABC 
 from . import InteractableABC
@@ -42,6 +43,7 @@ class Map:
             self.configure_setup(config_directory + f'/{map_file_name}')
         else: self.configure_setup(config_directory + '/map.json')
 
+        # self.printing_mutex = PRINTING_MUTEX # lock to ensure only one thread prints at a time. A single mutex is shared among both control and simulation package.
  
 
     #
@@ -49,8 +51,11 @@ class Map:
     #
     def draw_map(self, voles=[]): 
         '''prints the chambers, edges, and components to the screen. If this is called from a Simulation, there is an option to pass the voles argument to also print the vole positions in the map'''
+        print('\n')
+        # * note - do NOT aquire the printing mutex here because that would cause deadlock since both functions we call will also attempt to acquire the mutex
         self.draw_chambers(voles)
         self.draw_edges(voles)
+        print('\n')
     
     def draw_helper(self, voles, interactables): 
 
@@ -73,10 +78,15 @@ class Map:
             voles_before_i = [] 
             voles_after_i = []
             
-            
+               
             for v in voles: # for each interactable, loop thru the voles w/in the same chamber and check their component location 
                 
-                if type(v.curr_component) is self.Chamber.ComponentSet and v.curr_component.interactableSet == i: 
+                if not hasattr(v, 'curr_component'): 
+                    # voles are the Map version of the vole class, which does not have info on the component location, only the chamber/edge location 
+                    # simply place this vole before i 
+                    voles_before_i.append('Vole' + str(v.tag)) 
+
+                elif type(v.curr_component) is self.Chamber.ComponentSet and v.curr_component.interactableSet == i: 
                     # voles current_component.interactableSet is the entire set of Unordered Interactables 
                     # as we loop through interactables, one of the elements should also be the entire set of Unordered Interactables 
                     # so we should look for the direct comparison between i and the interactableSet, as these should be identical.
@@ -161,6 +171,11 @@ class Map:
     
     def draw_chambers(self, voles=[]): 
 
+        if len(voles) == 0: 
+            voles = self.voles 
+
+
+        PRINTING_MUTEX.acquire() # # Aquire Lock for Active Printing Section # # 
         for cid in self.graph.keys(): 
             
             chmbr = self.get_chamber(cid)
@@ -170,6 +185,8 @@ class Map:
             for v in voles: 
                 if v.curr_loc == chmbr: 
                     cvoles.append(v)
+
+            
             print(f'-------------------------------------------------------')
             print(f'|                       (C{chmbr.id})                          |')
 
@@ -218,9 +235,16 @@ class Map:
                         
             print(f'-------------------------------------------------------')
 
+        PRINTING_MUTEX.release() # # End of Active Printing Section, Release Lock # # 
     
     def draw_edges(self, voles=[]): 
+
+        if len(voles) == 0: 
+            voles = self.voles
+
         edges = self.edges
+
+        PRINTING_MUTEX.acquire() # GET PRINTING LOCK
         for e in edges: 
             
             # Make List of Edge Voles
@@ -236,13 +260,17 @@ class Map:
             vole_interactable_lst = self.draw_helper(evoles, interactables)
 
             print(f'({e.v1}) <---{vole_interactable_lst}----> ({e.v2})')
+        PRINTING_MUTEX.release() # RELEASE PRINTING LOCK
 
 
     def draw_location(self, location, voles=[]): 
         
         # draws the specified location, not the entire map 
         drawing = '' # we return a string that represents all of the things to print ( this way we can write the drawings to the logging files )
-        
+
+        if len(voles) == 0:
+            voles = self.voles
+
         # get voles that are at location 
         loc_voles = []
         for v in voles: 
@@ -262,6 +290,7 @@ class Map:
 
         vole_interactable_lst = self.draw_helper(loc_voles, interactables)
 
+        PRINTING_MUTEX.acquire() # RETRIEVE PRINTING LOCK 
         if location.edge_or_chamber == 'edge': 
             # draw edge 
             print(f'({location.v1}) <---{vole_interactable_lst}----> ({location.v2})')
@@ -281,6 +310,7 @@ class Map:
             print(f'-------------')
             drawing += (f'\n-------------')
 
+        PRINTING_MUTEX.release() # RELEASE PRINTING LOCK
         return drawing
 
     #
@@ -1742,8 +1772,8 @@ class Map:
             ## Vole Location Information ## 
             self.curr_loc = map.get_chamber(start_chamber)
             self.prev_loc = None # object representing the voles previous location.
-        
 
+        
     def _setup_voles(self, data): 
         # uses data in the map config file to create voles and set their start location
         for v in data['voles']: 

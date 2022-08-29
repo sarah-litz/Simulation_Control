@@ -81,7 +81,19 @@ class Vole:
             return False 
 
 
-        
+    def simulate_move_and_interactable(self, interactable): 
+
+        ''' first moves to the interactable, and if movement is successful then procedes by calling simulate_vole_interactable_interaction on the interactable '''
+        try: 
+            self.move_to_interactable(interactable)
+        except Exception as e: 
+            print(e)
+            return 
+        # procede with simulation 
+        self.simulate_vole_interactable_interaction(interactable)
+        return 
+
+
     def simulate_vole_interactable_interaction(self, interactable): 
 
         ''' called from vole.attempt_move() in order to simulate a vole's interaction with an interactable '''
@@ -92,8 +104,8 @@ class Vole:
         # Active Check
         #
         if interactable.active is False: 
-            print(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} is inactive')
-            sim_log(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} is inactive')
+            print(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is inactive')
+            sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is inactive')
             # we don't care to simulate an inactive interactable
             # vole unable to effect the threshold attribute value of an inactive interactable (so threshold value is the same the entire time)
             return 
@@ -103,8 +115,8 @@ class Vole:
         # Physical Proximity Check 
         #
         if not self.at_location_of(interactable): 
-            print(f'(Vole.py, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
-            sim_log(f'(Vole.py, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
+            print(f'(Vole{self.tag}, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
+            sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
             return 
 
 
@@ -138,8 +150,8 @@ class Vole:
         #
         if interactable.isSimulation: 
 
-            vole_log( f'(Vole.py, simulate_vole_interactable_interaction) simulating vole{self.tag} interaction with {interactable.name}' ) 
-            print(f'(Vole.py, simulate_vole_interactable_interaction) Simulating vole{self.tag} interaction with {interactable.name}')
+            vole_log( f'(Vole{self.tag}, simulate_vole_interactable_interaction) simulating vole{self.tag} interaction with {interactable.name}' ) 
+            print(f'(Vole{self.tag}, simulate_vole_interactable_interaction) Simulating vole{self.tag} interaction with {interactable.name}')
     
             if hasattr(interactable, 'simulate_with_fn'):
                 
@@ -152,14 +164,14 @@ class Vole:
                 threshold_attr_name = interactable.threshold_condition["attribute"]
                 # attribute = getattr(interactable, threshold_attr_name) # get object specified by the attribute name
 
-                sim_log(f'(Vole.py, attempt_move) {interactable.name}, threshold attribute: {threshold_attr_name}, threshold value: {interactable.threshold_condition["goal_value"]}')
+                sim_log(f'(Vole{self.tag}, attempt_move) {interactable.name}, threshold attribute: {threshold_attr_name}, threshold value: {interactable.threshold_condition["goal_value"]}')
             
                 # manually set the attribute to its goal value so we meet the threshold condition, and trigger the control side to add an event to the threshold_event_queue 
                 setattr(interactable, threshold_attr_name, interactable.threshold_condition['goal_value'])
                 
                 newattrval = getattr(interactable, threshold_attr_name)
                 # sim_log(f'{interactable.name}, manual attribute check: {interactable.buttonObj}')
-                sim_log(f"(Vole.py, attempt_move) {interactable.name}, attribute result: {newattrval}")
+                sim_log(f"(Vole{self.tag}, attempt_move) {interactable.name}, attribute result: {newattrval}")
             
             # countdown(5, f'simulating vole{self.tag} interaction with {interactable.name}') 
             time.sleep(2) # gives the threshold listener a chance to react to the simulation
@@ -206,7 +218,7 @@ class Vole:
 
         if newcomponent is None: 
             if nxt_edge_or_chmbr_id is None: 
-                raise Exception(f'(vole.py, update_location) If trying to update vole{self.tag} component location to a newcomponent of None, then must specify the argument for next edge or chamber id that vole should be in!')
+                raise Exception(f'(Vole{self.tag}, update_location) If trying to update vole{self.tag} component location to a newcomponent of None, then must specify the argument for next edge or chamber id that vole should be in!')
             if prev_loc.edge_or_chamber == 'chamber': 
                 # grab edge 
                 self.curr_loc = self.map.get_edge(nxt_edge_or_chmbr_id)
@@ -235,7 +247,7 @@ class Vole:
         print(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
         vole_log(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
 
-        location_visual = self.map.draw_location(location = self.curr_loc, voles = [self])
+        location_visual = self.map.draw_location(location = self.curr_loc)
         print('\n')
         vole_log(location_visual)
 
@@ -261,7 +273,7 @@ class Vole:
         if goal_interactable.edge_or_chamber_id < 0: 
             # ensure that interactable's location is reachable by a vole 
             # Goal Location does not exist or is not reachable by a vole (e.g. if the interactable is in a chamber with a negative integer for its id)
-            raise Exception(f'(Vole.py, move_to_interactable) Invalid Argument for Vole Movement: {goal_interactable} exists in a location that is unreachable for a vole.')
+            raise Exception(f'(Vole{self.tag}, move_to_interactable) Invalid Argument for Vole Movement: {goal_interactable} exists in a location that is unreachable for a vole.')
 
 
         if self.curr_component is not None: 
@@ -296,7 +308,7 @@ class Vole:
 
         # if the goal_component is a ComponentSet, then an interactable should be specified with the interactable_within_component argument! 
         if type(goal_component) is self.map.Chamber.ComponentSet and interactable_within_component is None: 
-            raise Exception(f'(Vole.py, move_to_component) Must specify the goal interactable within {goal_component} since the goal component is a set of interactables.')
+            raise Exception(f'(Vole{self.tag}, move_to_component) Must specify the goal interactable within {goal_component} since the goal component is a set of interactables.')
         
         ''' 
         compiles list of components that stand between current component and the goal component. 
@@ -341,7 +353,7 @@ class Vole:
             #
             # This entire while loop is just to get the vole positioned at some component, since its current component is None and that is unhelpful to start out on!  
             # 
-            sim_log(f'(Vole.py, move_to_component) Vole{self.tag} current component is None; Searching for the nearest component to update the voles location to.')
+            sim_log(f'(Vole{self.tag}, move_to_component) Vole{self.tag} current component is None; Searching for the nearest component to update the voles location to.')
             # manually put together the component path by using the start_loc and goal_loc 
             # goal_loc = self.map.get_location_object(goal_component.interactable)
             path = self.map.get_edge_chamber_path(self.curr_loc, goal_loc)
@@ -459,7 +471,7 @@ class Vole:
             goal_nxt = None 
             goal_prev = None
             if goal_interactable is None and nxt_edge_or_chmbr_id is None: 
-                raise Exception(f'(Vole.py, move_next_component) if goal component is None, must specify an argument for next_chamber_or_edge_id')
+                raise Exception(f'(Vole{self.tag}, move_next_component) if goal component is None, must specify an argument for next_chamber_or_edge_id')
             
         else: 
             goal_nxt = getInteractable(goal_component.nextval)
@@ -627,11 +639,11 @@ class Vole:
             if not self.is_move_valid(destination): 
                 # print reason that move is invalid, and then return.
                 if self.curr_loc == destination: 
-                    sim_log(f'(Vole.py, attempt_move) Vole{self.tag} is already in chamber{destination}!')
-                    print(f'(Vole.py, attempt_move) Vole{self.tag} is already in chamber {destination}!')
+                    sim_log(f'(Vole{self.tag}, attempt_move) Vole{self.tag} is already in chamber{destination}!')
+                    print(f'(Vole{self.tag}, attempt_move) Vole{self.tag} is already in chamber {destination}!')
                 else: 
-                    sim_log(f'(Vole.py, attempt_move) attempting a move that is not physically possible according to Map layout. Skipping Move Request')
-                    print(f'(Vole.py, attempt_move) attempting a move that is not physically possible according to Map layout. Skipping Move Request.')
+                    sim_log(f'(Vole{self.tag}, attempt_move) attempting a move that is not physically possible according to Map layout. Skipping Move Request')
+                    print(f'(Vole{self.tag}, attempt_move) attempting a move that is not physically possible according to Map layout. Skipping Move Request.')
 
                 return False
 
@@ -688,7 +700,7 @@ class Vole:
         if self.curr_component.interactable.name not in [*(ele.interactable.name for ele in edge)]: 
             self.move_to_component(edge[0])'''
 
-        vole_log(f'(Vole.py, attempt_move) vole{self.tag} is on the edge with the following components: {[*(ele.interactable.name for ele in edge)]}')
+        vole_log(f'(Vole{self.tag}, attempt_move) vole{self.tag} is on the edge with the following components: {[*(ele.interactable.name for ele in edge)]}')
         
         # begin simulation from the vole's current interactable position. 
         # if self.curr_component is None: 
@@ -701,7 +713,7 @@ class Vole:
         edge = edge[i::]
 
 
-        vole_log(f'(Vole.py, attempt_move) vole{self.tag} traversing the components: {[*(ele.interactable.name for ele in edge)]}')
+        vole_log(f'(Vole{self.tag}, attempt_move) vole{self.tag} traversing the components: {[*(ele.interactable.name for ele in edge)]}')
 
         # traverse the linked list containing the edge components 
         for i in range(len(edge)):
@@ -712,8 +724,8 @@ class Vole:
             # check that vole's current interactable position allows us to simulate
             if self.curr_component.interactable.name != component.interactable.name: 
                 
-                print(f'(Vole.py, attempt_move) vole{self.tag} is positioned at {self.curr_component}, so unable to simulate interaction with {component.interactable.name} and cannot complete the attempted move.')
-                sim_log(f'(Vole.py, attempt_move) vole{self.tag} is positioned at {self.curr_component}, so unable to simulate interaction with {component.interactable.name} and cannot complete the attempted move.')
+                print(f'(Vole{self.tag}, attempt_move) vole{self.tag} is positioned at {self.curr_component}, so unable to simulate interaction with {component.interactable.name} and cannot complete the attempted move.')
+                sim_log(f'(Vole{self.tag}, attempt_move) vole{self.tag} is positioned at {self.curr_component}, so unable to simulate interaction with {component.interactable.name} and cannot complete the attempted move.')
                 return 
             
             else: 
@@ -775,7 +787,7 @@ class Vole:
                 # Goal Check After Every Move! # 
                 if self.curr_loc == self.map.graph[destination]: 
                     # Goal reached. No need to traverse any further on the edge 
-                    vole_log(f'(Vole.py, attempt_move) Simulated Vole {self.tag} moved into {self.curr_loc}. Component Location is between ({self.prev_component}, {self.curr_component}')
+                    vole_log(f'(Vole{self.tag}, attempt_move) Simulated Vole {self.tag} moved into {self.curr_loc}. Component Location is between ({self.prev_component}, {self.curr_component}')
                     print(f'Simulated Vole{self.tag} New Location is {self.curr_loc}. Component Location is between ({self.prev_component}, {self.curr_component})')
                     return 
 
@@ -862,8 +874,8 @@ class Vole:
 
         (action_fn, arg) = self.random_action() 
             
-        sim_log(f'(Vole.py, attempt_random_action) Vole{self.tag} attempting: {action_fn.__name__} (arg: {arg}) ')
-        print(f'(Vole.py, attempt_random_action) Vole{self.tag} attempting: {action_fn.__name__} (arg: {arg}) ')
+        sim_log(f'(Vole{self.tag}, attempt_random_action) Vole{self.tag} attempting: {action_fn.__name__} (arg: {arg}) ')
+        print(f'(Vole{self.tag}, attempt_random_action) Vole{self.tag} attempting: {action_fn.__name__} (arg: {arg}) ')
 
         action_fn(arg) 
 

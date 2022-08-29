@@ -26,11 +26,6 @@ class AirLockDoorsSim(SimulationABC):
         # the Non-Parallel Execution of the Vole Movements works OK. 
         #
 
-        #
-        # leaving off here --> next test should be with threaded voles, where 2 voles are attempting at the same time!! 
-        # can maybe start by getting both voles to just go sit in front of door2 to see if the code works. 
-        #
-
         vole1 = self.get_vole(1)
         vole2 = self.get_vole(2)
 
@@ -46,8 +41,10 @@ class AirLockDoorsSim(SimulationABC):
         vole2 = self.get_vole(2)
         
         #
-        # Voles will attempt to make a move at the same time.
+        # Voles will attempt to make a move at the same time. Goal Result: This should Fail the Recheck and door2 should not open!
         #
+
+        print('\n\n    Both Voles Attempt Move into Chamber 2')
         v1 = threading.Thread(target = vole1.attempt_move, args=(2,), daemon=True) # attempt move into chamber 2
         v2 = threading.Thread(target = vole2.attempt_move, args=(2,), daemon=True) # attempt move into chamber 2
 
@@ -56,3 +53,42 @@ class AirLockDoorsSim(SimulationABC):
 
         v1.join() 
         v2.join()
+
+
+        #
+        # Move voles Back into Chamber 1 to "reset"
+        #
+        print('\n\n    Moving Both Voles Back Into Chamber 1')
+        v1 = threading.Thread(target = vole1.attempt_move, args=(1,), daemon=True) # attempt move into chamber 1
+        v2 = threading.Thread(target = vole2.attempt_move, args=(1,), daemon=True) # attempt move into chamber 1
+
+        v1.start()
+        v2.start()
+
+        v1.join() 
+        v2.join()
+
+
+        
+        #
+        # Vole 2 attempts a move into chamber 2, while Vole 1 interacts with the food lever. Goal Result: This should pass the recheck and door1 should close and door2 should open! 
+        #
+        print('\n\n    Vole 1 Interacts with lever_food while Vole 2 Attempts Move into Chamber 2')
+        v1 = threading.Thread(target = vole1.simulate_move_and_interactable, args=(self.map.lever_food,), daemon=True) # interact with the food lever 
+        v2 = threading.Thread(target = vole2.attempt_move, args=(2,), daemon=True) # attempt move into chamber 2
+
+        v1.start()
+        v2.start()
+
+        v1.join() 
+        v2.join()   
+
+        print('\n\n    Vole2Attempt2 Move into Chamber 2')
+        if vole2.curr_loc == self.map.get_chamber(2): 
+            pass
+        else: 
+            # reattempt the move into chamber 2 
+            vole2.attempt_move(2)    
+        
+        # Final Visual before Sim Finishes
+        self.map.draw_map()

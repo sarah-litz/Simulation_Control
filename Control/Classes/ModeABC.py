@@ -195,13 +195,13 @@ class modeABC:
                 # # we want to prioritize the passing of a ping from the shared_rfidQ to the individual rfidQ where the handling of a ping will happen # # 
                 # In order to do this, before allowing an indivual rfid to pull from its rfidQ, we want to empty out the shared_rfidQ # 
                 
-                print('\nPING ADDED TO SHARED QUEUE: ', ping)
+                # print('\nPING ADDED TO SHARED QUEUE: ', ping)
                 id = ping[1] # parse the ping information 
 
                 rfid_interactable = rfid_objects[id] # retrieve the corresponding rfid object 
 
                 rfid_interactable.rfidQ.put( (ping) ) 
-                print('PING ADDED TO THE INDIVIDUAL RFIDQ')
+                # print('PING ADDED TO THE INDIVIDUAL RFIDQ')
 
                 # # # the Map's Vole Location Tracking relies on the RFIDs for making any location updates # # # 
                 # # Make Updates to Voles Location in the Map Class # # 

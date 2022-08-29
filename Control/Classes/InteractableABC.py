@@ -648,6 +648,7 @@ class door(interactableABC):
         else: # if not simulating gpio connection, then isPressed should be a function call that checks the GPIO input/output value each call
             self.isOpen = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
         
+
         # Set Doors Starting state to its Initial Open/Close Position
         # --> need to do this open/close startingstate AFTER isSimulation has been set. ( maybe just have people do this in the setup() function of the actual script )
         '''if self.isOpen != threshold_condition['initial_value']: 
@@ -663,7 +664,9 @@ class door(interactableABC):
 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
     
-    
+    def __str__(self):
+        return self.name+f'(Open:{self.isOpen})'
+
     def override(self, open_or_close): 
         ''' if override button gets pressed we call this function on the door '''
 
@@ -827,10 +830,6 @@ class door(interactableABC):
 
 
 
-
-
-
-
 class rfid(interactableABC):
     """This class is the unique class for rfid readers that is an interactable object. Note that this does not control the rfid readers like the other unique classes, it only deals with the handling of rfid data and its postion in the decision flow.
 
@@ -897,7 +896,7 @@ class rfid(interactableABC):
                         # Update Existing Ping Object
                         p.set_ping2(ping) # sets ping2 and calculates latency 
                         newEntry = False 
-                        print('UPDATED A PREVIOUSLY RECORDED PING')
+                        # print('UPDATED A PREVIOUSLY RECORDED PING')
                         return 
                     else: 
                         newEntry = True 
@@ -905,10 +904,6 @@ class rfid(interactableABC):
 
             if newEntry: 
                 # create new Ping object and add to threshold event queue! 
-                '''try: # Checks to see if there is already a second ping
-                    ping2 = self.rfidQ.get_nowait() 
-                    latency = ping2[2] - ping[2] # calculates time difference between the 1st and 2nd ping
-                except queue.Empty: '''
                 ping2 = None
                 latency = None 
                 newPing = self.Ping(ping, ping2, latency)

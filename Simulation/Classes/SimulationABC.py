@@ -36,11 +36,13 @@ class SimulationABC:
         # configure sim: updates interactables w/ simulation attributes & instantiates voles 
         self.configure_simulation(cwd + '/Simulation/Configurations/simulation.json') 
 
-        self.simulation_func = {} # dict for pairing a mode with a simulation function 
+        self.simulation_func = {} # dict for pairing a mode with a simulation function ( or list of simulation functions )
 
         self.modes = modes
 
         self.current_mode = None # contains the Mode object that the control software is currently running. 
+
+        self.map.voles = self.voles # Replace the Control Voles w/ the Simulation Voles so we can provide more information in the visualilzations
 
 
     def __str__(self): 
@@ -86,7 +88,7 @@ class SimulationABC:
             return 
 
    
-        sim_log(f'(Simulation.py, run_sim) {current_mode} is paired with the simulation function: {self.simulation_func[current_mode]}')
+        sim_log(f'(Simulation.py, run_sim) {current_mode} is paired with the simulation function: {[*(f.__name__ for f in self.simulation_func[current_mode])]}')
 
         # print(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
         vole_log(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
@@ -95,28 +97,34 @@ class SimulationABC:
 
         #
         # Run the Mode's Simulation Function in separate thread. Exit when the running mode becomes inactive or exits its timeout interval. 
-        sim_fn = self.simulation_func[current_mode]
-
-        sim_thread = threading.Thread(target = sim_fn)
+        sim_fn_list = self.simulation_func[current_mode]
 
         current_mode.simulation_lock.acquire()  # grab lock to denote that simulation is running 
-        sim_thread.start() 
+        for sim_fn in sim_fn_list: 
 
-        while current_mode.inTimeout and current_mode.active: 
-            
-            time.sleep(1)  # let the simulation continue to run while mode is both active and in timeout
+            print(f'\n     (SimulationABC.py, run_sim) New Simulation Function Running: {sim_fn.__name__}')
+            sim_thread = threading.Thread(target = sim_fn)
+
+            sim_thread.start() 
+
+            while current_mode.inTimeout and current_mode.active: 
+                
+                time.sleep(1)  # let the simulation continue to run while mode is both active and in timeout
 
 
-        if sim_thread.is_alive(): 
-
-            print(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
-            sim_log(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
-            
-            sim_thread.join(1000) # wait for simulation to finish 
             if sim_thread.is_alive(): 
-                print(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')
-                sim_log(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')
-        
+
+                print(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
+                sim_log(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
+                
+                sim_thread.join(1000) # wait for simulation to finish 
+                if sim_thread.is_alive(): 
+                    print(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')
+                    sim_log(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')    
+            
+            if not current_mode.active: 
+                print(f'(Simulation.py, run_sim) {current_mode} ended, final simulation function that ran was {sim_fn}. ( Full List of Functions set to run: {sim_fn_list}')
+
         current_mode.simulation_lock.release() # release lock to denote that simulation for this mode finished running  
         return
         
@@ -138,12 +146,13 @@ class SimulationABC:
 
         # Validity Check that will only execute once # 
         ''' check validitity of the simulation functions that were set to notify user of potential errors as early as possible '''
-        for (mode, simFn) in self.simulation_func.items(): 
+        for (mode, simFnList) in self.simulation_func.items(): 
              # DON'T ALLOW SOMEONE TO PASS IN FUNCITON FROM A DIFFERENT CLASS BECAUSE THEN THE BOX BASICALLY RESETS AKA IT WONT RECALL WHERE THE VOLES LEFT OFF!
-            if hasattr(self, simFn.__name__): 
-                sim_log(f'{mode} is paired with {simFn.__name__}')
-            else: 
-                raise Exception(f'specified {simFn} as a simulation function for {self}. Simulation Function Must Belong To {self}. Otherwise 2 diff simulations will get created, and Voles will reset to initial positions.')
+            for simFn in simFnList:
+                if hasattr(self, simFn.__name__): 
+                    sim_log(f'{mode} is paired with {simFn.__name__}')
+                else: 
+                    raise Exception(f'specified {simFn} as a simulation function for {self}. Simulation Function Must Belong To {self}. Otherwise 2 diff simulations will get created, and Voles will reset to initial positions.')
 
 
 

@@ -45,21 +45,21 @@ sim_log('\n\n\n\n-----------------------------Simulation Package Started--------
 SimulationScript = AirLockDoorsSim( modes = modes ) # create simulation, pass list of modes as argument 
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-SimulationScript.simulation_func[ modes[0] ] = ( SimulationScript.threaded_vole_movements ) 
-SimulationScript.simulation_func[ modes[1] ] = ( SimulationScript.non_threaded_vole_movements ) 
-SimulationScript.simulation_func[ modes[2] ] = ( SimulationScript.non_threaded_vole_movements ) 
+SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.threaded_vole_movements, SimulationScript.non_threaded_vole_movements ]
+SimulationScript.simulation_func[ modes[1] ] = [ SimulationScript.non_threaded_vole_movements ] 
+SimulationScript.simulation_func[ modes[2] ] = [ SimulationScript.non_threaded_vole_movements ] 
 
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 
 print(f'\n Double Check that the following Control/Simulation Pairings look correct...') 
-data = [ ['Control Mode', 'filepath', 'Simulation Scripts', 'filepath'] ]
+data = [ ['Control Mode', 'Simulation Scripts'] ]
 for m in modes: 
     if m in SimulationScript.simulation_func.keys(): 
-        data.append( [m, ' ' + str(os.path.relpath(inspect.getfile(m.__class__))) , SimulationScript.simulation_func[m].__name__, ' ' + str(os.path.relpath(inspect.getfile(SimulationScript.__class__))) ])
+        data.append( [str(m) + f' ({str(os.path.relpath(inspect.getfile(m.__class__)))})', f' {[*(f.__name__ for f in SimulationScript.simulation_func[m])]}  ({(str(os.path.relpath(inspect.getfile(SimulationScript.__class__))))})' ])
 
     else: 
-        data.append( [m, 'None'] )
-draw_table(data, cellwidth=40)
+        data.append( [str(m) + f' ({str(os.path.relpath(inspect.getfile(m.__class__)))})'] )
+draw_table(data, cellwidth=80)
 input_before_continue('')
 
 
