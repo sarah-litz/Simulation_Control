@@ -37,6 +37,39 @@ class ButtonTests(SimulationABC):
         print(door1_override_open_button.active)
 
 
+class BeamTests(SimulationABC): 
+
+    def __init__(self, modes): 
+
+        super().__init__(modes) 
+
+        self.modes = modes     
+
+    def mode1(self): 
+
+        vole1 = self.get_vole(1)
+
+        beam1 = self.map.instantiated_interactables['beam1_door1']
+        beam2 = self.map.beam2_door1
+
+        vole1.move_to_interactable(self.map.lever_door1)
+
+        vole1.simulate_vole_interactable_interaction(self.map.lever_door1)
+        
+        vole1.move_to_interactable(beam1)
+
+        vole1.simulate_vole_interactable_interaction(beam1)
+
+
+
+
+        return 
+
+        vole1.move_to_interactable(beam2)
+
+        vole1.simulate_vole_interactable_interaction(beam2)
+
+        return 
 
 class LeverTests(SimulationABC): 
 

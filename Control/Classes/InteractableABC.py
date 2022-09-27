@@ -106,6 +106,7 @@ class interactableABC:
             else: 
                 self.isPressed = self.isPressedProperty # actual buttons get access to method version which checks GPIO value in order to know if isPressed is True or False
 
+
         def __str__(self): 
             return self.isPressed
 
@@ -525,9 +526,7 @@ class lever(interactableABC):
 
         # appends to the lever's threshold event queue 
         self.threshold_event_queue.put(f'{self} pressed {self.num_pressed} times!')
-        # (NOTE) if you don't want this component to be checking for a threhsold value the entire time, then deactivate here ( will be re-activated when a new mode starts thru call to activate_interactables ) 
-        # self.deactivate()
-
+        
 
     #@threader
     def extend(self):
@@ -593,9 +592,6 @@ class lever(interactableABC):
             self.servoObj.servo.angle = self.retracted_angle
             self.isExtended = False 
             return 
-
-
-
 
 
     def stop(self): 
@@ -1093,13 +1089,13 @@ class buttonInteractable(interactableABC):
 
         ## Threshold Condition Tracking ## 
         # self.pressed is a property method to ensure that num_pressed updates 
-        self.buttonQ = queue.Queue()
+        # self.buttonQ = queue.Queue()
         # we want Button to be updating the num_pressed value. notify 
 
-        if self.buttonObj.pressed_val < 0: # simulating gpio connection
-            self.isPressed = None 
-        else: 
-            self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
+        #if self.buttonObj.pressed_val < 0: # simulating gpio connection
+        #    self.isPressed = None 
+        #else: 
+        #    self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
     
     # (NOTE - don't think i need this, as this should be handled by Button class now.)
     # @property
@@ -1119,7 +1115,7 @@ class buttonInteractable(interactableABC):
             return 
         
         else: 
-            # not simulating door, check that the doors Movement Controllers (button and servo) have been properly setup 
+            # not simulating button, check that the button object has been properly setup 
             if self.buttonObj.pressed_val < 0: 
                 
                 errorMsg = []
@@ -1141,6 +1137,103 @@ class buttonInteractable(interactableABC):
         # append to event queue 
         self.threshold_event_queue.put(press)
 
+
+class beam(interactableABC): 
+
+    def __init__(self, ID, threshold_condition, hardware_specs, name ): 
+
+         # Initialize the parent class
+        super().__init__(threshold_condition, name)
+
+        self.ID = ID 
+
+        self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self)
+
+        ## Threshold Condition Tracking ## 
+        if self.buttonObj.pressed_val < 0: 
+            self.isBroken = threshold_condition['initial_value'] # if simulating gpio connection, then we want to leave isPressed as an attribute value that we can manually set
+        else: # if not simulating gpio connection, then isPressed should be a function call that checks the GPIO input/output value each call
+            self.isBroken = self.buttonObj.isPressed # True if button is in a pressed state --> represents beam being broken 
+        
+        
+        self.barrier = False # if rfid doesnt reach threshold, it wont prevent a voles movement
+        self.autonomous = True # operates independent of direct interaction with a vole or other interactales. This will ensure that vole interacts with beams on every pass. 
+    
+    # # Button Object # # 
+    @property 
+    def num_breaks(self): 
+        ''' return the current number of breaks that have been recorded'''
+        # Button Object updates the num_pressed object 
+        return self.buttonObj.num_pressed
+
+    def reset_break_count(self): 
+        ''' used as a callback function set by the beam config file '''
+        self.buttonObj.num_pressed = self.threshold_condition['initial_value']
+
+    def validate_hardware_setup(self):
+        
+        if self.isSimulation: 
+            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
+            return 
+        
+        else: 
+            # not simulating beam, check that the beam's button was setup correctly
+            if self.buttonObj.pressed_val < 0: 
+                
+                errorMsg = []
+                if self.buttonObj.pressed_val < 0: 
+                    errorMsg.append('buttonObj')
+                
+                raise Exception(f'(beam, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
+
+            return 
+    
+    def activate(self): 
+        ''' activate as usual, and once it is active we can begin the button object listening '''
+        interactableABC.activate(self)
+        self.buttonObj.listen_for_event()
+    
+    def add_new_threshold_event(self):
+
+        '''New [Press] was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
+        # try: 
+        #    press = self.buttonObj.buttonQ.get() 
+        # except queue.Empty as e: 
+        #    raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the buttonQ for {self.name}')
+
+        # append to event queue 
+        self.threshold_event_queue.put(f'{self.name} beam broken {self.num_breaks} times')
+
+        # To avoid overloading a door with threshold events, we can sleep here until a state change occurs 
+        ''' while (self.threshold_attribute == self.threshold_goal_value) and self.active: 
+            if len(self.threshold_event_queue.queue) == 0: # isEmpty!
+                # simulation side "used" the added threshold event, so even if there hasn't been a state change, break out of while loop so we can add another threshold event 
+                return  
+            time.sleep(.5) '''
+        return 
+    
+    # # Simulation Use Only # # 
+    def simulate_break(self): 
+        self.isBroken = True # describes the current state of the button object 
+        self.buttonObj.num_pressed += 1
+    def simulate_unbroken(self): 
+        self.isBroken = False 
+    def simulate_break_for_n_seconds(self, n): 
+        if not self.isSimulation: 
+            print(f'(beam, simulate_break_for_n_seconds) {self.name} is not being simulated. Cannot complete function call')
+        else:   
+            print('simulating beam break')  
+            self.isBroken = True 
+            self.buttonObj.num_pressed += 1
+            time.sleep(n)
+            self.isBroken = False 
+        return 
+
+    def set_num_breaks(self, n): 
+        ''' manually sets how many beam breaks the button object has recorded ( used in simulation ) '''
+        print(f'setting the number of beam breaks to {n}')
+        self.buttonObj.num_pressed = n
+    
 
 
 class laser(interactableABC): 
@@ -1235,8 +1328,6 @@ class laser(interactableABC):
         ''' executes the passed in pattern. Pattern in a dictionary of strings. We can reference the pattern definitions '''
     
 
-
-    
 
 
     

@@ -23,7 +23,7 @@ from .Timer import draw_table, PRINTING_MUTEX
 from Logging.logging_specs import control_log, sim_log
 from .ModeABC import modeABC 
 from . import InteractableABC
-from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser, laser
+from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser, laser, beam
 
 class Map: 
     def __init__(self, config_directory, map_file_name = None ): 
@@ -432,6 +432,11 @@ class Map:
             try: new_obj = laser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, dutycycle_definitions = dutycycle_definitions)
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
+        elif type == 'beam': 
+            
+            try: new_obj = beam(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name)
+            except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
+        
         else: 
 
             raise Exception(f'interactableABC does not have a subclass {type} implemented in InteractableABC.py')

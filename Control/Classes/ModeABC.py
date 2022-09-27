@@ -78,7 +78,7 @@ class modeABC:
 
             print(f'\nnew mode entered: {self}') # print to console 
 
-            time.sleep(2) # pause before activating interactables 
+            time.sleep(1) # pause before activating interactables 
 
             self.map.activate_interactables() # ensure that interactables are running for the new mode 
 

@@ -9,6 +9,13 @@ import threading
 PRINTING_MUTEX = threading.Lock()
 
 
+class TimestampManager: 
+    pass 
+
+class Latency: 
+    pass 
+
+
 
 def printer(messageQ): 
     while True: 

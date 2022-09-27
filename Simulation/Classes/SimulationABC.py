@@ -123,7 +123,7 @@ class SimulationABC:
                     sim_log(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')    
             
             if not current_mode.active: 
-                print(f'(Simulation.py, run_sim) {current_mode} ended, final simulation function that ran was {sim_fn}. ( Full List of Functions set to run: {sim_fn_list}')
+                print(f'(Simulation.py, run_sim) {current_mode} ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]}')
 
         current_mode.simulation_lock.release() # release lock to denote that simulation for this mode finished running  
         return

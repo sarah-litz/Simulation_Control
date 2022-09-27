@@ -1,4 +1,6 @@
 import sys, time, threading
+import concurrent.futures
+import random
 
 # Local Imports
 from ..Logging.logging_specs import sim_log
@@ -92,3 +94,30 @@ class AirLockDoorsSim(SimulationABC):
         
         # Final Visual before Sim Finishes
         self.map.draw_map()
+    
+
+
+    def three_threaded_voles(self): 
+        ''' 3 voles make moves at same time '''
+
+        vole1 = self.map.get_vole(1)
+        vole2 = self.map.get_vole(2)
+        vole3 = self.map.get_vole(3)
+
+        
+
+        # 
+        # LEAVING OFF HERE:: figure out a way to automate the idea that a vole is running on its own thread?! 
+        # probably add a wrapper that gets called when certain vole methods get called 
+        # wrapper should create a thread 
+        # not super sure where to place the .join() call tho.... 
+        # 
+        
+        executor = concurrent.futures.ThreadPoolExecutor()
+        v1_future = executor.submit(vole1.attempt_move, random.random(1,4))
+        v2_future = executor.submit(vole2.attempt_move, random.random(1,4))
+        v3_future = executor.submit(vole3.attempt_move, random.random(1,4))
+
+
+        #with concurrent.futures.ThreadPoolExecutor() as executor:
+        #    executor.map(, )

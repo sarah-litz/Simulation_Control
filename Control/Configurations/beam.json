@@ -1,0 +1,34 @@
+
+{ 
+    "beam1_door1": { 
+        "id": 1, 
+        "threshold_condition": { 
+            "attribute":"num_breaks", 
+            "initial_value":0, "goal_value":1, 
+            "onThreshold_callback_fn": ["self.reset_break_count()"]
+        }, 
+        "parents": [], 
+        "hardware_specs": { 
+            "button_specs": { 
+                "button_pin": 12, 
+                "pullup_pulldown":"pullup"
+            }
+        }
+    }, 
+
+    "beam2_door1": { 
+        "id": 2, 
+        "threshold_condition": { 
+            "attribute":"num_breaks", 
+            "initial_value":0, "goal_value":1, 
+            "onThreshold_callback_fn": ["self.reset_break_count()"]
+        }, 
+        "parents": [], 
+        "hardware_specs": { 
+            "button_specs": { 
+                "button_pin": 12, 
+                "pullup_pulldown":"pullup"
+            }
+        }
+    }
+}
