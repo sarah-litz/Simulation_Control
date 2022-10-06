@@ -31,9 +31,6 @@ class AirLockDoorsSim(SimulationABC):
         vole1 = self.get_vole(1)
         vole2 = self.get_vole(2)
 
-        vole1.move_to_interactable(self.map.door1)
-        vole2.move_to_interactable(self.map.door1)
-
         vole1.attempt_move(2) 
         vole2.attempt_move(2)
 

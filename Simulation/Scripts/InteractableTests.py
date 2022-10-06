@@ -53,22 +53,20 @@ class BeamTests(SimulationABC):
         beam2 = self.map.beam2_door1
 
         vole1.move_to_interactable(self.map.lever_door1)
-
         vole1.simulate_vole_interactable_interaction(self.map.lever_door1)
         
         vole1.move_to_interactable(beam1)
-
+        vole1.simulate_vole_interactable_interaction(beam1)
         vole1.simulate_vole_interactable_interaction(beam1)
 
 
+        vole2 = self.get_vole(2)
+        vole2.move_to_interactable(beam1)
+        vole2.simulate_vole_interactable_interaction(beam1)
 
-
-        return 
 
         vole1.move_to_interactable(beam2)
-
         vole1.simulate_vole_interactable_interaction(beam2)
-
         return 
 
 class LeverTests(SimulationABC): 

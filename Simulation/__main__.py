@@ -42,15 +42,13 @@ sim_log('\n\n\n\n-----------------------------Simulation Package Started--------
 
 
 # (TODO) Instantiate the Simulation Classes that you want to run.
-SimulationScript = BeamTests( modes = modes )
-# SimulationScript = AirLockDoorsSim( modes = modes ) # create simulation, pass list of modes as argument 
+SimulationScript = AirLockDoorsSim( modes = modes ) # create simulation, pass list of modes as argument 
 
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.mode1 ]
-# SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.non_threaded_vole_movements, SimulationScript.threaded_vole_movements, SimulationScript.three_threaded_voles ]
-# SimulationScript.simulation_func[ modes[1] ] = [ SimulationScript.non_threaded_vole_movements ] 
-# SimulationScript.simulation_func[ modes[2] ] = [ SimulationScript.non_threaded_vole_movements ] 
+SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.non_threaded_vole_movements, SimulationScript.threaded_vole_movements, SimulationScript.three_threaded_voles ]
+SimulationScript.simulation_func[ modes[1] ] = [ SimulationScript.non_threaded_vole_movements ] 
+SimulationScript.simulation_func[ modes[2] ] = [ SimulationScript.non_threaded_vole_movements ] 
 
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 

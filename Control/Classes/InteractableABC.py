@@ -1154,11 +1154,11 @@ class beam(interactableABC):
             self.isBroken = threshold_condition['initial_value'] # if simulating gpio connection, then we want to leave isPressed as an attribute value that we can manually set
         else: # if not simulating gpio connection, then isPressed should be a function call that checks the GPIO input/output value each call
             self.isBroken = self.buttonObj.isPressed # True if button is in a pressed state --> represents beam being broken 
-        
+        self.break_history = [] # exhaustive list of all the timestamps of the beam breaks that have occurred for this beam 
         
         self.barrier = False # if rfid doesnt reach threshold, it wont prevent a voles movement
         self.autonomous = True # operates independent of direct interaction with a vole or other interactales. This will ensure that vole interacts with beams on every pass. 
-    
+
     # # Button Object # # 
     @property 
     def num_breaks(self): 
@@ -1169,6 +1169,7 @@ class beam(interactableABC):
     def reset_break_count(self): 
         ''' used as a callback function set by the beam config file '''
         self.buttonObj.num_pressed = self.threshold_condition['initial_value']
+
 
     def validate_hardware_setup(self):
         
@@ -1197,7 +1198,7 @@ class beam(interactableABC):
 
         '''New [Press] was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
         # try: 
-        #    press = self.buttonObj.buttonQ.get() 
+        #     press = self.buttonObj.buttonQ.get() 
         # except queue.Empty as e: 
         #    raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the buttonQ for {self.name}')
 
@@ -1211,6 +1212,7 @@ class beam(interactableABC):
                 return  
             time.sleep(.5) '''
         return 
+
     
     # # Simulation Use Only # # 
     def simulate_break(self): 

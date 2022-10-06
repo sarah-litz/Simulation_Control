@@ -206,7 +206,7 @@ class modeABC:
                 # # # the Map's Vole Location Tracking relies on the RFIDs for making any location updates # # # 
                 # # Make Updates to Voles Location in the Map Class # # 
                 self.map.update_vole_location( tag = ping[0], loc = self.map.get_location_object(rfid_interactable) )
-            
+
 
    #
    # Running Modal Scripts 
