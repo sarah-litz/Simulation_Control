@@ -34,6 +34,8 @@ class AirLockDoorsSim(SimulationABC):
         vole1.attempt_move(2) 
         vole2.attempt_move(2)
 
+        return 
+
     def threaded_vole_movements(self): 
 
         vole1 = self.get_vole(1)
@@ -111,9 +113,9 @@ class AirLockDoorsSim(SimulationABC):
         # 
         
         executor = concurrent.futures.ThreadPoolExecutor()
-        v1_future = executor.submit(vole1.attempt_move, random.random(1,4))
-        v2_future = executor.submit(vole2.attempt_move, random.random(1,4))
-        v3_future = executor.submit(vole3.attempt_move, random.random(1,4))
+        v1_future = executor.submit(vole1.attempt_move, random.randint(1,4))
+        v2_future = executor.submit(vole2.attempt_move, random.randint(1,4))
+        v3_future = executor.submit(vole3.attempt_move, random.randint(1,4))
 
 
         #with concurrent.futures.ThreadPoolExecutor() as executor:

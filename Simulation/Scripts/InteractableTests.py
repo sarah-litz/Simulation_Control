@@ -223,6 +223,11 @@ class DispenserTests(SimulationABC):
         vole1.move_to_interactable(food_lever)
         vole1.simulate_vole_interactable_interaction(food_lever)
 
+        food_trough = self.map.instantiated_interactables['food_trough'] 
+
+        vole1.move_to_interactable(food_trough)
+        vole1.simulate_vole_interactable_interaction(food_trough)
+
 
 
     

@@ -3,8 +3,8 @@
     {
         "id":1, 
         "threshold_condition": { 
-            "attribute":"isPressed", 
-            "initial_value": true, "goal_value": false },
+            "attribute":"isPelletRetrieved", 
+            "initial_value": false, "goal_value": true },
 
         "hardware_specs": {
             "button_specs": { 

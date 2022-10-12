@@ -34,7 +34,7 @@ def main():
     reactiveBox = ReactiveBox(timeout = 30, map = map )
 
     # (TODO) Update the list of control mode scripts with each of the scripts you want to run, in the order that you want them to run in! 
-    mode_scripts = [ airlockBox, intervalBox, iteratorBox, reactiveBox ]
+    mode_scripts = [ airlockBox ]
 
 
     if __name__ != '__main__': # falls into this if the simulation package imported this module

@@ -123,7 +123,7 @@ class AirLockDoorLogic(modeABC):
 
 
             if move is None: 
-                print('No move detected.')
+                print('No move through door1 detected.')
                 return # mode became inactive while we were waiting for a vole move to occur
             
 
@@ -132,7 +132,7 @@ class AirLockDoorLogic(modeABC):
             self.map.door1.close()
             
 
-            # Now that door has closed, recheck the beams for more movements detected 
+            # Now that door has closed, Recheck the beams for more movements thru door1  
 
             if check_for_move(self.map.beam1_door1, self.map.beam2_door1) is not None: 
                 # another vole moved thru the door 
@@ -160,6 +160,7 @@ class AirLockDoorLogic(modeABC):
 
                     # rfid ping detected. Figure out which vole it was caused by 
                     print(f'Vole #{ping.vole_tag} walked through door1!')
+                    return 
                 
             
             return 

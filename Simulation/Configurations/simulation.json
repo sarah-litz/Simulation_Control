@@ -4,10 +4,10 @@
     "interactables": [
         
 
-        { "name":"door1", "simulate":true }, 
-        { "name":"door2", "simulate":true }, 
-        { "name":"door3", "simulate":true }, 
-        { "name":"door4", "simulate":true },
+        { "name":"door1", "simulate":true, "simulate_with_fn": "lambda self, vole: self.sim_open()" }, 
+        { "name":"door2", "simulate":true, "simulate_with_fn": "lambda self, vole: self.sim_open()" }, 
+        { "name":"door3", "simulate":true, "simulate_with_fn": "lambda self, vole: self.sim_open()" }, 
+        { "name":"door4", "simulate":true, "simulate_with_fn": "lambda self, vole: self.sim_open()" },
 
 
         {"name":"rfid1", 
@@ -62,8 +62,9 @@
 
 
 
-        {"name":"food_dispenser",
-        "simulate":true
+        {"name":"food_trough",
+        "simulate":true, 
+        "simulate_with_fn": "lambda self, vole: self.sim_vole_retrieval()"
         }, 
 
 

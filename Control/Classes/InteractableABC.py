@@ -102,7 +102,7 @@ class interactableABC:
             # 
             # Setup isPressed Variable --> setup depends on if Button is a simulation or not
             if self.isSimulation: 
-                self.isPressed = False # simulated buttons have a boolean isPressed 
+                self.isPressed = False # simulated buttons have a boolean isPressed that manually will get set to True/False by a simulation script.
             else: 
                 self.isPressed = self.isPressedProperty # actual buttons get access to method version which checks GPIO value in order to know if isPressed is True or False
 
@@ -638,22 +638,6 @@ class door(interactableABC):
         self.servoObj = self.ContServo(hardware_specs['servo_specs'], parentObj = self) # continuous servo to control speed of opening and closing door
         self.buttonObj = self.Button(hardware_specs['button_specs'], parentObj = self) 
         
-        ## Threshold Condition Tracking ## 
-        if self.buttonObj.pressed_val < 0: 
-            self.isOpen = threshold_condition['initial_value'] # if simulating gpio connection, then we want to leave isPressed as an attribute value that we can manually set
-        else: # if not simulating gpio connection, then isPressed should be a function call that checks the GPIO input/output value each call
-            self.isOpen = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
-        
-
-        # Set Doors Starting state to its Initial Open/Close Position
-        # --> need to do this open/close startingstate AFTER isSimulation has been set. ( maybe just have people do this in the setup() function of the actual script )
-        '''if self.isOpen != threshold_condition['initial_value']: 
-            if threshold_condition['initial_value'] == True: 
-                self.open() 
-            else: 
-                self.close()'''
-
-
         ## Dependency Chain Information ## 
         self.barrier = True # set to True if the interactable acts like a barrier to a vole, meaning we require a vole interaction of somesort everytime a vole passes by this interactable. 
         self.autonomous = False # False because doors are dependent on other interactables or on vole interactions ( i.e. doors are dependent on lever press )
@@ -663,44 +647,46 @@ class door(interactableABC):
     def __str__(self):
         return self.name+f'(Open:{self.isOpen})'
 
+    @property
+    def isOpen(self): 
+        return self.buttonObj.isPressed 
+    def sim_open(self): 
+        if self.isSimulation: 
+            self.buttonObj.isPressed = True 
+    def sim_close(self): 
+        if self.isSimulation: 
+            self.buttonObj.isPressed = False 
+
+
+
     def override(self, open_or_close): 
         ''' if override button gets pressed we call this function on the door '''
-
         # immediately stop door movement 
         self.stop() 
-
         # reset door to stop execution of current door actions
         self.deactivate()
         self.activate() 
-
         if open_or_close == 'open': 
-
             self.open() 
-
         else: 
-
             self.close() 
         
     def validate_hardware_setup(self):
         
         if self.isSimulation: 
-            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
+            # doesn't matter if the hardware has been setup or not if we are simulating the interactable. 
             return 
         
         else: 
             # not simulating door, check that the doors Movement Controllers (button and servo) have been properly setup 
-            if self.buttonObj.pressed_val < 0 or self.servoObj.servo is None: 
-                
+            if self.buttonObj.pressed_val < 0 or self.servoObj.servo is None:   
                 errorMsg = []
                 # problem with both button and/or servo. figure out which have problems
                 if self.buttonObj.pressed_val < 0: 
-                    errorMsg.append('buttonObj')
-                
+                    errorMsg.append('buttonObj')              
                 if self.servoObj.servo is None: 
-                    errorMsg.append('servoObj')
-                
+                    errorMsg.append('servoObj')              
                 raise Exception(f'(Door, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
-
             return 
 
 
@@ -733,20 +719,17 @@ class door(interactableABC):
     def close(self):
         """This function closes the doors fully"""
 
-        #  This Function Accesses Hardware => Perform Sim Check First
-        if self.isSimulation: 
-            # If door is being simulated, then rather than actually closing a door we can just set the state to False (representing a Closed state)
-            print(f'(Door(InteractableABC), close()) {self.name} is being simulated. Setting state to Closed and returning.')
-            self.isOpen = False 
-            # time.sleep(2) # simulate time passed before the door actually closes 
-            return 
-
         # check if the door is already closed 
         if self.isOpen is False: 
-
             # door is already closed 
             control_log('(Door(InteractableABC)) {self.name} was already Closed')
             print(f'(Door(InteractableABC)) {self.name} was already Closed')
+            return 
+
+        #  This Function Accesses Hardware => Perform Sim Check First
+        if self.isSimulation: 
+            print(f'(Door(InteractableABC), close()) {self.name} is being simulated. Setting state to Closed and returning.')
+            self.sim_close() 
             return 
 
         # 
@@ -771,7 +754,6 @@ class door(interactableABC):
         # raise Exception(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
 
 
-
     #@threader
     def open(self):
         """This function opens the doors fully
@@ -782,13 +764,11 @@ class door(interactableABC):
         if self.isSimulation: 
             # If door is being simulated, then rather than actually opening a door we can just set the state to True (representing an Open state)
             print(f'(Door(InteractableABC), open()) {self.name} is being simulated. Setting switch val to Open (True) and returning.')
-            self.isOpen = True 
-            # time.sleep(2) # simulate the time passed before the door is actually open
+            self.sim_open()
             return 
         
         # check if door is already open
         if self.isOpen is True: 
-
             control_log('(Door(InteractableABC)) {self.name} is Open')
             print(f'(Door(InteractableABC)) {self.name} is Open')
             return 
@@ -821,8 +801,6 @@ class door(interactableABC):
         if self.isSimulation: return 
         self.servoObj.servo.throttle = self.stop_speed 
         return 
-
-
 
 
 
@@ -953,20 +931,16 @@ class dispenser(interactableABC):
         self.dispense_time = hardware_specs['dispense_time']
             
         # Threshold Tracking with isPressed attribute #
+        '''  This should now be handled by the Button Class!! Just access buttonObj.isPressed no matter what. 
         if self.buttonObj.pressed_val < 0:  # simulating gpio connection, simulate the isPressed Value
             self.isPressed = self.threshold_condition['initial_value'] 
         else: # not simulating, use the actual buttonObj i/o value to get current state  
-            self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
+            self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise '''
 
-        '''if self.isPressed: # pellet is already present
-            self.pellet_state = True 
-            self.monitor_for_retrieval = True '''
-
-        ## Use the Threshold Attribute to set pellet_state and monitor_for_retrieval ## 
-        if self.isPressed: # pellet is already present
+        ## Use the Threshold Attribute to set if we should immediately monitor_for_retrieval ## 
+        if self.buttonObj.isPressed: # pellet is already present
             initial = True 
         else: initial = False 
-        self.pellet_state =  initial # True if pellet is in trough 
         self.monitor_for_retrieval = initial # gets set to True only once we first confirm that a pellet is present in the trough. When we set this True, then we will start recording threshold events ( i.e. waiting for the pellet state to get set back to false, due to a vole retrieval ) If trough is initially empty, this prevents watch_for_threshold_event from recording this empty state as the occurrence of a pellet retrieval.
 
         ## Dependency Chain ## 
@@ -987,7 +961,7 @@ class dispenser(interactableABC):
         if self.isSimulation: 
             # we should make sure that the button and servo will also be simulated! 
             # Basically checks to make sure that they were not properly set up! 
-            self.isPressed = self.threshold_condition['initial_value'] # ensures that we wont access the button object value version of the button gpio!
+            # self.isPressed = self.threshold_condition['initial_value'] # ensures that we wont access the button object value version of the button gpio!
 
             return 
         
@@ -1003,21 +977,62 @@ class dispenser(interactableABC):
                 raise Exception(f'(Dispenser, validate_hardware_setup) {self} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
             return 
 
+    @property 
+    def isPressed(self): 
+        return self.buttonObj.isPressed 
+    @property
+    def isPelletRetrieved(self): 
+        # returns True if no pellet in trough, returns False if pellet in trough
+        return not self.isPressed
+
+
+    def sim_press(self): 
+        if self.isSimulation: 
+            self.buttonObj.isPressed = True
+    def sim_unpress(self): 
+        if self.isSimulation: 
+            self.buttonObj.isPressed = False 
+    def sim_dispense(self): 
+        ''' '''
+        print('(InteractableABC, dispenser.sim_dispense()) (simulated) Pellet Dispensed! ')
+        control_log(f'(InteractableABC, dispenser.sim_dispense()) (simualted) Pellet Dispensed! setting the isPressed value to True to simulate that a pellet was dispensed.  Monitoring for a pellet retrieval from {self}!')
+        self.sim_press() # simulates a dispense by setting button object to a pressed state 
+        return 
+    def sim_vole_retrieval(self): 
+        ''' '''
+        print('(InteractableABC, dispenser.sim_vole_retrieval) Pellet Retrieved!')
+        control_log(f'(InteractableABC, dispenser.sim_vole_retrieval) Pellet Retrieved! Stopped monitoring for a pellet retrieval.')
+        self.sim_unpress() # simulates a retrieval by setting button object to an unpressed state 
+        return 
+
+
+
+
     def activate_inner_objects(self): 
         ''' overriding the function from InteractableABC! 
             this method gets called upon interactable activation 
             we are able to handle 
         '''
     def add_new_threshold_event(self):
+
+        threshold_state = getattr(self, self.threshold_condition['attribute']) 
+
+        print('')
         if self.monitor_for_retrieval: 
             self.threshold_event_queue.put(f'Pellet Retrieval')
             print('PELLET RETRIEVAL!')
             self.monitor_for_retrieval = False # reset since we recorded a single pellet retrieval.
         else: 
             control_log(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
-            print(f'(InteratableABC.py, {self}, add_new_threshold_event)not monitoring for retrieval at the moment')
-            return
+            print(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
+
+        # To avoid overloading a food trough sensor with threshold events for when the food trough is empty, we can sleep here until a state change occurs 
+        while not self.monitor_for_retrieval and self.active: 
+            ''' wait for monitor for retrieval to get set to True! '''
+            time.sleep(.5)
         
+
+
     def start(self): 
         self.servoObj.servo.throttle = self.dispense_speed 
         print('hopefully servo is moving')
@@ -1030,18 +1045,16 @@ class dispenser(interactableABC):
     def dispense(self): 
 
         # Edge Case: if there is already a pellet in the trough, we don't want to dispense again ( this likely means vole did not take pellet on a previous dispense )
-        if self.isPressed is True:     
+        if self.isPressed is True:    
+
             print('(InteractableABC, dispenser) Already a pellet in trough; previous pellet not retrieved')
             control_log(f'(InteractableABC, dispenser.dispense()) Already a pellet in trough; Previous pellet not retrieved.')
+            self.monitor_for_retrieval = True 
             return 
 
         # Simulation Check
         if self.isSimulation: 
-            
-            print('(InteractableABC, dispenser.dispense()) (simulated) Pellet Dispensed! ')
-            control_log(f'(InteractableABC, dispenser.dispense()) (simualted) Pellet Dispensed! setting the isPressed value to True to simulate that a pellet was dispensed.  Monitoring for a pellet retrieval from {self}!')
-
-            self.isPressed = True 
+            self.sim_dispense()
             self.monitor_for_retrieval = True 
             return 
         
@@ -1058,7 +1071,6 @@ class dispenser(interactableABC):
             if dispenses_read > 2: 
                 # Pellet was dispensed! 
                 self.stop() 
-                self.pellet_state = True # note that a pellet was dispensed 
                 self.monitor_for_retrieval = True 
                 print(f'(InteractableABC, Dispenser) {self}: Pellet Dispensed!')
                 control_log(f'(InteractableABC, Dispenser) {self}: Pellet Dispensed!')
@@ -1070,6 +1082,7 @@ class dispenser(interactableABC):
         print(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
         control_log(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
         return 
+
 
 
 class buttonInteractable(interactableABC):
@@ -1087,22 +1100,7 @@ class buttonInteractable(interactableABC):
         # Button # 
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
 
-        ## Threshold Condition Tracking ## 
-        # self.pressed is a property method to ensure that num_pressed updates 
-        # self.buttonQ = queue.Queue()
-        # we want Button to be updating the num_pressed value. notify 
-
-        #if self.buttonObj.pressed_val < 0: # simulating gpio connection
-        #    self.isPressed = None 
-        #else: 
-        #    self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
     
-    # (NOTE - don't think i need this, as this should be handled by Button class now.)
-    # @property
-    # def pressed(self): 
-    #    '''returns the current number of presses that button object has detected'''
-    #    return self.buttonObj.num_pressed
-
     def activate(self): 
         ''' activate button as usual, and once it is active we can begin the button object listening '''
         interactableABC.activate(self)
@@ -1230,7 +1228,6 @@ class beam(interactableABC):
             time.sleep(n)
             self.isBroken = False 
         return 
-
     def set_num_breaks(self, n): 
         ''' manually sets how many beam breaks the button object has recorded ( used in simulation ) '''
         print(f'setting the number of beam breaks to {n}')
