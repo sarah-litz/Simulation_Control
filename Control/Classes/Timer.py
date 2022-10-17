@@ -7,6 +7,7 @@ import sys
 import threading
 
 PRINTING_MUTEX = threading.Lock()
+COUNTDOWN_MUTEX = threading.Lock()
 
 
 class TimestampManager: 
@@ -24,14 +25,41 @@ def printer(messageQ):
             print(message)
     
 
-def countdown(timeinterval, message): 
+def countdown(timeinterval, message, secondary_message = False): 
     print("\r")
+    
+    if secondary_message: 
+        if not COUNTDOWN_MUTEX.locked(): 
+            COUNTDOWN_MUTEX.acquire() 
+            while timeinterval:
+                mins, secs = divmod(timeinterval, 60)
+                timer = '{:02d}:{:02d}'.format(mins, secs)
+
+                if not PRINTING_MUTEX.locked(): 
+                    sys.stdout.write(f"\r{timer} {message}   | ")
+                
+                time.sleep(1)
+                timeinterval -= 1 
+            COUNTDOWN_MUTEX.release()
+            print('\n')
+            return 
+
+
     while timeinterval:
         mins, secs = divmod(timeinterval, 60)
         timer = '{:02d}:{:02d}'.format(mins, secs)
-        if not PRINTING_MUTEX.locked(): 
-            # only print time remaining if the Printing Lock is free 
+        
+        if secondary_message: 
+            if not PRINTING_MUTEX.locked() and not COUNTDOWN_MUTEX.locked(): 
+                # get the countdown mutex and then print
+                COUNTDOWN_MUTEX.acquire()
+                sys.stdout.write(f"\r{timer} {message}   | ")
+                COUNTDOWN_MUTEX.release()
+
+        if not PRINTING_MUTEX.locked() and not COUNTDOWN_MUTEX.locked(): 
+            # only print time remaining if the Printing Lock AND Countdown Lock is free
             sys.stdout.write(f"\r{timer} {message}   | ")
+
         time.sleep(1)
         timeinterval -= 1
     print('\n')

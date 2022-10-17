@@ -31,8 +31,29 @@ class AirLockDoorsSim(SimulationABC):
         vole1 = self.get_vole(1)
         vole2 = self.get_vole(2)
 
-        vole1.attempt_move(2) 
-        vole2.attempt_move(2)
+        v1_success = vole1.attempt_move(2) 
+        v2_success = vole2.attempt_move(2)
+
+        if not v1_success or not v2_success: 
+
+            for n in range(3): 
+
+                if not self.current_mode.active: # and not v2_success 
+
+                    return 
+                
+                else: 
+                    
+                    # 3 attempts to succeed on attempted move into chamber 2
+
+                    if not v1_success: 
+
+                        # Second Attempt 
+                        v1_success = vole1.attempt_move(2)
+                    
+                    if not v2_success: 
+
+                        v2_success = vole2.attempt_move(2)
 
         return 
 

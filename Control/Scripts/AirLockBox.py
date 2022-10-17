@@ -39,6 +39,15 @@ class AirLockDoorLogic(modeABC):
     def setup(self): 
 
         ''' any tasks to setup before run() gets called '''
+        if not self.map.door1.isOpen: 
+            self.map.door1.open() 
+        
+        if self.map.door3.isOpen:
+            self.map.door3.close() 
+        if self.map.door2.isOpen:
+            self.map.door2.close() 
+        if self.map.door4.isOpen:
+            self.map.door4.close() 
 
     def run(self):
 
@@ -48,78 +57,40 @@ class AirLockDoorLogic(modeABC):
 
         door_levers_list = [self.map.lever_door1, self.map.lever_door2, self.map.lever_door3, self.map.lever_door4]
 
-        def set_to_start_state(): 
-
-            '''puts doors back to their start state '''
-            if not self.map.door1.isOpen: 
-                self.map.door1.open() 
-            if not self.map.door3.isOpen:
-                self.map.door3.open() 
-
-            if self.map.door2.isOpen:
-                self.map.door2.close() 
-            if self.map.door4.isOpen:
-                self.map.door4.close() 
-
-
         def num_pings_by_vole(rfid, vole_tag): 
-
             # sorts the rfid pings by which vole caused that ping 
             count = 0
             for e in list(rfid.threshold_event_queue.queue): 
-
                 if e.vole_tag == vole_tag: 
-
-                    count += 1 
-            
+                    count += 1      
             return count
 
+        def volesSeparated(beam): 
+            # assumes only 2 voles are present in the cage. Tries to figure out if voles are separated or together based on the number of beam breaks that have occurred. 
+            # returns True if an odd number of beam breaks have occurred ( voles are separated )
+            # returns False if an even number of beam breaks have occurred ( voles are together )
+            ''' nothing yet '''
 
-        def check_for_move(b1, b2, wait = False): 
-
-            ''' returns when a vole crosses over b1 and b2 w/in 3 seconds '''
+        def check_for_move(b1, wait = False): 
+            
+            ''' returns when a vole crosses over b1 ( a beam object ) '''
             while self.active: 
-                
-                beam1_event = None 
-                beam2_event = None 
-
-                # Check for beam1 break followed by a beam2 break ( i.e. a vole Move )
-                try: beam1_event = b1.threshold_event_queue.get_nowait()
+                try: return b1.threshold_event_queue.get_nowait()
                 except queue.Empty: pass 
-
-                if beam1_event: 
-
-                    # waits 3 seconds for a beam2 event to follow; this is using the assumption that door1_beam1 and door1_beam2 almost act as a single unit/sensor surrounding door1. 
-                    # if beam2_event does not occur within the 3 seconds, we scrap both events and start over. 
-                    try: 
-                        beam2_event = b2.threshold_event_queue.get(timeout = 15)
-                    except queue.Empty: 
-                        pass  
-                
-                if beam2_event: 
-                    # a beam1_event and beam2_event were detected. i.e. a vole moved thru the door. 
-                    return (beam1_event, beam2_event) 
-                
                 if wait is False: 
                     return None # if wait is false then we do not loop because we just check once to see a move occurred 
-            
             return None # mode deactivated, no move ever completed. 
         
 
-        # Begin in Start State 
-        set_to_start_state()
-
-        # As soon as there is a singular Move detected ( where Move is defined as a cross over the door entry way, based on info from the ir beams ), 
-        # Close the door. Then we will monitor the rfid reader to recieve information on which vole walked thru the door, and also to double check that in fact only one vole is in the "airlocked" area. 
+        # As soon as there is a singular Move detected, close the door. 
+        # Then we will monitor the rfid reader to recieve information on which vole walked thru the door, and also to double check that in fact only one vole is in the "airlocked" area. 
 
         while self.active: 
 
 
             # Begin checking for movement thru doors ( using the beam breaks ) 
 
-            # for each set of beams, check for a move ( make sure we check for bidirectional movement, so need to make 2 diff calls )
-
-            move = check_for_move(self.map.beam1_door1, self.map.beam2_door1, wait = True ) # loops until a move is detected or until the mode because inactive 
+            move = check_for_move(self.map.beam1_door1,  wait = True ) # loops until a move is detected or until the mode because inactive 
 
 
             if move is None: 
@@ -127,42 +98,65 @@ class AirLockDoorLogic(modeABC):
                 return # mode became inactive while we were waiting for a vole move to occur
             
 
-            # Move has occurred; close door1 
-            print(f'Movement Through Door 1 Detected {move}|| Closing Door 1 Now...')
-            self.map.door1.close()
-            
 
-            # Now that door has closed, Recheck the beams for more movements thru door1  
-
-            if check_for_move(self.map.beam1_door1, self.map.beam2_door1) is not None: 
+            # 1st Beam Recheck 
+            if check_for_move(self.map.beam1_door1) is not None: 
                 # another vole moved thru the door 
-                print('Another vole passed by door1 before it could shut! Voles not separated.')
+                print('Another beam break detected! Voles not separated.')
                 return    
-            if check_for_move(self.map.beam2_door1, self.map.beam1_door1) is not None: 
-                print('The vole turned around and went back thru the door before it closed. Voles not separated')
+            # Passed 1st Beam Recheck
+
+
+            # Move has occurred; close door1 
+            time.sleep(1) # Pause before door close to give vole a chance to finish moving thru... 
+            print(f'Movement Through Door 1 Detected {move}|| Closing Door 1 Now...')
+            self.map.door1.close() # Closing Door
+
+
+            # 2nd Beam Recheck 
+            if check_for_move(self.map.beam1_door1) is not None:  # Now that door has closed, Recheck the beams for more movements thru door1 again 
+                # another vole moved thru the door 
+                print('Another beam break detected! Voles not separated.')
+                return   
+            # Passed 2nd Beam Recheck
+
+            # Pause to give vole(s) a chance to trigger RFID ...
+            time.sleep(2)
+
+
+            # RFID Checks
+            voles_in_edge = []
+            for v in self.map.voles: 
+
+                n = num_pings_by_vole(self.map.rfid1, v.tag)
+
+                if n > 0: 
+
+                    voles_in_edge.append(v)
+
+            if len(voles_in_edge) > 1: 
+
+                # More than one vole detected in the edge. 
+                print(f'More than one Vole detected by {self.map.rfid1}: {[*(str(v) for v in voles_in_edge)]}')
                 return 
             
-            # Passed the Beam Recheck! 
-            # Open the next door
+            elif len(voles_in_edge) == 0: 
 
-            self.map.door2.open()
-
-            # Begin checking for rfid1 for pings to figure out which vole walked thru the door! 
-
-            while self.active: 
-                
-                ping = None 
-                try: ping = self.map.rfid1.threshold_event_queue.get_nowait()
-                except queue.Empty: pass 
-
-
-                if ping is not None: 
-
-                    # rfid ping detected. Figure out which vole it was caused by 
-                    print(f'Vole #{ping.vole_tag} walked through door1!')
-                    return 
-                
+                # rfid does not detect a vole in the edge 
+                print(f'no voles detected on the edge with {self.map.rfid1}')
+                return 
             
+            else: 
+
+                # exactly 1 vole on the edge! ( Goal Check )
+
+                print(f'Successfully Separated Voles! Vole in Edge: {[*(str(v) for v in voles_in_edge)]}')
+                self.map.draw_map()
+
+                # Open The Next Door 
+                self.map.door2.open() 
+
+
             return 
 
 

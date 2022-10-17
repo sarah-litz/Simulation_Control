@@ -18,15 +18,16 @@ from ..Logging.logging_specs import sim_log, vole_log
 from .Timer import countdown
 
 
-'''
-POTENTIAL TODO: create separate vole class that is only the vole with the attributes and no access to the methods provided for a simulated vole. 
-then the Map class will be able to track where a vole currently is within a Map. 
-will also be able to throw an error if a vole makes a physically impossible move. (e.g. lever press and then another lever press but no rfid ping for an rfid ping that is inbetween the 2 levers)
-'''
 
 '''
 SIMULATED VOLE
 '''
+
+##
+## Simulating a vole interaction with some Interactable thru setting attribute value or thru function call
+##
+
+
 class Vole: 
 
     def __init__(self, tag, start_chamber, map): 
@@ -50,11 +51,9 @@ class Vole:
         vole_log(f'VOLE {self.tag} STARTING POSITION BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
 
 
-    ##
-    ## Simulating Interactable thru setting attribute value or thru function call
-    ##
 
-
+    def __str__(self): 
+        return f'Vole{self.tag}'
     def at_location_of(self, interactable): 
         ''' 
 
@@ -135,15 +134,6 @@ class Vole:
                 print(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is a Barrier but is NOT autonomous. Interactables of this type do not allow for direct vole interactions.')
                 sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is a barrier and not autonomous. Interactables of this type do not allow for direct vole interactions. Vole must attempt simulating with {interactable.name} controllers ( interactables who have {interactable.name} as a parent )')
                 return 
-
-        ''' (FISH --> Delete once I confirm i don't need dependents attribute!)
-        if len(interactable.dependents) > 0: 
-            # a fully independent interacable means that it is dependent on the values of its dependents and independent of a vole's actions
-            # i.e. it is pointless for the vole to interact directly with it. So return. (Doesn't mean we won't interact and simulate w/ its dependents tho)
-            print(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} isDependent on dependents, not on a vole interaction.')
-            sim_log(f'(Vole.py, simulate_vole_interactable_interaction) {interactable.name} isDependent on dependents, not on a vole interaction.')
-            return '''
-
 
         #
         # Simulate
@@ -251,10 +241,8 @@ class Vole:
         print('\n')
         vole_log(location_visual)
 
-        # 
-        # LEAVING OFF HERE 
-        # FISH FISH FISH 
-        # BIG CHANGE HERE! LEAVING OFF HERE! MAKE SURE THIS IS OK!
+
+        # (NOTE) BIG CHANGE HERE! 
         # This is the Vole PASSING prev_component, meaning that we should reset its threshold to False so watch_for_threshold_event begins looping again to look for more threshold events. 
         '''if self.prev_component is not None: 
             if type(self.prev_component) is self.map.Chamber.ComponentSet: 
@@ -434,11 +422,11 @@ class Vole:
 
 
     def move_next_component(self, goal_component, nxt_edge_or_chmbr_id = None): 
-        #TESTME
+     
         ''' vole positions itself in front of goal_component. component specified must be a component that only requires a singular position change. 
             this will check the threshold of the voles current component to make sure it is okay for us to move passed it.
             This function Simulates any Autonomous Component! 
-                -> if the current component is an rfid, will simulate a ping. Any other component does not get automatically simulated in here. 
+                -> (autonomous components: RFIDs, IR Beams)
             Vole is able to freely pass by non-barrier objects. 
             we check if the voles current component is able to be freely passed. If so, we move and position ourselves at this new interactable. 
             Once returned from this function, we would be able to attempt an interaction with the new component without getting a physical proximity error. 
@@ -499,8 +487,6 @@ class Vole:
             # possible that the next component is on an adjacent edge/chamber to the vole's current location 
 
             if len(self.map.get_component_path(self.curr_component,goal_component)) == 2: 
-                # checkPath = self.map.get_component_path(self.curr_component, component)
-                # print('\n', *(component.interactable.name for component in checkPath), '\n')
 
                 # the goal component is not a chamber interactable, so did not fall into the first if() check. 
                 # However, there are no components that stand in between the current component and the goal component, so this is a valid move request. 
@@ -525,12 +511,7 @@ class Vole:
         #
     
 
-        # if type(curr_interactable) is self.map.Chamber.ComponentSet: 
-            
-            # we are able to travel from ANY unordered component -> adjacent ordered component. 
-            # so only check validity of passing whatever the current interactable is 
-
-
+        # If current interactable is in an UNORDERED chamber set 
             # 
             #  before updating location, we should check that all of the unordered interactables are passable 
             #
@@ -539,9 +520,7 @@ class Vole:
             #           if not barrier: pass 
             #           if barrier with true threshold: pass 
             #           if barrier with false threshold: cannot pass 
-            
-            # curr_interactable = [curr_interactable] # convert any Ordered Interactable to a list object 
-       
+                   
         
         #
         # Not Barrier
@@ -678,7 +657,7 @@ class Vole:
   
 
         #
-        # Edge Traversal 
+        # Position for Start of Edge Traversal 
         #
 
         # position start location along the edge to be where the vole's current position is 
@@ -690,21 +669,8 @@ class Vole:
             # if vole is in a chamber, then the first step we should take is traversing any chamber components that lie between the vole and the first component in the chamber 
             self.move_to_component(edge[0]) # traverses components in current chamber to reach first component on edge ( this could be a chamber interactable that the edge references tho )
 
-        '''
-        FISH
-        ## Case that vole is in an empty chamber ( positioned at a component == None )
-        if self.curr_component is None: 
-            self.move_to_component(edge[0]) # move to the starting component
-
-        ## Case that vole is in a chamber that is connected to the edge we need, but vole is currenlty positioned between 2 interactables that are attached to a diff edge ##
-        if self.curr_component.interactable.name not in [*(ele.interactable.name for ele in edge)]: 
-            self.move_to_component(edge[0])'''
 
         vole_log(f'(Vole{self.tag}, attempt_move) vole{self.tag} is on the edge with the following components: {[*(ele.interactable.name for ele in edge)]}')
-        
-        # begin simulation from the vole's current interactable position. 
-        # if self.curr_component is None: 
-        #    self.curr_component = edge[0] # first component on edge 
         
         # remove any components that come before vole's current position 
         i = 0
@@ -715,57 +681,39 @@ class Vole:
 
         vole_log(f'(Vole{self.tag}, attempt_move) vole{self.tag} traversing the components: {[*(ele.interactable.name for ele in edge)]}')
 
+
+        #
+        # Edge Traversal ( and Simulating certain interactables that we pass along the way )
+        #
+
         # traverse the linked list containing the edge components 
         for i in range(len(edge)):
 
             component = edge[i] 
-            # print(f'Updated Vole Interactable Location from {self.prev_component} to {self.curr_component} ')
 
             # check that vole's current interactable position allows us to simulate
             if self.curr_component.interactable.name != component.interactable.name: 
                 
                 print(f'(Vole{self.tag}, attempt_move) vole{self.tag} is positioned at {self.curr_component}, so unable to simulate interaction with {component.interactable.name} and cannot complete the attempted move.')
                 sim_log(f'(Vole{self.tag}, attempt_move) vole{self.tag} is positioned at {self.curr_component}, so unable to simulate interaction with {component.interactable.name} and cannot complete the attempted move.')
-                return 
+                return False
             
             else: 
                 
-                # 
-                # Dependency Chain Checks to see if we can allow simulation to occur
-                #
                 # Simulation for any non-autonomous Component ( because all autonomous components are automatically simulated in the move_next_component function ) 
-                #
                 interactable = component.interactable
-                if not interactable.autonomous:
-                    '''FISH FISH
-                    for dependent in interactable.dependents:
-                        if dependent.threshold is False: 
-                            self.simulate_vole_interactable_interaction(dependent)'''
-                    
+                if not interactable.autonomous: # For a non-autonomous interactable, we care to interact with the interactable if it controls a Parent Interactable.
 
-                    # # # Double Check This!!! # # # 
-                    # # # Dependency Chain # # # 
-                    # If the component has control of some parent component (i.e., has at least one parent that is dependent on this interactable's value), then simulate. 
-                    if len(interactable.parents) > 0: self.simulate_vole_interactable_interaction(interactable) # function call which simulates interaction thru function call or changing vals of specified attributes
-                    # # # # # # 
+                    if len(interactable.parents) > 0: 
 
+                        self.simulate_vole_interactable_interaction(interactable) # If the component has control of some parent component (i.e., has at least one parent that is dependent on this interactable's value), then simulate this component! 
 
-
-
-
-
-                ################################################
-                '''     LEAVING OFF HERE!! --> if we are at the end of the edge component traversal, and we need to move into our destination chamber, 
-                                        we need to call move_next_component one more time to get that last occurrence of the simulation and get the vole 
-                                        to actually enter that chamber, but the "next component" is potentially just None, in the scenario that we are walking into 
-                                        an empty chamber. So figure out how to account for this situation. '''
-                ################################################
 
                 # 
-                # now that simulations have completed, vole should pass the interactable it just simulated. 
+                # vole should pass the interactable it just simulated. 
                 # 
                 if i+1 < len(edge): 
-                    self.move_next_component(edge[i+1]) # completed sim for edge[i], so move past it.
+                    self.move_next_component(edge[i+1]) # completed sim for the interactable at edge[i], so move past it.
                 else: 
                     # On the Final Component on the edge: edge[i]
                     # In order to move past this component, we need to grab the first component from our goal (next) chamber. 
@@ -789,7 +737,7 @@ class Vole:
                     # Goal reached. No need to traverse any further on the edge 
                     vole_log(f'(Vole{self.tag}, attempt_move) Simulated Vole {self.tag} moved into {self.curr_loc}. Component Location is between ({self.prev_component}, {self.curr_component}')
                     print(f'Simulated Vole{self.tag} New Location is {self.curr_loc}. Component Location is between ({self.prev_component}, {self.curr_component})')
-                    return 
+                    return True 
 
 
 
@@ -797,10 +745,12 @@ class Vole:
                 # Wait for Control Side Software to react to Simulation of this Interactable
                 #
                 ################################################
-                time.sleep(4)  # Pause to give control side a moment to assess if there was a threshold event 
+                # time.sleep(0.5)  # Pause to give control side a moment to assess if there was a threshold event 
                 ################################################
-      
-        return 
+
+        print(f'(Vole.py, attempt_move) Finished iterating through the path but never reached goal. This may mean that there is an issue in the attempt_move funciton.')
+        sim_log(f'(Vole.py, attempt_move) Finished iterating through the path but never reached goal. This may mean that there is an issue in the attempt_move funciton.')
+        return False
 
 
 

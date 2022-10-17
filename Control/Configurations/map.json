@@ -50,7 +50,6 @@
                 { "chamber_interactable": "lever_door1" },
                 { "interactable_name":"beam1_door1", "type":"beam"}, 
                 { "interactable_name":"door1", "type":"door" },
-                { "interactable_name":"beam2_door1", "type":"beam"}, 
                 { "interactable_name":"rfid1", "type":"rfid" }, 
                 { "interactable_name":"door2", "type":"door" }, 
                 { "chamber_interactable": "lever_door2" }

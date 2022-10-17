@@ -11,6 +11,7 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 import importlib
 from cgitb import reset
 import time
+import random
 import threading
 import queue
 import signal
@@ -18,6 +19,7 @@ import sys
 
 # Local Imports 
 from Logging.logging_specs import control_log, sim_log
+from ..Classes.Timer import countdown
 
 try: 
     import RPi.GPIO as GPIO 
@@ -430,10 +432,7 @@ class interactableABC:
                         # FISH
                         # i still don't love that we set the threshold to false when we pass by it! 
                         #
-
-                        
                         else: 
-
                             time.sleep(0.1)'''
 
                 
@@ -652,9 +651,11 @@ class door(interactableABC):
         return self.buttonObj.isPressed 
     def sim_open(self): 
         if self.isSimulation: 
+            countdown(self.close_timeout, 'remaining for (simulated) door open to complete', secondary_message = True)
             self.buttonObj.isPressed = True 
     def sim_close(self): 
         if self.isSimulation: 
+            countdown(self.close_timeout, 'remaining for (simulated) door close to complete', secondary_message = True)
             self.buttonObj.isPressed = False 
 
 
@@ -703,13 +704,13 @@ class door(interactableABC):
         # appends to the threshold event queue 
         state = self.isOpen
         self.threshold_event_queue.put(f'{self.name} isOpen:{self.isOpen}')
-        print("Door Threshold: ", self.threshold, "  Door Threshold Condition: ", self.threshold_condition)
+        print(f"{self.name} Threshold: ", self.threshold, " Threshold Condition: ", self.threshold_condition)
         print(f'(Door(InteractableABC.py, add_new_threshold_event) {self.name} event queue: {list(self.threshold_event_queue.queue)}')
 
         # To avoid overloading a door with threshold events, we can sleep here until a state change occurs 
         while self.isOpen == state and self.active: 
             if len(self.threshold_event_queue.queue) == 0: # isEmpty!
-                # simulation side "used" the added threshold event, so even if there hasn't been a state change, break out of while loop so we can add another threshold event 
+                # control side "used" the added threshold event, so even if there hasn't been a state change, break out of while loop so we can add another threshold event 
                 return  
             time.sleep(.5)
         return 
@@ -728,7 +729,7 @@ class door(interactableABC):
 
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation: 
-            print(f'(Door(InteractableABC), close()) {self.name} is being simulated. Setting state to Closed and returning.')
+            print(f'(Door(InteractableABC), close()) {self.name} is being simulated. setting state to Closed and returning.')
             self.sim_close() 
             return 
 
@@ -816,6 +817,8 @@ class rfid(interactableABC):
         super().__init__(threshold_condition, name)
         self.ID = ID 
         self.rfidQ = queue.Queue()
+        
+        # self.shared_rfidQ: after initialization, assinged a shared_rfidQ attribute in ModeABC. This is a shared queue among all of the rfids. 
 
         self.ping_history = [] # exhaustive list of all the pings that have occurred, independent of phase/mode 
 
@@ -823,6 +826,11 @@ class rfid(interactableABC):
         self.autonomous = True # operates independent of direct interaction with a vole or other interactales. This will ensure that vole interacts with rfids on every pass. 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
+
+    def sim_ping(self, vole): 
+        # simulates an RFID ping by adding to the shared rfidQ 
+        # self.shared_rfidQ.put((vole, self.ID, (time.time() + (random.randint(1,3) - random.random())) ))
+        [self.shared_rfidQ.put((vole, self.ID, (time.time() + ( i - random.random() )))) for i in range (1,3)]
 
     class Ping: 
         ''' class for packaging rfid pings into pairs in order to represent the time that a vole first scanned an the rfid reader, 
@@ -1154,7 +1162,7 @@ class beam(interactableABC):
             self.isBroken = self.buttonObj.isPressed # True if button is in a pressed state --> represents beam being broken 
         self.break_history = [] # exhaustive list of all the timestamps of the beam breaks that have occurred for this beam 
         
-        self.barrier = False # if rfid doesnt reach threshold, it wont prevent a voles movement
+        self.barrier = False # if beam doesnt reach threshold, it wont prevent a voles movement
         self.autonomous = True # operates independent of direct interaction with a vole or other interactales. This will ensure that vole interacts with beams on every pass. 
 
     # # Button Object # # 
@@ -1206,7 +1214,7 @@ class beam(interactableABC):
         # To avoid overloading a door with threshold events, we can sleep here until a state change occurs 
         ''' while (self.threshold_attribute == self.threshold_goal_value) and self.active: 
             if len(self.threshold_event_queue.queue) == 0: # isEmpty!
-                # simulation side "used" the added threshold event, so even if there hasn't been a state change, break out of while loop so we can add another threshold event 
+                # control side "used" the added threshold event, so even if there hasn't been a state change, break out of while loop so we can add another threshold event 
                 return  
             time.sleep(.5) '''
         return 
