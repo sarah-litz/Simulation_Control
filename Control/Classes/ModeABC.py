@@ -8,14 +8,16 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 """
 
 # Imports
+from multiprocessing import Event
 from posixpath import split
 import inspect
 from Logging.logging_specs import control_log
 import time
 import threading
 import queue 
+import traceback
 from .InteractableABC import rfid
-from ..Classes.Timer import countdown
+from ..Classes.Timer import EventManager
 import signal
 import sys
 
@@ -27,7 +29,7 @@ class modeABC:
     """This is the base class, each mode will be an obstantiation of this class.
     """
 
-    def __init__(self, timeout = None, map = None, enterFuncs = None, exitFuncs = None, bypass = False, **kwargs):
+    def __init__(self, timeout = None, map = None, output_fp = None, enterFuncs = None, exitFuncs = None, bypass = False, **kwargs):
         
 
         # Set the givens
@@ -37,7 +39,10 @@ class modeABC:
         self.timeout = timeout
         self.optional = kwargs
         self.inTimeout = False 
-        self.startTime = None
+        self.output_fp = output_fp
+        self.startTime = time.time()
+        self.event_manager = EventManager(self)
+
 
         # Shared rfidQ ( if no rfids present, this will just sit idle )
         self.shared_rfidQ = queue.Queue() # if any of the rfids are pinged, a message will be added to this queue 
@@ -78,34 +83,35 @@ class modeABC:
 
             print(f'\nnew mode entered: {self}') # print to console 
 
-            time.sleep(1) # pause before activating interactables 
-
             self.map.activate_interactables() # ensure that interactables are running for the new mode 
-
+            
+            #
+            # Mode Setup
+            #
+            self.event_manager.activate() # Start Tracking for Mode Events 
+            self.event_manager.new_timestamp(event_description='Mode_Setup', time=time.time())
             self.setup() # prep for run() function call ( this is where calls to deactivate() specific interactables should be made )
-
-            time.sleep(3) # Pause Before Starting
-
-            self.startTime = time.time() 
+            
             self.active = True # mark this mode as being active, triggering a simulation to start running, if a simulation exists
-
             self.rfidListener() # starts up listener that checks the shared_rfidQ
 
+            # Starting Mode Timeout and Running the Start() Method of the Mode Script!
             self.inTimeout = True 
+            self.event_manager.new_timestamp(event_description=f'Mode_Timeout_Start', time=time.time())
             mode_thread = threading.Thread(target = self.run, daemon = True) # start running the run() funciton in its own thread as a daemon thread
             mode_thread.start() 
 
             # countdown for the specified timeout interval 
-            countdown( timeinterval = self.timeout, message = f"remaining in {self}'s timeout interval" )
+            self.event_manager.new_countdown(event_description = f"remaining in {self}'s timeout interval", duration = self.timeout, primary_countdown = True)
 
             # exit when the timeout countdown finishes
             self.exit()   
-
             mode_thread.join() # ensure that mode thread finishes before returning 
         
         except Exception as e: 
             ''' if any errors/exceptions get raised, code will fall into this except statement where we can ensure nothing gets left running '''
-            print(e)
+            print(e) # printing exception message
+            traceback.print_exc() # printing stack trace 
             self._except_handler()
 
 
@@ -116,29 +122,34 @@ class modeABC:
     def exit(self): 
         """This function is run when the mode exits and another mode begins. It closes down all the necessary threads and makes sure the next mode is setup and ready to go. 
         """
-
         print(f"{self} finished its Timeout Period and is now Exiting")
         self.inTimeout = False
+        self.event_manager.new_timestamp(event_description=f'mode_timeout_end', time=time.time())
         self.active = False 
 
         # Waits on Sim to reach clean exiting point # 
         self.simulation_lock.acquire() # if sim is running, wait for lock to ensure that it exits cleanly
         self.simulation_lock.release() # immediately release so next sim can use it 
 
+        # Deactivate Interactables and Event Manager
         self.map.deactivate_interactables(clear_threshold_queue = True) # empties the interactable's threshold event queue and sets active = False
+        self.event_manager.deactivate() # Stop Event Tracking for this Mode 
 
     def _interrupt_handler(self, signal, frame): 
         ''' catches interrupt, notifies threads, attempts a clean exit '''
         print(f'(ModeABC, _interrupt_handler) Deactivating Interactables')
         self.map.deactivate_interactables() # shuts off all of the hardware interactables
+        print('mode start time:', self.startTime)
+        self.event_manager.new_timestamp(event_description='Early_Interrupt_Caused_Exit', time=time.time())
+        self.event_manager.finish()
         sys.exit(0)
     def _except_handler(self): 
         ''' if exception/error occurs, attempts to shutoff any components before exiting '''
         print(f'(ModeABC, _except_handler) Deactiving Interactables')
         self.map.deactivate_interactables() # shuts off all the hardware interactables 
+        self.event_manager.new_timestamp(event_description='Exception_Caused_Exit', time=time.time())
+        self.event_manager.finish()
         sys.exit(0)
-
-
 
     #
     # rfid listener --> manages the queue that is shared amongst all RFID readers in a box  

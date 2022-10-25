@@ -8,6 +8,12 @@ import time
 
 from Control.Classes.Timer import PRINTING_MUTEX
 from Control.Classes.Timer import COUNTDOWN_MUTEX
+from Control.Classes.Timer import EventManager
+
+class SimulationEventsManager(EventManager): 
+    def __init__(self): 
+        pass 
+    
 
 
 def countdown(timeinterval, message, secondary_message = False): 

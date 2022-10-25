@@ -4,9 +4,10 @@
             "id": 1, 
             "descriptive_name": "Chamber 1", 
             "components": [
-                { "interactable_name":"food_dispenser", "type":"dispenser"} 
+                
             ] 
         }
     ], 
-    "edges": [ ]
+    "edges": [ ], 
+    "voles": [ ]
 }

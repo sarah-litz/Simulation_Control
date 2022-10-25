@@ -1,0 +1,8 @@
+
+Control Mode,<Control.Classes.Timer.EventManager object at 0x10f96ebe0>,<class 'Control.Classes.Timer.EventManager'>
+Round,Event,Interactable,Modal Time,Time,In Timeout?
+,Mode_Setup,,0.58,1666719729.7655911,False
+,Mode_Timeout_Start,,0.58,1666719729.765988,True
+,timestamp event #1,,14.69,1666719743.875974,True
+,timestamp event #2,,15.69,1666719744.8830452,True
+,Early_Interrupt_Caused_Exit,,35.69,1666719764.883591,False
