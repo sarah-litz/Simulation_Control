@@ -6,7 +6,6 @@ import time
 import threading 
 import queue
 
-from ..Classes.Timer import countdown
 from ..Classes.Map import Map
 from ..Classes.ModeABC import modeABC
 
@@ -144,7 +143,6 @@ class mode2(modeABC):
             ## Effect of Lever Threshold Being Met ## 
             # lever1.retract() # retract lever 
             door1.open() # open door
-            countdown(timeinterval = 10, message = 'seconds until door1 closes') # (NOTE) careful with how long the sleep time is cause don't want to go over the timeout period, becuase it will then mess up the next mode. ( somehow have a continuous check for if been set to inactive throughout the sleep time?? )
             door1.close() # close door 
 
 

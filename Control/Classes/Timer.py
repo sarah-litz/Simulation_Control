@@ -17,15 +17,23 @@ class EventManager:
     ''' EventManager records events and the times that they happened at. 
         Provides the option to log messages, print to terminal, and/or record data in an output csv file '''
     
-    def __init__(self, mode): 
+    def __init__(self, mode=None): 
         print('(Timer.py, EventManager.__init__) New Event Manager created for Control Mode:', type(mode))
         self.mode = mode 
         self.active = False 
         self.write_queue = queue.Queue() # items get added here to be written to output csv file 
-        self.output_fp = self.mode.output_fp
-        self.setup_output_file()
+        if mode is not None: 
+            self.output_fp = self.mode.output_fp
+            self.setup_output_file()
     
-    def activate(self): 
+    def update_for_new_mode(self, mode): 
+        self.mode = mode
+        self.output_fp = mode.output_fp 
+        self.setup_output_file()
+
+    def activate(self, new_mode = None):
+        if new_mode is not None: 
+            self.update_for_new_mode(new_mode) 
         self.active = True 
         self.watch_write_queue()
     def deactivate(self): 
@@ -41,7 +49,7 @@ class EventManager:
     def setup_output_file(self): 
         with open(self.output_fp, 'w') as file:  # w - mode start at the BEGINNING of a file, so will overwrite any existing contents if the file already existed.
             spacer = []
-            title = [f'Control Mode', str(self), type(self)]
+            title = [f'Control Mode', str(self.mode), type(self.mode)]
             header = ['Round', 'Event', 'Interactable', 'Modal Time', 'Time', 'In Timeout?']
             csv_writer = csv.writer(file, delimiter = ',')
             csv_writer.writerow(spacer)
@@ -111,10 +119,9 @@ class EventManager:
         self.write_queue.put(ts)
         return ts
     
-    def new_countdown(self, event_description, duration, primary_countdown = False): 
+    def new_countdown(self, event_description, duration, primary_countdown = False, create_start_and_end_timestamps = True): 
         # creates a new Countdown object and adds to priority queue, where the event that will finish the soonest has the highest priority/will be printed to the screen.
-        return self.Countdown(event_description, duration, mode = self.mode, primary_countdown = primary_countdown)
-
+        return self.Countdown(event_description, duration, new_timestamp = self.new_timestamp, mode = self.mode, primary_countdown = primary_countdown, create_timestamps=create_start_and_end_timestamps)
 
     
     class Timestamp:
@@ -131,18 +138,20 @@ class EventManager:
             TIMESTAMP_EVENT_MUTEX.acquire()
             print(self)
             TIMESTAMP_EVENT_MUTEX.release()
-
+            
 
     class Countdown: 
         ''' event that occurs over a measurable period of time '''
-        def __init__(self, event_description, duration, mode, start_time = None, primary_countdown = False): 
+        def __init__(self, event_description, duration, mode, new_timestamp, start_time = None, primary_countdown = False, create_timestamps = True): 
             self.event = event_description
             self.mode = mode
             self.primary_countdown = primary_countdown # Round Countdown; will pause for other countdowns
             if start_time is not None: self.start_time = start_time 
             else: self.start_time = time.time()
             self.end_time = self.start_time + duration 
+            if create_timestamps: new_timestamp(event_description = self.event+'_Start', time = self.start_time) # Timestamp Countdown Start
             self.print_countdown() 
+            if create_timestamps: new_timestamp(event_description = self.event+'_Finish', time = self.end_time) # Timestamp Countdown End
 
         @property
         def active(self): 
@@ -173,7 +182,6 @@ class EventManager:
                             if not TIMESTAMP_EVENT_MUTEX.locked(): sys.stdout.write(f'\r{timer} {self.event}   |')
                         COUNTDOWN_MUTEX.release()  
                     time.sleep(1)
-                
                 return 
             
             if not self.active: 

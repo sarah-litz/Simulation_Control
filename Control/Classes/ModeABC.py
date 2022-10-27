@@ -41,7 +41,7 @@ class modeABC:
         self.inTimeout = False 
         self.output_fp = output_fp
         self.startTime = time.time()
-        self.event_manager = EventManager(self)
+        self.event_manager = self.map.event_manager
 
 
         # Shared rfidQ ( if no rfids present, this will just sit idle )
@@ -88,7 +88,7 @@ class modeABC:
             #
             # Mode Setup
             #
-            self.event_manager.activate() # Start Tracking for Mode Events 
+            self.event_manager.activate(new_mode = self) # Start Tracking for Mode Events 
             self.event_manager.new_timestamp(event_description='Mode_Setup', time=time.time())
             self.setup() # prep for run() function call ( this is where calls to deactivate() specific interactables should be made )
             
@@ -97,12 +97,12 @@ class modeABC:
 
             # Starting Mode Timeout and Running the Start() Method of the Mode Script!
             self.inTimeout = True 
-            self.event_manager.new_timestamp(event_description=f'Mode_Timeout_Start', time=time.time())
+            # self.event_manager.new_timestamp(event_description=f'Mode_Timeout_Start', time=time.time())
             mode_thread = threading.Thread(target = self.run, daemon = True) # start running the run() funciton in its own thread as a daemon thread
             mode_thread.start() 
 
             # countdown for the specified timeout interval 
-            self.event_manager.new_countdown(event_description = f"remaining in {self}'s timeout interval", duration = self.timeout, primary_countdown = True)
+            self.event_manager.new_countdown(event_description = f"Mode_Timeout", duration = self.timeout, primary_countdown = True)
 
             # exit when the timeout countdown finishes
             self.exit()   
@@ -124,7 +124,7 @@ class modeABC:
         """
         print(f"{self} finished its Timeout Period and is now Exiting")
         self.inTimeout = False
-        self.event_manager.new_timestamp(event_description=f'mode_timeout_end', time=time.time())
+        # self.event_manager.new_timestamp(event_description=f'mode_timeout_end', time=time.time())
         self.active = False 
 
         # Waits on Sim to reach clean exiting point # 

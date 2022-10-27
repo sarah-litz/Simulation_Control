@@ -3,7 +3,6 @@ import queue
 
 from Control.Classes.InteractableABC import rfid
 
-from ..Classes.Timer import countdown
 from ..Classes.Map import Map
 from ..Classes.ModeABC import modeABC
 

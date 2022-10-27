@@ -1,8 +1,12 @@
 
-Control Mode,<Control.Classes.Timer.EventManager object at 0x10f96ebe0>,<class 'Control.Classes.Timer.EventManager'>
+Control Mode,Airlock Doors to Separate Voles,<class 'Control.Scripts.AirLockBox.AirLockDoorLogic'>
 Round,Event,Interactable,Modal Time,Time,In Timeout?
-,Mode_Setup,,0.58,1666719729.7655911,False
-,Mode_Timeout_Start,,0.58,1666719729.765988,True
-,timestamp event #1,,14.69,1666719743.875974,True
-,timestamp event #2,,15.69,1666719744.8830452,True
-,Early_Interrupt_Caused_Exit,,35.69,1666719764.883591,False
+,Mode_Setup,,8.5,1666839504.523697,False
+,sim_door_open_Start,,8.81,1666839504.831486,False
+,sim_door_open_Finish,,16.81,1666839512.831486,False
+,Mode_Timeout_Start,,9.0,1666839505.0230038,True
+,sim_door_close_Start,,22.45,1666839518.470735,True
+,sim_door_close_Finish,,30.45,1666839526.470735,True
+,sim_door_open_Start,,34.79,1666839530.809456,True
+,sim_door_open_Finish,,42.79,1666839538.809456,True
+,Early_Interrupt_Caused_Exit,,88.79,1666839584.80785,True

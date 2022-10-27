@@ -19,7 +19,6 @@ import sys
 
 # Local Imports 
 from Logging.logging_specs import control_log, sim_log
-from ..Classes.Timer import countdown
 
 try: 
     import RPi.GPIO as GPIO 
@@ -43,7 +42,10 @@ except ModuleNotFoundError as e:
 
 class interactableABC:
 
-    def __init__(self, threshold_condition, name):
+    def __init__(self, threshold_condition, name, event_manager):
+
+        ## Shared Among Interactables ## 
+        self.event_manager = event_manager
 
         ## Object Information ## 
         self.ID = None
@@ -383,67 +385,11 @@ class interactableABC:
                 # no threshold event, ensure that threshold is False 
                 self.threshold = False # BIG CHANGE!!! FISH
 
-
-
-                    # Since an event occurred, check if we should reset the attribute value to its inital value
-            ''' 
-                    NOT SURE THAT reset_value SHOULD EVER BE AN OPTION BECAUSE FOR EVERY INTERACTABLE THAT HAS A THRESHOLD THAT REQUIRES 'check_threshold_with_fn', that means it probs doesnt make much sense to try to directly SET the threshold attribute. 
-                    if ('reset_value' in self.threshold_condition.keys() and self.threshold_condition['reset_value'] is True): 
-
-                        setattr( self, self.threshold_condition['attribute'], self.threshold_condition['initial_value'] )
-                        print( f'(InteractableABC,py, watch_for_threshold_event) resetting {self.name} threshold attribute, {self.threshold_condition["attribute"]}, to its initial value for  ')
-                        control_log( f'(InteractableABC,py, watch_for_threshold_event) resetting {self.name} threshold attribute, {self.threshold_condition["attribute"]}, to its initial value for  ')
-                    
-                    else:''' 
-                    # if we are not resetting the value, then to ensure that we don't endlessly count threshold_events
-                    # we want to wait for some kind of state change ( a change in its attribute value ) before again tracking a threshold event 
-                    
-                    #
-                    # Sleep To Avoid Double Counting Threshold Events!
-                    #
-                    # LEAVING OFF HERE!!!!!! 
-                    #
-                    # I BELIEVE THIS IS WHERE THE RFIDs ARE GETTING STUCK SINCE OF COURSE WHEN WE ADD A BUNCH OF THINGS TO THE RFIDQ, IT NEVER REACHES A STATE WHERE THE 
-                    # RFIDQ IS EMPTY AGAIN (i.e. the threshold is stuck in a true state, and we are sitting here waiting for it to go back to its false state before checking for more threshold events.)
-            '''while event_bool: 
-
-                        # repeatedly upate the current value of the threshold attribute so we can check for changes in its value #
-                        # check for attributes that may have been added dynamically 
-                        if hasattr(self, 'check_threshold_with_fn'): # the attribute check_threshold_with_fn is pointing to a function that we need to execute 
-                            attribute = self.check_threshold_with_fn(self) # sets attribute value to reflect the value returned from the function call
-                        else: 
-                            attribute = getattr(self, threshold_attr_name) # necessary for lever_food w/ dispenser as its parent
-
-                        # wait for a change in the attribute value before starting to look for an event again #
-                        if attribute != self.threshold_condition['goal_value']: 
-                            # Note: do not set interactable.threshold to False here! Threshold attribute is specifically for communication with Simulation. So the Simulation is in charge of resetting the threshold value to false. ( we do so in update_location when a vole passes by an interactable. )
-                            event_bool = False # reset event bool so we exit loop
-                            self.threshold = False # BIG CHANGE!!! FISH
-
-                        # 2nd reason to start looking for an event: if the threshold_event_queue is emptied, meaning a Control side script used some threshold event in its logic
-                        elif len(self.threshold_event_queue.queue) == 0: # isEmpty! 
-                            event_bool = False # reset event bool so we exit loop 
-
-                        # 3rd reason to start looking for an event: if the threshold has been set to False, but the attribute still == self.threshold_condition['goal_value'], 
-                        # meaning we successfully communicated to a vole that there was a threshold reached, and because the vole passed by this interactable it set the threshold to False 
-                        # when it passed by the interactable. 
-                        #
-                        # LEAVING OFF HERE::: THIS SEEMS ODD 
-                        # FISH
-                        # i still don't love that we set the threshold to false when we pass by it! 
-                        #
-                        else: 
-                            time.sleep(0.1)'''
-
-                
-            
-
-
-         
+ 
 class lever(interactableABC):
-    def __init__(self, ID, threshold_condition, hardware_specs, name):
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager):
         # Initialize the parent class
-        super().__init__(threshold_condition, name)
+        super().__init__(threshold_condition, name, event_manager)
 
         # Initialize the given properties
         self.ID        = ID 
@@ -618,9 +564,9 @@ class door(interactableABC):
         interactableABC ([type]): [description]
     """
 
-    def __init__(self, ID, threshold_condition, hardware_specs, name):
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager):
         
-        super().__init__(threshold_condition, name) # init the parent class 
+        super().__init__(threshold_condition, name, event_manager) # init the parent class 
         
         self.ID = ID  # init the given properties 
         
@@ -651,11 +597,11 @@ class door(interactableABC):
         return self.buttonObj.isPressed 
     def sim_open(self): 
         if self.isSimulation: 
-            countdown(self.close_timeout, 'remaining for (simulated) door open to complete', secondary_message = True)
+            self.event_manager.new_countdown('sim_door_open', self.close_timeout)
             self.buttonObj.isPressed = True 
     def sim_close(self): 
         if self.isSimulation: 
-            countdown(self.close_timeout, 'remaining for (simulated) door close to complete', secondary_message = True)
+            self.event_manager.new_countdown('sim_door_close', self.close_timeout)
             self.buttonObj.isPressed = False 
 
 
@@ -812,9 +758,9 @@ class rfid(interactableABC):
         interactableABC ([type]): [description]
     """
 
-    def __init__(self, ID, threshold_condition, name):
+    def __init__(self, ID, threshold_condition, name, event_manager):
         # Initialize the parent 
-        super().__init__(threshold_condition, name)
+        super().__init__(threshold_condition, name, event_manager)
         self.ID = ID 
         self.rfidQ = queue.Queue()
         
@@ -922,10 +868,10 @@ class rfid(interactableABC):
 
 class dispenser(interactableABC): 
 
-    def __init__(self, ID, threshold_condition, hardware_specs, name ): 
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager): 
 
         # Initialize the parent class
-        super().__init__(threshold_condition, name)
+        super().__init__(threshold_condition, name, event_manager)
 
         self.ID = ID 
 
@@ -1098,9 +1044,9 @@ class buttonInteractable(interactableABC):
         buttonInteractable is used for the buttons that control the open/closing of doors; if a door is in movement, these buttons override that movement immediately 
     '''
 
-    def __init__(self, ID, threshold_condition, hardware_specs, name ): 
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager ): 
          # Initialize the parent class
-        super().__init__(threshold_condition, name)
+        super().__init__(threshold_condition, name, event_manager)
 
         # Initialize the given properties
         self.ID = ID 
@@ -1146,10 +1092,10 @@ class buttonInteractable(interactableABC):
 
 class beam(interactableABC): 
 
-    def __init__(self, ID, threshold_condition, hardware_specs, name ): 
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager): 
 
          # Initialize the parent class
-        super().__init__(threshold_condition, name)
+        super().__init__(threshold_condition, name, event_manager)
 
         self.ID = ID 
 
@@ -1245,10 +1191,10 @@ class beam(interactableABC):
 
 class laser(interactableABC): 
 
-    def __init__(self, ID, threshold_condition, hardware_specs, name, dutycycle_definitions ): 
+    def __init__(self, ID, threshold_condition, hardware_specs, name, dutycycle_definitions, event_manager): 
 
          # Initialize the parent class
-        super().__init__(threshold_condition, name)
+        super().__init__(threshold_condition, name, event_manager)
 
         self.ID = ID    
 

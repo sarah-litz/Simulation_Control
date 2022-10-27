@@ -15,7 +15,6 @@ import time, random
 
 # Local Imports 
 from ..Logging.logging_specs import sim_log, vole_log
-from .Timer import countdown
 
 
 

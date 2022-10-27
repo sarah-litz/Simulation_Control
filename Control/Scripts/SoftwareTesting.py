@@ -11,7 +11,6 @@ import importlib
 from tkinter import Button
 
 from ..Classes.Timer import EventManager
-# from ..Classes.Timer import Countdown
 from ..Classes.Map import Map
 from ..Classes.ModeABC import modeABC
 
@@ -44,10 +43,10 @@ class EventManagerTests(modeABC):
         print(f'(SoftwareTesting.py, EventManagerTests, run())')
         time.sleep(3)
         print('\n')
-        self.event_manager.new_countdown('another time! ', 10)
-        self.event_manager.new_timestamp('timestamp event #1', time=time.time())
+        self.event_manager.new_countdown('Countdown', 10)
+        self.event_manager.new_timestamp('Event_1', time=time.time())
         time.sleep(1)
-        self.event_manager.new_timestamp('timestamp event #2', time=time.time())
+        self.event_manager.new_timestamp('Event_2', time=time.time())
         print('All Done')
         return 
         

@@ -3,7 +3,6 @@ import queue
 
 from Control.Classes.InteractableABC import rfid
 
-from ..Classes.Timer import countdown
 from ..Classes.Map import Map
 from ..Classes.ModeABC import modeABC
 
@@ -11,8 +10,8 @@ from ..Logging.logging_specs import script_log, control_log
 
 
 class WaitFiveSecondsBeforeRetractOrClose(modeABC): 
-    def __init__(self, timeout, map): 
-        super().__init__(timeout,map)
+    def __init__(self, timeout, map, output_fp): 
+        super().__init__(timeout,map, output_fp)
     
     def __str__(self): 
         return '5 Sec Intervals b4 Close/Retract'
