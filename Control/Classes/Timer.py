@@ -27,6 +27,8 @@ class EventManager:
             self.setup_output_file()
     
     def update_for_new_mode(self, mode): 
+        ''' map contains 1 instance of event manager that will be shared among all the modes. 
+        this gets called when one mode ends and another starts running '''
         self.mode = mode
         self.output_fp = mode.output_fp 
         self.setup_output_file()
@@ -38,7 +40,10 @@ class EventManager:
         self.watch_write_queue()
     def deactivate(self): 
         self.active = False 
+        self.mode = None
         self.finish() # Finishes writing any items left in the write_queue
+    def isActive(self): 
+        return self.active 
     @property
     def modeActive(self): 
         return self.mode.active
@@ -50,7 +55,7 @@ class EventManager:
         with open(self.output_fp, 'w') as file:  # w - mode start at the BEGINNING of a file, so will overwrite any existing contents if the file already existed.
             spacer = []
             title = [f'Control Mode', str(self.mode), type(self.mode)]
-            header = ['Round', 'Event', 'Interactable', 'Modal Time', 'Time', 'In Timeout?']
+            header = ['Round', 'Event', 'Modal Time', 'Time', 'Duration', 'In Timeout?']
             csv_writer = csv.writer(file, delimiter = ',')
             csv_writer.writerow(spacer)
             csv_writer.writerow(title)
@@ -75,7 +80,7 @@ class EventManager:
             csv_writer = csv.writer(f, delimiter=',')
             while len(self.write_queue.queue) > 0: 
                 item = self.write_queue.get() 
-                csv_writer.writerow([None, item.event, None, item.modal_time, item.time, item.inTimeout])
+                csv_writer.writerow([None, item.event, item.modal_time, item.time, item.duration, item.inTimeout])
             f.close()
             return 
         if len(self.write_queue.queue) > 19: 
@@ -97,11 +102,11 @@ class EventManager:
                     # write to csv file 
                     item_round = None 
                     item_event = item.event
-                    item_interactable = None 
                     item_mode_time = item.modal_time
                     item_raw_time = item.time
+                    item_duration = item.duration
                     item_in_timeout = item.inTimeout
-                    csv_writer.writerow([item_round, item_event, item_interactable, item_mode_time, item_raw_time, item_in_timeout])
+                    csv_writer.writerow([item_round, item_event, item_mode_time, item_raw_time, item_duration, item_in_timeout])
                     file.flush() 
             
             file.close() 
@@ -110,9 +115,14 @@ class EventManager:
     #
     # Event Creation 
     # 
-    def new_timestamp(self, event_description, time, print_to_screen = True ):
+    def new_timestamp(self, event_description, time, print_to_screen = True, duration = None ):
         # Streamlined way of marking an event and when it happened! Creates a timestamp and then sends to queues where it will be recorded in the csv file and possibly printed to the terminal 
-        ts = self.Timestamp(event_description, mode_start_time=self.mode.startTime, inTimeout = self.mode.inTimeout, time = time)
+        
+        if self.mode is None: 
+            print(f'Skipping timestamp creation for {event_description} because no mode is currently active.')
+            return 
+
+        ts = self.Timestamp(event_description, mode_start_time=self.mode.startTime, inTimeout = self.mode.inTimeout, time = time, duration = duration)
         if print_to_screen: 
             ts.print_timestamp()
         # Add to Queue so timestamp is written to output csv file 
@@ -121,19 +131,24 @@ class EventManager:
     
     def new_countdown(self, event_description, duration, primary_countdown = False, create_start_and_end_timestamps = True): 
         # creates a new Countdown object and adds to priority queue, where the event that will finish the soonest has the highest priority/will be printed to the screen.
-        return self.Countdown(event_description, duration, new_timestamp = self.new_timestamp, mode = self.mode, primary_countdown = primary_countdown, create_timestamps=create_start_and_end_timestamps)
+        return self.Countdown(event_description, duration, mode = self.mode, new_timestamp = self.new_timestamp, checkEventManagerActive = self.isActive, start_time = None, primary_countdown = primary_countdown, create_timestamps=create_start_and_end_timestamps)
 
     
     class Timestamp:
         ''' Specific/Instantaneous Event Occurrence'''
-        def __init__( self, event_description, mode_start_time, inTimeout, time = time.time()): 
+        def __init__( self, event_description, mode_start_time, inTimeout, time = time.time(), duration = None): 
             self.event = event_description
             self.time = time 
             self.modal_time = round(time - mode_start_time, 2)
             self.inTimeout = inTimeout
+            self.duration = duration
+    
         def __str__(self): 
             return f'{self.event} : {self.modal_time}'
         def print_timestamp(self): 
+            # wait to ensure that the printing mutex is not in use ( meaning a map is getting printed )
+            # while PRINTING_MUTEX.locked(): 
+            #    ''' wait here until printing mutex is not in use'''
             # Grab the timestamp mutex and print 
             TIMESTAMP_EVENT_MUTEX.acquire()
             print(self)
@@ -142,21 +157,29 @@ class EventManager:
 
     class Countdown: 
         ''' event that occurs over a measurable period of time '''
-        def __init__(self, event_description, duration, mode, new_timestamp, start_time = None, primary_countdown = False, create_timestamps = True): 
+        def __init__(self, event_description, duration, mode, new_timestamp, checkEventManagerActive, start_time = None, primary_countdown = False, create_timestamps = True): 
+            
             self.event = event_description
             self.mode = mode
             self.primary_countdown = primary_countdown # Round Countdown; will pause for other countdowns
+            self.checkEventManagerActive = checkEventManagerActive # Function Call that returns if the event manager is active or not.
+
+            # Start and End Time # 
             if start_time is not None: self.start_time = start_time 
             else: self.start_time = time.time()
             self.end_time = self.start_time + duration 
-            if create_timestamps: new_timestamp(event_description = self.event+'_Start', time = self.start_time) # Timestamp Countdown Start
+
+            # Create Start and Finish Countdowns
+            if create_timestamps: ts1 = new_timestamp(event_description = self.event+'_Start', time = time.time()) # Timestamp Countdown Start
             self.print_countdown() 
-            if create_timestamps: new_timestamp(event_description = self.event+'_Finish', time = self.end_time) # Timestamp Countdown End
+            if create_timestamps: 
+                t = time.time()
+                new_timestamp(event_description = self.event+'_Finish', time = t, duration = t - ts1.time) # Timestamp Countdown End
 
         @property
         def active(self): 
-            return self.mode.active
-
+            return self.checkEventManagerActive()
+        
         def print_countdown(self):    
             if self.primary_countdown: 
                 # ROUND COUTNDOWN: sent to background if needed # 
@@ -165,8 +188,9 @@ class EventManager:
                     if not COUNTDOWN_MUTEX.locked(): 
                         timeinterval = int(round(self.end_time,2) - round(time.time(),2)) # calculate time remaining
                         mins, secs = divmod(timeinterval, 60) # Format Time for displaying 
-                        if not TIMESTAMP_EVENT_MUTEX.locked(): timer = '{:02d}:{:02d}'.format(mins, secs) 
-                        sys.stdout.write(f'\r{timer} {self.event}   |')    
+                        timer = '{:02d}:{:02d}'.format(mins, secs) 
+                        if not TIMESTAMP_EVENT_MUTEX.locked() and not PRINTING_MUTEX.locked(): 
+                            sys.stdout.write(f'\r{timer} {self.event}   |')    
                     time.sleep(1)
                 
                 return 
@@ -174,12 +198,13 @@ class EventManager:
             if not self.primary_countdown: 
                 while self.end_time > time.time() and self.active:
                     if not COUNTDOWN_MUTEX.locked(): # gives terminal printing priority to specific events that need to print to terminal
-                        COUNTDOWN_MUTEX.acquire()
+                        COUNTDOWN_MUTEX.acquire() # Aquires the Countdown Mutex, which will prevent the primary countdown from printing while this countdown prints. 
                         while self.end_time > time.time() and self.active: 
                             timeinterval = int(self.end_time - time.time()) # calculate time remaining
                             mins, secs = divmod(timeinterval, 60) # Format Time for displaying 
                             timer = '{:02d}:{:02d}'.format(mins, secs) 
-                            if not TIMESTAMP_EVENT_MUTEX.locked(): sys.stdout.write(f'\r{timer} {self.event}   |')
+                            if not TIMESTAMP_EVENT_MUTEX.locked() and not PRINTING_MUTEX.locked(): 
+                                sys.stdout.write(f'\r{timer} {self.event}   |')
                         COUNTDOWN_MUTEX.release()  
                     time.sleep(1)
                 return 
@@ -190,63 +215,18 @@ class EventManager:
             return 
         
 
-
-def countdown(): 
-    print(' countdown does nothing  ')
-'''def countdown(timeinterval, message, primary_message = False): 
-    print("\r")
-    
-    if not primary_message: 
-        if not COUNTDOWN_MUTEX.locked(): 
-            COUNTDOWN_MUTEX.acquire() 
-            while timeinterval:
-                mins, secs = divmod(timeinterval, 60)
-                timer = '{:02d}:{:02d}'.format(mins, secs)
-
-                if not PRINTING_MUTEX.locked(): 
-                    sys.stdout.write(f"\r{timer} {message}   | ")
-                
-                time.sleep(1)
-                timeinterval -= 1 
-            COUNTDOWN_MUTEX.release()
-            print('\n')
-            return 
-
-
-    while timeinterval:
-        mins, secs = divmod(timeinterval, 60)
-        timer = '{:02d}:{:02d}'.format(mins, secs)
-        
-        if not primary_message: 
-            if not PRINTING_MUTEX.locked() and not COUNTDOWN_MUTEX.locked(): 
-                # get the countdown mutex and then print
-                COUNTDOWN_MUTEX.acquire()
-                sys.stdout.write(f"\r{timer} {message}   | ")
-                COUNTDOWN_MUTEX.release()
-
-        if not PRINTING_MUTEX.locked() and not COUNTDOWN_MUTEX.locked(): 
-            # only print time remaining if the Printing Lock AND Countdown Lock is free
-            sys.stdout.write(f"\r{timer} {message}   | ")
-
-        time.sleep(1)
-        timeinterval -= 1
-    print('\n')'''
-
-
-
-def draw_table(data=[], cellwidth = 12): 
-    for i, d in enumerate(data):
-        line = '|'.join(str(x).ljust(cellwidth) for x in d)
-        print(line)
-        if i == 0:
-            print('-' * len(line))
-
-
-        ''' Example For Creating the Table: 
-        draw_table( 
-            data=[ 
-                ['row1col1', 'row1col2', 'row1col3'], 
-                ['row2col1', 'row2col2', 'row2col3'], 
-                ['row3col1', 'row3col2', 'row3col3']
-            ]
-        )'''
+class Visuals: 
+    def draw_table(data=[], cellwidth = 12): 
+        for i, d in enumerate(data):
+            line = '|'.join(str(x).ljust(cellwidth) for x in d)
+            print(line)
+            if i == 0:
+                print('-' * len(line))
+            ''' Example For Creating the Table: 
+            draw_table( 
+                data=[ 
+                    ['row1col1', 'row1col2', 'row1col3'], 
+                    ['row2col1', 'row2col2', 'row2col3'], 
+                    ['row3col1', 'row3col2', 'row3col3']
+                ]
+            )'''

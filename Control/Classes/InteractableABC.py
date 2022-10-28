@@ -383,7 +383,7 @@ class interactableABC:
                     pass 
             else: 
                 # no threshold event, ensure that threshold is False 
-                self.threshold = False # BIG CHANGE!!! FISH
+                self.threshold = False 
 
  
 class lever(interactableABC):
@@ -470,7 +470,13 @@ class lever(interactableABC):
     def add_new_threshold_event(self): 
 
         # appends to the lever's threshold event queue 
-        self.threshold_event_queue.put(f'{self} pressed {self.num_pressed} times!')
+        event = f'{self}_{self.num_pressed}_Presses'
+
+        # add threshold event to queue 
+        self.threshold_event_queue.put(event)
+
+        # add timestamp 
+        self.event_manager.new_timestamp(event, time=time.time())
         
 
     #@threader
@@ -597,11 +603,11 @@ class door(interactableABC):
         return self.buttonObj.isPressed 
     def sim_open(self): 
         if self.isSimulation: 
-            self.event_manager.new_countdown('sim_door_open', self.close_timeout)
+            self.event_manager.new_countdown(f'sim_{self.name}_open', self.close_timeout)
             self.buttonObj.isPressed = True 
     def sim_close(self): 
         if self.isSimulation: 
-            self.event_manager.new_countdown('sim_door_close', self.close_timeout)
+            self.event_manager.new_countdown(f'sim_{self.name}_close', self.close_timeout)
             self.buttonObj.isPressed = False 
 
 
@@ -649,7 +655,13 @@ class door(interactableABC):
     def add_new_threshold_event(self): 
         # appends to the threshold event queue 
         state = self.isOpen
-        self.threshold_event_queue.put(f'{self.name} isOpen:{self.isOpen}')
+        if self.isOpen: event = f'{self.name}_Open'
+        else: event = f'{self.name}_Close'
+
+        self.threshold_event_queue.put(event)
+        self.event_manager.new_timestamp(event, time=time.time())
+
+
         print(f"{self.name} Threshold: ", self.threshold, " Threshold Condition: ", self.threshold_condition)
         print(f'(Door(InteractableABC.py, add_new_threshold_event) {self.name} event queue: {list(self.threshold_event_queue.queue)}')
 
@@ -682,6 +694,7 @@ class door(interactableABC):
         # 
         # Direct Rpi to Close Door
         # 
+        ts_start = self.event_manager.new_timestamp(f'{self}_close_Start', time = time.time())
         self.servoObj.servo.throttle = self.close_speed 
 
         start = time.time() 
@@ -690,12 +703,16 @@ class door(interactableABC):
             if self.isOpen is False: 
                 # door successfully closed 
                 self.stop() # stop door movement 
+                t = time.time()
+                self.event_manager.new_timestamp(f'{self}_close_Finish', time=t, duration = t - ts_start.time)
                 return 
             else:
                 time.sleep(0.005)
         
         # Close Unsuccessful 
         self.stop() # stop door movement 
+        t = time.time()
+        self.event_manager.new_timestamp(f'{self}_close_Failure', time=t, duration = t - ts_start.time)
         control_log(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
         print(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
         # raise Exception(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
@@ -823,13 +840,15 @@ class rfid(interactableABC):
                         # The new ping should be recorded as the 2nd ping in this Ping Object! Do not add a new threshold event. 
                         # Update Existing Ping Object
                         p.set_ping2(ping) # sets ping2 and calculates latency 
+
+                        # Record Timestamp for Ping 2 
+                        self.event_manager.new_timestamp(f'rfid{p.rfid_id}_ping2_vole{p.vole_tag}', time=p.ping2[2], duration = p.latency)
+
                         newEntry = False 
-                        # print('UPDATED A PREVIOUSLY RECORDED PING')
                         return 
                     else: 
                         newEntry = True 
                         break 
-
             if newEntry: 
                 # create new Ping object and add to threshold event queue! 
                 ping2 = None
@@ -837,7 +856,11 @@ class rfid(interactableABC):
                 newPing = self.Ping(ping, ping2, latency)
                 self.ping_history.append(newPing)
                 self.threshold_event_queue.put(newPing)
+                # Record Timestamp for Ping 1 
+                ping1_timestamp = self.event_manager.new_timestamp(f'rfid{newPing.rfid_id}_ping1_vole{newPing.vole_tag}', time=newPing.ping1[2])
 
+            
+        
         except queue.Empty as e: 
             raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the rfidQ for {self.name}')
 
@@ -974,7 +997,7 @@ class dispenser(interactableABC):
         print('')
         if self.monitor_for_retrieval: 
             self.threshold_event_queue.put(f'Pellet Retrieval')
-            print('PELLET RETRIEVAL!')
+            self.event_manager.new_timestamp(f'{self.name}_pellet_retrieved', time = time.time())
             self.monitor_for_retrieval = False # reset since we recorded a single pellet retrieval.
         else: 
             control_log(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
@@ -1088,6 +1111,7 @@ class buttonInteractable(interactableABC):
 
         # append to event queue 
         self.threshold_event_queue.put(press)
+        self.event_manager.new_timestamp(f'{self.name}_pressed', time = time.time())
 
 
 class beam(interactableABC): 
@@ -1124,21 +1148,16 @@ class beam(interactableABC):
 
 
     def validate_hardware_setup(self):
-        
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable
             return 
-        
         else: 
             # not simulating beam, check that the beam's button was setup correctly
-            if self.buttonObj.pressed_val < 0: 
-                
+            if self.buttonObj.pressed_val < 0:  
                 errorMsg = []
                 if self.buttonObj.pressed_val < 0: 
-                    errorMsg.append('buttonObj')
-                
+                    errorMsg.append('buttonObj') 
                 raise Exception(f'(beam, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
-
             return 
     
     def activate(self): 
@@ -1149,15 +1168,20 @@ class beam(interactableABC):
     def add_new_threshold_event(self):
 
         '''New [Press] was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
-        # try: 
-        #     press = self.buttonObj.buttonQ.get() 
-        # except queue.Empty as e: 
-        #    raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the buttonQ for {self.name}')
 
         # append to event queue 
         self.threshold_event_queue.put(f'{self.name} beam broken {self.num_breaks} times')
 
-        # To avoid overloading a door with threshold events, we can sleep here until a state change occurs 
+        # Timestamp Break
+        ts = self.event_manager.new_timestamp(f'{self.name}_beam_break', time = time.time())
+
+        # Wait for Beam to Unbreak and Timestamp
+        while self.isBroken: 
+            ''' wait for beam to be unbroken '''
+        t = time.time()
+        self.event_manager.new_timestamp(f'{self.name}_beam_unbroken', time=t, duration = t - ts.time)
+
+        # To avoid overloading a beam with threshold events, we can sleep here until a state change occurs 
         ''' while (self.threshold_attribute == self.threshold_goal_value) and self.active: 
             if len(self.threshold_event_queue.queue) == 0: # isEmpty!
                 # control side "used" the added threshold event, so even if there hasn't been a state change, break out of while loop so we can add another threshold event 

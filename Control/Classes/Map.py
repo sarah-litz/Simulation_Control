@@ -19,7 +19,7 @@ import os
 import threading
 
 # Local Imports 
-from .Timer import draw_table, PRINTING_MUTEX
+from .Timer import Visuals, PRINTING_MUTEX
 from Logging.logging_specs import control_log, sim_log
 from .ModeABC import modeABC 
 from . import InteractableABC
@@ -44,10 +44,7 @@ class Map:
 
         if map_file_name is not None: 
             self.configure_setup(config_directory + f'/{map_file_name}')
-        else: self.configure_setup(config_directory + '/map.json')
-
-        # self.printing_mutex = PRINTING_MUTEX # lock to ensure only one thread prints at a time. A single mutex is shared among both control and simulation package.
- 
+        else: self.configure_setup(config_directory + '/map.json') 
 
     #
     # Map Visualization Methods
@@ -336,7 +333,7 @@ class Map:
         data = [ row1 ] 
         for i_name in self.instantiated_interactables.keys(): 
             data.append( [i_name, self.instantiated_interactables[i_name].isSimulation, self.instantiated_interactables[i_name].messagesReturnedFromSetup ] )
-        draw_table(data, cellwidth=20)
+        Visuals.draw_table(data, cellwidth=20)
     
     def print_dependency_chain(self): 
         '''
@@ -348,7 +345,7 @@ class Map:
             # dnames = ','.join([d.name for d in self.instantiated_interactables[i_name].dependents]) # makes list of names and converts list to string 
             pnames = ','.join([p.name for p in self.instantiated_interactables[i_name].parents]) 
             data.append( [i_name, pnames] )
-        draw_table(data, cellwidth=40)
+        Visuals.draw_table(data, cellwidth=40)
         
 
 

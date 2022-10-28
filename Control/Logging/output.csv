@@ -1,12 +1,20 @@
 
 Control Mode,Airlock Doors to Separate Voles,<class 'Control.Scripts.AirLockBox.AirLockDoorLogic'>
-Round,Event,Interactable,Modal Time,Time,In Timeout?
-,Mode_Setup,,8.5,1666839504.523697,False
-,sim_door_open_Start,,8.81,1666839504.831486,False
-,sim_door_open_Finish,,16.81,1666839512.831486,False
-,Mode_Timeout_Start,,9.0,1666839505.0230038,True
-,sim_door_close_Start,,22.45,1666839518.470735,True
-,sim_door_close_Finish,,30.45,1666839526.470735,True
-,sim_door_open_Start,,34.79,1666839530.809456,True
-,sim_door_open_Finish,,42.79,1666839538.809456,True
-,Early_Interrupt_Caused_Exit,,88.79,1666839584.80785,True
+Round,Event,Modal Time,Time,Duration,In Timeout?
+,Mode_Setup,4.57,1666974568.783881,,False
+,sim_door1_open_Start,4.57,1666974568.7840111,,False
+,sim_door1_open_Finish,13.6,1666974577.811595,9.027583837509155,False
+,door1_Open,13.98,1666974578.191102,,True
+,Mode_Timeout_Start,14.04,1666974578.258507,,True
+,beam1_door1_beam_break,26.46,1666974590.6723788,,True
+,beam1_door1_beam_unbroken,26.46,1666974590.672429,5.030632019042969e-05,True
+,sim_door1_close_Start,27.84,1666974592.0494258,,True
+,rfid1_ping1_vole1,35.93,1666974600.1398766,,True
+,sim_door1_close_Finish,37.08,1666974601.293217,9.243791103363037,True
+,rfid1_ping2_vole1,36.58,1666974600.7946558,0.6547791957855225,True
+,sim_door2_open_Start,39.35,1666974603.5650198,,True
+,sim_door2_open_Finish,48.7,1666974612.911007,9.34598708152771,True
+,door2_Open,49.15,1666974613.360728,,True
+,beam1_door1_beam_break,54.42,1666974618.638203,,True
+,beam1_door1_beam_unbroken,54.42,1666974618.63829,8.702278137207031e-05,True
+,Mode_Timeout_Finish,104.43,1666974668.647254,90.38874697685242,True

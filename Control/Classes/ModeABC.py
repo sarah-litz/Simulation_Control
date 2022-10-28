@@ -80,7 +80,9 @@ class modeABC:
         try: 
             """This method runs when the mode is entered from another mode. Essentially it is the startup method. This differs from the __init__ method because it should not run when the object is created, rather it should run every time this mode of operation is started. 
             """
-
+            # Set Start Time now that Mode has been entered and interactables activated 
+            self.startTime = time.time()
+            
             print(f'\nnew mode entered: {self}') # print to console 
 
             self.map.activate_interactables() # ensure that interactables are running for the new mode 
@@ -88,8 +90,10 @@ class modeABC:
             #
             # Mode Setup
             #
+            # Startup Event Manager
             self.event_manager.activate(new_mode = self) # Start Tracking for Mode Events 
             self.event_manager.new_timestamp(event_description='Mode_Setup', time=time.time())
+            # Mode Prep 
             self.setup() # prep for run() function call ( this is where calls to deactivate() specific interactables should be made )
             
             self.active = True # mark this mode as being active, triggering a simulation to start running, if a simulation exists

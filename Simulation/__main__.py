@@ -18,7 +18,7 @@ cwd = os.getcwd() # current working directory
 import time
 from .Logging.logging_specs import sim_log
 from Control.Classes.Map import Map
-from Control.Classes.Timer import draw_table
+from Control.Classes.Timer import Visuals
 
 # (Optional TODO) Import Your ModeABC Implementations Here using the following syntax: from Control.Scripts.your_file_name import modeName1, modeName2, etc. 
     #   the default import statement below uses the modes that are created in the __main__.py of the Control software 
@@ -60,7 +60,7 @@ for m in modes:
 
     else: 
         data.append( [str(m) + f' ({str(os.path.relpath(inspect.getfile(m.__class__)))})'] )
-draw_table(data, cellwidth=80)
+Visuals.draw_table(data, cellwidth=80)
 input_before_continue('')
 
 
