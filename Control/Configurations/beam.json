@@ -3,9 +3,10 @@
     "beam1_door1": { 
         "id": 1, 
         "threshold_condition": { 
-            "attribute":"num_breaks", 
+            "attribute":"check_threshold_with_fn", 
             "initial_value":0, "goal_value":1, 
-            "onThreshold_callback_fn": ["self.reset_break_count()"]
+            "onThreshold_callback_fn": ["self.reset_break_count()"], 
+            "check_threshold_with_fn": "lambda self: self.num_breaks"
         }, 
         "parents": [], 
         "hardware_specs": { 
@@ -16,12 +17,13 @@
         }
     }, 
 
-    "beam2_door1": { 
+    "beam2_door2": { 
         "id": 2, 
         "threshold_condition": { 
             "attribute":"num_breaks", 
             "initial_value":0, "goal_value":1, 
-            "onThreshold_callback_fn": ["self.reset_break_count()"]
+            "onThreshold_callback_fn": ["self.reset_break_count()"], 
+            "check_threshold_with_fn": null 
         }, 
         "parents": [], 
         "hardware_specs": { 

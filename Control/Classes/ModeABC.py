@@ -82,7 +82,7 @@ class modeABC:
             """
             # Set Start Time now that Mode has been entered and interactables activated 
             self.startTime = time.time()
-            
+
             print(f'\nnew mode entered: {self}') # print to console 
 
             self.map.activate_interactables() # ensure that interactables are running for the new mode 
@@ -93,8 +93,12 @@ class modeABC:
             # Startup Event Manager
             self.event_manager.activate(new_mode = self) # Start Tracking for Mode Events 
             self.event_manager.new_timestamp(event_description='Mode_Setup', time=time.time())
-            # Mode Prep 
-            self.setup() # prep for run() function call ( this is where calls to deactivate() specific interactables should be made )
+            
+            # Mode Prep ( Run in Separate Thread so we can still catch any Interrupts )
+            setup_thread = threading.Thread(target=self.setup, daemon=False)
+            setup_thread.start()
+            setup_thread.join()
+            # self.setup() # prep for run() function call ( this is where calls to deactivate() specific interactables should be made )
             
             self.active = True # mark this mode as being active, triggering a simulation to start running, if a simulation exists
             self.rfidListener() # starts up listener that checks the shared_rfidQ
@@ -140,19 +144,22 @@ class modeABC:
         self.event_manager.deactivate() # Stop Event Tracking for this Mode 
 
     def _interrupt_handler(self, signal, frame): 
-        ''' catches interrupt, notifies threads, attempts a clean exit '''
+        ''' catches interrupt, notifies threads, attempts a clean exit ''' 
+        # self.event_manager.deactivate()
+        event_interrupt_thread = threading.Thread(target=self.event_manager.interrupt, daemon=True)
+        event_interrupt_thread.start()
         print(f'(ModeABC, _interrupt_handler) Deactivating Interactables')
         self.map.deactivate_interactables() # shuts off all of the hardware interactables
-        print('mode start time:', self.startTime)
-        self.event_manager.new_timestamp(event_description='Early_Interrupt_Caused_Exit', time=time.time())
-        self.event_manager.finish()
+        event_interrupt_thread.join()
         sys.exit(0)
+        # print('mode start time:', self.startTime)
+
     def _except_handler(self): 
         ''' if exception/error occurs, attempts to shutoff any components before exiting '''
-        print(f'(ModeABC, _except_handler) Deactiving Interactables')
-        self.map.deactivate_interactables() # shuts off all the hardware interactables 
-        self.event_manager.new_timestamp(event_description='Exception_Caused_Exit', time=time.time())
-        self.event_manager.finish()
+        print(f'(ModeABC, _except_handler) ')
+        # self.map.deactivate_interactables() # shuts off all the hardware interactables 
+        # self.event_manager.new_timestamp(event_description='Exception_Caused_Exit', time=time.time())
+        # self.event_manager.finish()
         sys.exit(0)
 
     #

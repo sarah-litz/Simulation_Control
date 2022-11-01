@@ -1,20 +1,22 @@
 
 Control Mode,Airlock Doors to Separate Voles,<class 'Control.Scripts.AirLockBox.AirLockDoorLogic'>
 Round,Event,Modal Time,Time,Duration,In Timeout?
-,Mode_Setup,4.57,1666974568.783881,,False
-,sim_door1_open_Start,4.57,1666974568.7840111,,False
-,sim_door1_open_Finish,13.6,1666974577.811595,9.027583837509155,False
-,door1_Open,13.98,1666974578.191102,,True
-,Mode_Timeout_Start,14.04,1666974578.258507,,True
-,beam1_door1_beam_break,26.46,1666974590.6723788,,True
-,beam1_door1_beam_unbroken,26.46,1666974590.672429,5.030632019042969e-05,True
-,sim_door1_close_Start,27.84,1666974592.0494258,,True
-,rfid1_ping1_vole1,35.93,1666974600.1398766,,True
-,sim_door1_close_Finish,37.08,1666974601.293217,9.243791103363037,True
-,rfid1_ping2_vole1,36.58,1666974600.7946558,0.6547791957855225,True
-,sim_door2_open_Start,39.35,1666974603.5650198,,True
-,sim_door2_open_Finish,48.7,1666974612.911007,9.34598708152771,True
-,door2_Open,49.15,1666974613.360728,,True
-,beam1_door1_beam_break,54.42,1666974618.638203,,True
-,beam1_door1_beam_unbroken,54.42,1666974618.63829,8.702278137207031e-05,True
-,Mode_Timeout_Finish,104.43,1666974668.647254,90.38874697685242,True
+,Mode_Setup,6.05,1667340716.8683882,,False
+,sim_door1_open_Start,6.47,1667340717.284731,,False
+,sim_door1_open_Finish,14.59,1667340725.401532,8.116801023483276,False
+,door1_Open,15.06,1667340725.873963,,False
+,Mode_Timeout_Start,15.84,1667340726.655615,,True
+,beam1_door1_beam_break,29.82,1667340740.6334379,,True
+,beam1_door1_beam_unbroken,29.91,1667340740.729069,0.09563112258911133,True
+,sim_door1_close_Start,31.03,1667340741.849584,,True
+,rfid1_ping1_vole1,35.08,1667340745.8958485,,True
+,rfid1_ping2_vole1,36.8,1667340747.6128047,1.7169561386108398,True
+,sim_door1_close_Finish,40.03,1667340750.847811,8.998226881027222,True
+,sim_door2_open_Start,42.68,1667340753.500528,,True
+,beam1_door1_beam_break,47.52,1667340758.3394392,,True
+,beam1_door1_beam_unbroken,47.84,1667340758.655829,0.316389799118042,True
+,sim_door2_open_Finish,51.04,1667340761.860876,8.360347986221313,True
+,door2_Open,52.12,1667340762.938505,,True
+,beam2_door2_beam_break,58.16,1667340768.9741492,,True
+,beam2_door2_beam_unbroken,58.95,1667340769.769427,0.7952778339385986,True
+,Early_Interrupt_Caused_Exit,80.0,1667340790.820266,,True

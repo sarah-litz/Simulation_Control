@@ -19,6 +19,7 @@ import sys
 
 # Local Imports 
 from Logging.logging_specs import control_log, sim_log
+from .Timer import Visuals
 
 try: 
     import RPi.GPIO as GPIO 
@@ -370,11 +371,12 @@ class interactableABC:
                     if "onThreshold_callback_fn" in self.threshold_condition: 
                         # execute each of the callback functions in the list, in order
                         callbackfn_lst = self.threshold_condition['onThreshold_callback_fn']
-                        for callbackfn in callbackfn_lst: 
-                            print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: ', "parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
-                            parent_names = {*(p.name+' ' for p in self.parents)}
-                            control_log(f' (InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: parents:[ {parent_names}  ]  callbackfn: , {callbackfn} ')
-                            callbackfn = eval(callbackfn)
+                        if callbackfn_lst is not None: 
+                            for callbackfn in callbackfn_lst: 
+                                print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: ', "parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
+                                parent_names = {*(p.name+' ' for p in self.parents)}
+                                control_log(f' (InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: parents:[ {parent_names}  ]  callbackfn: , {callbackfn} ')
+                                callbackfn = eval(callbackfn)
 
                     print(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
                     control_log(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
@@ -992,9 +994,6 @@ class dispenser(interactableABC):
         '''
     def add_new_threshold_event(self):
 
-        threshold_state = getattr(self, self.threshold_condition['attribute']) 
-
-        print('')
         if self.monitor_for_retrieval: 
             self.threshold_event_queue.put(f'Pellet Retrieval')
             self.event_manager.new_timestamp(f'{self.name}_pellet_retrieved', time = time.time())
@@ -1009,10 +1008,9 @@ class dispenser(interactableABC):
             time.sleep(.5)
         
 
-
     def start(self): 
         self.servoObj.servo.throttle = self.dispense_speed 
-        print('hopefully servo is moving')
+        # print('(InteractableABC.py, dispense.start()) Started Servo')
     def stop(self): 
         if self.isSimulation: 
             return 
@@ -1179,7 +1177,8 @@ class beam(interactableABC):
         while self.isBroken: 
             ''' wait for beam to be unbroken '''
         t = time.time()
-        self.event_manager.new_timestamp(f'{self.name}_beam_unbroken', time=t, duration = t - ts.time)
+        if ts is not None: 
+            self.event_manager.new_timestamp(f'{self.name}_beam_unbroken', time=t, duration = t - ts.time)
 
         # To avoid overloading a beam with threshold events, we can sleep here until a state change occurs 
         ''' while (self.threshold_attribute == self.threshold_goal_value) and self.active: 

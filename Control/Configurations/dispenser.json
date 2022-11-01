@@ -4,7 +4,10 @@
         "id":1, 
         "threshold_condition": { 
             "attribute":"isPelletRetrieved", 
-            "initial_value": false, "goal_value": true },
+            "initial_value": false, "goal_value": true, 
+            "check_threshold_with_fn": null, 
+            "onThreshold_callback_fn": []
+        },
 
         "hardware_specs": {
             "button_specs": { 

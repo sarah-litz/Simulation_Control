@@ -444,10 +444,9 @@ class Map:
 
         # dynamically set any attributes that can be optionally added to an interactable's configurations
         if "check_threshold_with_fn" in objspec['threshold_condition'].keys(): 
-            setattr(new_obj, 'check_threshold_with_fn', eval(objspec['threshold_condition']['check_threshold_with_fn']) ) # function for checking if the threshold condition has been met
-        # FISH --> delete once i confirm its ok to delete all dependents stuff!
-        # if "dependents" in objspec.keys(): 
-        #     setattr( new_obj, 'dependent_names', objspec['dependents'] ) # interactable that the threshold is dependent on. Prevents a vole from directly interacting with the interactable, as the presence of any dependents specifies that the vole must directly interact with the dependents to trigger a threshold event.
+            try: setattr(new_obj, 'check_threshold_with_fn', eval(objspec['threshold_condition']['check_threshold_with_fn']) ) # function for checking if the threshold condition has been met
+            except TypeError: pass # allows the attribute to get set to null. If set to null, just doesn't add this attribute to the object!
+      
         if "parents" in objspec.keys(): 
             setattr( new_obj, 'parent_names', objspec['parents']) # interactables can call functions to control their parent behavior (e.g. if we want lever1 to control door1, then add door1 as lever1's parent )
         
@@ -552,7 +551,7 @@ class Map:
         chmbr1obj = self.get_chamber(chmbr1id)
         chamber1_interactable_lst = [interactable for interactable in chmbr1obj.allChamberInteractables]
         chamber1_bridge_interactable = chmbr1references[0]
-        print(f'edge {new_edge.id} references the following interactables assigned to chamber {chmbr1id}:', [ ele.name for ele in chmbr1references ] )
+        self.event_manager.print_to_terminal(f'edge {new_edge.id} references the following interactables assigned to chamber {chmbr1id}: {[ele.name for ele in chmbr1references]}' )
         # Ensure that the Bridges are on an End of the Chamber Interactables
         if chamber1_bridge_interactable != chamber1_interactable_lst[0] and chamber1_bridge_interactable != chamber1_interactable_lst[len(chamber1_interactable_lst) -1 ]: 
                 raise Exception(f'(Map,py, validate_chmbr_interactable_references) {chamber1_bridge_interactable.name} must be on the edge of the chamber, or edge{new_edge.id} must include the chamber_interactables inbetween {chamber1_bridge_interactable.name} and the edge of the chamber (in the direction of where edge{new_edge.id} exists)')
@@ -561,7 +560,7 @@ class Map:
             chmbr2obj = self.get_chamber(chmbr2id)
             chamber2_interactable_lst = [interactable for interactable in chmbr2obj.allChamberInteractables]
             chamber2_bridge_interactable = chmbr2references[len(chmbr2references)-1]
-            print(f'edge {new_edge.id} references the following interactables assigned to chamber {chmbr2id}:', [ *(ele.name for ele in chmbr2references) ] )
+            self.event_manager.print_to_terminal(f'edge {new_edge.id} references the following interactables assigned to chamber {chmbr2id}:', [ *(ele.name for ele in chmbr2references) ] )
             # Ensure that the Bridges are on an End of the Chamber Interactables
             if chamber2_bridge_interactable != chamber2_interactable_lst[0] and chamber2_bridge_interactable != chamber2_interactable_lst[len(chamber2_interactable_lst)-1]: 
                 raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) {chamber2_bridge_interactable.name} must be on the edge of the chamber, or edge{new_edge.id} must include the chamber_interactables inbetween {chamber2_bridge_interactable.name} and the edge of the chamber (in the direction of where edge{new_edge.id} exists)')
@@ -827,7 +826,7 @@ class Map:
             if start == goal: 
                 return [start]
             else: 
-                print(f'(Map, get_chamber_path) paths do not exist for isolated chambers. No path connecting chamber{start}->chamber{goal}')
+                self.event_manager.print_to_terminal(f'(Map, get_chamber_path) paths do not exist for isolated chambers. No path connecting chamber{start}->chamber{goal}')
             
 
         def trace_path(previous, s): #helper function for get_path 
@@ -895,7 +894,6 @@ class Map:
         if type(start) == self.Edge:
             if type(goal) == self.Edge:
                 # edge->edge 
-                print("edge to edge!")
                 return edge_to_edge_path(start,goal)
             else: 
                 # edge->chamber
@@ -1189,7 +1187,7 @@ class Map:
                 component_path.extend(curr_loc_components)
                 
 
-            print('RAW COMPONENT PATH: ', *(str(c) for c in component_path))
+            self.event_manager.print_to_terminal('RAW COMPONENT PATH: ', *(str(c) for c in component_path))
 
 
 
@@ -1205,11 +1203,11 @@ class Map:
         goal_idx = component_path.index(goal_component)   
         
         if start_idx > goal_idx: 
-            print(f'(Map.py, get_component_path) COMPONENT PATH: {[*(str(ele) for ele in component_path[goal_idx:start_idx+1])]}')
+            self.event_manager.print_to_terminal(f'(Map.py, get_component_path) COMPONENT PATH: {[*(str(ele) for ele in component_path[goal_idx:start_idx+1])]}')
 
             return component_path[goal_idx:start_idx+1]
         
-        print(f'(Map.py, get_component_path) COMPONENT PATH: {[*(str(ele) for ele in component_path[start_idx:goal_idx+1])]}')
+        self.event_manager.print_to_terminal(f'(Map.py, get_component_path) COMPONENT PATH: {[*(str(ele) for ele in component_path[start_idx:goal_idx+1])]}')
         return component_path[start_idx:goal_idx+1] 
 
             

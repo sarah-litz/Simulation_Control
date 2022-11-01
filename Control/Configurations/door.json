@@ -5,7 +5,9 @@
         "id":1, 
         "threshold_condition": { 
             "attribute":"isOpen", 
-            "initial_value": null, "goal_value": true 
+            "initial_value": null, "goal_value": true, 
+            "check_threshold_with_fn": null, 
+            "onThreshold_callback_fn": null
         },
         "parents":[], 
         "hardware_specs": {
@@ -28,7 +30,10 @@
     "door2": 
     {
         "id":2, 
-        "threshold_condition": { "attribute":"isOpen", "initial_value": false, "goal_value":true }, 
+        "threshold_condition": { 
+            "attribute":"isOpen", "initial_value": false, "goal_value":true, 
+            "check_threshold_with_fn": null, "onThreshold_callback_fn": null
+        }, 
         "hardware_specs": { 
             "button_specs": { 
                 "button_pin":17, 
@@ -48,7 +53,9 @@
     "door3":
     {
         "id":3,
-        "threshold_condition": {"attribute":"isOpen", "initial_value":false, "goal_value":true}, 
+        "threshold_condition": {"attribute":"isOpen", "initial_value":false, "goal_value":true, 
+        "check_threshold_with_fn": null, "onThreshold_callback_fn": null
+    }, 
         "hardware_specs": { 
             "button_specs": { 
                 "button_pin":-1, 
@@ -68,7 +75,10 @@
     "door4": 
     {
         "id":4, 
-        "threshold_condition": {"attribute":"isOpen", "initial_value":false, "goal_value":true}, 
+        "threshold_condition": {
+            "attribute":"isOpen", "initial_value":false, "goal_value":true, 
+            "check_threshold_with_fn": null, "onThreshold_callback_fn": null
+        }, 
         "hardware_specs":{
             "button_specs": { 
                 "button_pin":-1, 
