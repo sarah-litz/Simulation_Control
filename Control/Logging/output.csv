@@ -1,8 +1,8 @@
 
 Control Mode,5 Sec Intervals b4 Close/Retract,<class 'Control.Scripts.DynamicBox.WaitFiveSecondsBeforeRetractOrClose'>
 Round,Event,Modal Time,Time,Duration,In Timeout?
-,Mode_Setup,6.12,1667410836.476589,,False
-,sim_door2_close_Start,6.47,1667410836.824165,,False
-,sim_door2_close_Finish,14.8,1667410845.1594088,8.335243701934814,False
-,Mode_Timeout_Start,15.52,1667410845.878471,,True
-,Mode_Timeout_Finish,31.18,1667410861.536623,15.658152103424072,True
+,Mode_Setup,6.85,1667414291.3003058,,False
+,sim_door2_close_Start,7.17,1667414291.6164632,,False
+,sim_door2_close_Finish,15.24,1667414299.6862879,8.069824695587158,False
+,Mode_Timeout_Start,16.13,1667414300.584497,,True
+,Mode_Timeout_Finish,31.47,1667414315.9236789,15.339181900024414,True

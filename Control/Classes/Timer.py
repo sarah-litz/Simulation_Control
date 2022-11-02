@@ -122,6 +122,7 @@ class EventManager:
     def watch_print_queue(self): 
         ''' grabs from print queue and prints to terminal at a time where it won't conflict with other statements '''
         print('STARTING THE WATCH PRINT QUEUE')
+        
         while not self.stop_messages: 
             item = None 
             while item is None: 
@@ -143,14 +144,9 @@ class EventManager:
                 print('EXITING THE WATCH PRINT QUEUE (3)')
                 return 
 
-            TIMESTAMP_EVENT_MUTEX.acquire()
-            try: 
+            with TIMESTAMP_EVENT_MUTEX: 
                 for i in item: 
                     print(i)
-                # print(f'{str(item)}')
-            finally: 
-                pass
-                TIMESTAMP_EVENT_MUTEX.release()  
     #
     # Event Creation 
     # 
@@ -202,10 +198,11 @@ class EventManager:
             # wait to ensure that the printing mutex is not in use ( meaning a map is getting printed )
             while PRINTING_MUTEX.locked(): 
                 ''' wait here until printing mutex is not in use'''
+            
             # Grab the timestamp mutex and print 
-            TIMESTAMP_EVENT_MUTEX.acquire()
-            try: print(self)
-            finally: TIMESTAMP_EVENT_MUTEX.release()
+            with TIMESTAMP_EVENT_MUTEX: 
+                print(self)
+            
             return 
             
     class Countdown: 

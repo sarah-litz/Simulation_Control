@@ -102,7 +102,7 @@ class SimulationABC:
         current_mode.simulation_lock.acquire()  # grab lock to denote that simulation is running 
         for sim_fn in sim_fn_list: 
 
-            print(f'\n     (SimulationABC.py, run_sim) New Simulation Function Running: {sim_fn.__name__}')
+            self.map.event_manager.print_to_terminal(f'\n     (SimulationABC.py, run_sim) New Simulation Function Running: {sim_fn.__name__}')
             sim_thread = threading.Thread(target = sim_fn)
 
             sim_thread.start() 
@@ -118,8 +118,8 @@ class SimulationABC:
         # If current mode ended before the current simulation, try to exit from simulation cleanly.... 
         if sim_thread.is_alive(): 
 
-            print(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
-            sim_log(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
+            self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended, simulation is completing its final iteration and then exiting.')
+            sim_log(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended, simulation is completing its final iteration and then exiting.')
             
             sim_thread.join(1000) # wait for simulation to finish 
             if sim_thread.is_alive(): 
@@ -127,7 +127,7 @@ class SimulationABC:
                 sim_log(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')    
         
         if not current_mode.active: 
-            print(f'(Simulation.py, run_sim) {current_mode} ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
+            self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) {current_mode} ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
 
         current_mode.simulation_lock.release() # release lock to denote that simulation for this mode finished running  
         return

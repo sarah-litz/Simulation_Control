@@ -48,7 +48,7 @@ class Vole:
         try: self.curr_component = self.curr_loc.unorderedComponent # current interactable the vole is closest to ( when in a chamber, this can be a list of Unordered interactables! Vole is free to simulate with any of them )
         except AttributeError: self.curr_component = None # (interactable1, interactable2)
 
-        self.event_manager.print_to_terminal(f'VOLE {self.tag} STARTING IN {self.curr_loc.edge_or_chamber}{self.curr_loc.id}, POSITIONED BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
+        print(f'VOLE {self.tag} STARTING IN {self.curr_loc.edge_or_chamber}{self.curr_loc.id}, POSITIONED BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
         vole_log(f'VOLE {self.tag} STARTING POSITION BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
 
 

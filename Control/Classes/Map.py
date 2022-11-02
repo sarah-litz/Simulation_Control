@@ -1194,7 +1194,7 @@ class Map:
                 component_path.extend(curr_loc_components)
                 
 
-            self.event_manager.print_to_terminal('RAW COMPONENT PATH: ', *(str(c) for c in component_path))
+            self.event_manager.print_to_terminal(f'RAW COMPONENT PATH: {[*(str(c) for c in component_path)]}')
 
 
 
