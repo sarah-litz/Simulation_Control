@@ -70,6 +70,13 @@ class Map:
             for v in voles: 
                 vole_interactable_lst.append('Vole'+str(v.tag))
         
+        else: # Check if voles have interactable info. If vole does not have component info, just draw in front of the interactables. 
+            for v in voles: 
+                if not hasattr(v, 'curr_component'): 
+                    # voles are the Map version of the vole class, which does not have info on the component location, only the chamber/edge location. 
+                    # just draw these voles now. 
+                    vole_interactable_lst.append('Vole' + str(v.tag)) 
+                    
         for idx in range(len(interactables)): # For Each Interactable 
 
             # loop thru interactales w/in the edge or chamber
@@ -83,8 +90,8 @@ class Map:
                 
                 if not hasattr(v, 'curr_component'): 
                     # voles are the Map version of the vole class, which does not have info on the component location, only the chamber/edge location 
-                    # simply place this vole before i 
-                    voles_before_i.append('Vole' + str(v.tag)) 
+                    # do not draw voles in between any components 
+                    pass 
 
                 elif type(v.curr_component) is self.Chamber.ComponentSet and v.curr_component.interactableSet == i: 
                     # voles current_component.interactableSet is the entire set of Unordered Interactables 
