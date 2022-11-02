@@ -36,7 +36,7 @@ class AirLockDoorsSim(SimulationABC):
 
         if not v1_success or not v2_success: 
 
-            for n in range(3): 
+            for n in range(1): 
 
                 if not self.current_mode.active: # and not v2_success 
 

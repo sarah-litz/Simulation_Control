@@ -560,7 +560,7 @@ class Map:
             chmbr2obj = self.get_chamber(chmbr2id)
             chamber2_interactable_lst = [interactable for interactable in chmbr2obj.allChamberInteractables]
             chamber2_bridge_interactable = chmbr2references[len(chmbr2references)-1]
-            self.event_manager.print_to_terminal(f'edge {new_edge.id} references the following interactables assigned to chamber {chmbr2id}:', [ *(ele.name for ele in chmbr2references) ] )
+            self.event_manager.print_to_terminal(f'edge {new_edge.id} references the following interactables assigned to chamber {chmbr2id}: {[ele.name for ele in chmbr2references]}' )
             # Ensure that the Bridges are on an End of the Chamber Interactables
             if chamber2_bridge_interactable != chamber2_interactable_lst[0] and chamber2_bridge_interactable != chamber2_interactable_lst[len(chamber2_interactable_lst)-1]: 
                 raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) {chamber2_bridge_interactable.name} must be on the edge of the chamber, or edge{new_edge.id} must include the chamber_interactables inbetween {chamber2_bridge_interactable.name} and the edge of the chamber (in the direction of where edge{new_edge.id} exists)')

@@ -1,22 +1,8 @@
 
-Control Mode,Airlock Doors to Separate Voles,<class 'Control.Scripts.AirLockBox.AirLockDoorLogic'>
+Control Mode,5 Sec Intervals b4 Close/Retract,<class 'Control.Scripts.DynamicBox.WaitFiveSecondsBeforeRetractOrClose'>
 Round,Event,Modal Time,Time,Duration,In Timeout?
-,Mode_Setup,6.05,1667340716.8683882,,False
-,sim_door1_open_Start,6.47,1667340717.284731,,False
-,sim_door1_open_Finish,14.59,1667340725.401532,8.116801023483276,False
-,door1_Open,15.06,1667340725.873963,,False
-,Mode_Timeout_Start,15.84,1667340726.655615,,True
-,beam1_door1_beam_break,29.82,1667340740.6334379,,True
-,beam1_door1_beam_unbroken,29.91,1667340740.729069,0.09563112258911133,True
-,sim_door1_close_Start,31.03,1667340741.849584,,True
-,rfid1_ping1_vole1,35.08,1667340745.8958485,,True
-,rfid1_ping2_vole1,36.8,1667340747.6128047,1.7169561386108398,True
-,sim_door1_close_Finish,40.03,1667340750.847811,8.998226881027222,True
-,sim_door2_open_Start,42.68,1667340753.500528,,True
-,beam1_door1_beam_break,47.52,1667340758.3394392,,True
-,beam1_door1_beam_unbroken,47.84,1667340758.655829,0.316389799118042,True
-,sim_door2_open_Finish,51.04,1667340761.860876,8.360347986221313,True
-,door2_Open,52.12,1667340762.938505,,True
-,beam2_door2_beam_break,58.16,1667340768.9741492,,True
-,beam2_door2_beam_unbroken,58.95,1667340769.769427,0.7952778339385986,True
-,Early_Interrupt_Caused_Exit,80.0,1667340790.820266,,True
+,Mode_Setup,6.12,1667410836.476589,,False
+,sim_door2_close_Start,6.47,1667410836.824165,,False
+,sim_door2_close_Finish,14.8,1667410845.1594088,8.335243701934814,False
+,Mode_Timeout_Start,15.52,1667410845.878471,,True
+,Mode_Timeout_Finish,31.18,1667410861.536623,15.658152103424072,True

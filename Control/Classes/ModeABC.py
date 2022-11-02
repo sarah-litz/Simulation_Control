@@ -98,14 +98,12 @@ class modeABC:
             setup_thread = threading.Thread(target=self.setup, daemon=False)
             setup_thread.start()
             setup_thread.join()
-            # self.setup() # prep for run() function call ( this is where calls to deactivate() specific interactables should be made )
             
             self.active = True # mark this mode as being active, triggering a simulation to start running, if a simulation exists
-            self.rfidListener() # starts up listener that checks the shared_rfidQ
+            self.rfidListener() # starts up listener that checks the shared_rfidQ ( if no rfids are present, returns immediately )
 
             # Starting Mode Timeout and Running the Start() Method of the Mode Script!
             self.inTimeout = True 
-            # self.event_manager.new_timestamp(event_description=f'Mode_Timeout_Start', time=time.time())
             mode_thread = threading.Thread(target = self.run, daemon = True) # start running the run() funciton in its own thread as a daemon thread
             mode_thread.start() 
 
@@ -114,14 +112,13 @@ class modeABC:
 
             # exit when the timeout countdown finishes
             self.exit()   
-            mode_thread.join() # ensure that mode thread finishes before returning 
+            mode_thread.join() # ensure that the mode's run() thread finishes before returning 
         
         except Exception as e: 
             ''' if any errors/exceptions get raised, code will fall into this except statement where we can ensure nothing gets left running '''
             print(e) # printing exception message
             traceback.print_exc() # printing stack trace 
             self._except_handler()
-
 
 
     #
@@ -145,21 +142,19 @@ class modeABC:
 
     def _interrupt_handler(self, signal, frame): 
         ''' catches interrupt, notifies threads, attempts a clean exit ''' 
-        # self.event_manager.deactivate()
+
+        # In a different thread, handle shutting down the event manager. In the calling thread, continue execution to deactivate interactables. 
         event_interrupt_thread = threading.Thread(target=self.event_manager.interrupt, daemon=True)
         event_interrupt_thread.start()
         print(f'(ModeABC, _interrupt_handler) Deactivating Interactables')
         self.map.deactivate_interactables() # shuts off all of the hardware interactables
         event_interrupt_thread.join()
         sys.exit(0)
-        # print('mode start time:', self.startTime)
 
     def _except_handler(self): 
         ''' if exception/error occurs, attempts to shutoff any components before exiting '''
         print(f'(ModeABC, _except_handler) ')
-        # self.map.deactivate_interactables() # shuts off all the hardware interactables 
-        # self.event_manager.new_timestamp(event_description='Exception_Caused_Exit', time=time.time())
-        # self.event_manager.finish()
+        self.map.deactivate_interactables() # shuts off all the hardware interactables 
         sys.exit(0)
 
     #
@@ -217,13 +212,11 @@ class modeABC:
                 # # we want to prioritize the passing of a ping from the shared_rfidQ to the individual rfidQ where the handling of a ping will happen # # 
                 # In order to do this, before allowing an indivual rfid to pull from its rfidQ, we want to empty out the shared_rfidQ # 
                 
-                # print('\nPING ADDED TO SHARED QUEUE: ', ping)
                 id = ping[1] # parse the ping information 
 
                 rfid_interactable = rfid_objects[id] # retrieve the corresponding rfid object 
 
                 rfid_interactable.rfidQ.put( (ping) ) 
-                # print('PING ADDED TO THE INDIVIDUAL RFIDQ')
 
                 # # # the Map's Vole Location Tracking relies on the RFIDs for making any location updates # # # 
                 # # Make Updates to Voles Location in the Map Class # # 
@@ -240,25 +233,18 @@ class modeABC:
     def run(self):
         """This is the main method that contains the logic for the specific mode. It should be overwritten for each specific mode class that inherits this one. Because of that, if this function is not overwritten it will raise an error on its default. 
         """
-
         # If not overwritten, this function will throw the following error
         raise NameError("This function must be overwritten with specific mode logic")
 
-
-
-
     #
-    # Finding functions & subclasses 
+    # Finding functions & subclasses ( Not in Use at the moment )
     # 
     def __find_func(self, functionName):
         """This function takes a given string and returns a function object that has the name of the given string. For example: If there was a class called "car" with a function called "get_miles" that returned the amount of miles the car has drive, this would look like __fund_func('car.get_miles'), and it would return the function object.
-
         Args:
             functionName (string): Name of subclass and method in form <objectName>.<methodName>
-
         Raises:
             NameError: Error is returned if no matching subclass and method is found
-
         Returns:
             object: actual function object of the subclass
         """

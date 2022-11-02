@@ -107,23 +107,27 @@ class SimulationABC:
 
             sim_thread.start() 
 
-            while current_mode.inTimeout and current_mode.active: 
+            while current_mode.inTimeout and current_mode.active and sim_thread.is_alive(): 
                 
                 time.sleep(1)  # let the simulation continue to run while mode is both active and in timeout
 
+            if current_mode.inTimeout is False or current_mode.active is False: 
+                # mode ended, don't finish running other sim_fn
+                break 
+                     
+        # If current mode ended before the current simulation, try to exit from simulation cleanly.... 
+        if sim_thread.is_alive(): 
 
-            if sim_thread.is_alive(): 
-
-                print(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
-                sim_log(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
-                
-                sim_thread.join(1000) # wait for simulation to finish 
-                if sim_thread.is_alive(): 
-                    print(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')
-                    sim_log(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')    
+            print(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
+            sim_log(f'(Simulation.py, run_sim) {current_mode} ended, simulation is completing its final iteration and then exiting.')
             
-            if not current_mode.active: 
-                print(f'(Simulation.py, run_sim) {current_mode} ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
+            sim_thread.join(1000) # wait for simulation to finish 
+            if sim_thread.is_alive(): 
+                print(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')
+                sim_log(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')    
+        
+        if not current_mode.active: 
+            print(f'(Simulation.py, run_sim) {current_mode} ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
 
         current_mode.simulation_lock.release() # release lock to denote that simulation for this mode finished running  
         return

@@ -605,8 +605,8 @@ class door(interactableABC):
         return self.buttonObj.isPressed 
     def sim_open(self): 
         if self.isSimulation: 
-            self.event_manager.new_countdown(f'sim_{self.name}_open', self.close_timeout)
             self.buttonObj.isPressed = True 
+            self.event_manager.new_countdown(f'sim_{self.name}_open', self.close_timeout)
     def sim_close(self): 
         if self.isSimulation: 
             self.event_manager.new_countdown(f'sim_{self.name}_close', self.close_timeout)

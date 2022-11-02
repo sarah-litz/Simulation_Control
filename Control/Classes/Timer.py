@@ -143,14 +143,14 @@ class EventManager:
                 print('EXITING THE WATCH PRINT QUEUE (3)')
                 return 
 
-            # TIMESTAMP_EVENT_MUTEX.acquire()
+            TIMESTAMP_EVENT_MUTEX.acquire()
             try: 
                 for i in item: 
                     print(i)
                 # print(f'{str(item)}')
             finally: 
                 pass
-                #TIMESTAMP_EVENT_MUTEX.release()  
+                TIMESTAMP_EVENT_MUTEX.release()  
     #
     # Event Creation 
     # 
