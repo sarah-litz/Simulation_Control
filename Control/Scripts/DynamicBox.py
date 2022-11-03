@@ -55,8 +55,8 @@ class IteratorBox(modeABC):
     Description: 
         << operant map. Each time a lever gets pressed we increment the goal number of presses >>
     '''
-    def __init__(self, timeout, map):
-        super().__init__(timeout, map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
         return 'Iterator Box'

@@ -87,11 +87,9 @@ class AirLockDoorsSim(SimulationABC):
         v1.start()
         v2.start()
 
-        v1.join() 
+        v1.join()
         v2.join()
 
-
-        
         #
         # Vole 2 attempts a move into chamber 2, while Vole 1 interacts with the food lever. Goal Result: This should pass the recheck and door1 should close and door2 should open! 
         #
@@ -101,9 +99,6 @@ class AirLockDoorsSim(SimulationABC):
 
         v1.start()
         v2.start()
-
-        v1.join() 
-        v2.join()   
 
         print('\n\n    Vole2Attempt2 Move into Chamber 2')
         if vole2.curr_loc == self.map.get_chamber(2): 

@@ -29,15 +29,13 @@ def main():
     # (TODO) Map Instantiation (which will also instantiate the hardware components) 
     map = Map(cwd+'/Control/Configurations', 'map.json') # optional argument: map_file_name to specify filepath to a different map configuration file 
 
-
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-    airlockBox = AirLockDoorLogic(timeout = 90, map = map, output_fp = OUTPUT_CSV_FILE)
-    intervalBox = WaitFiveSecondsBeforeRetractOrClose(timeout = 15, map = map, output_fp = OUTPUT_CSV_FILE)
-    # iteratorBox = IteratorBox(timeout = 15, map = map)
+    airlockBox = AirLockDoorLogic(timeout = 20, rounds = 3, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
+    iteratorBox = IteratorBox(timeout = 20, rounds = 1, ITI = 0, map = map, output_fp = OUTPUT_CSV_FILE)
     # reactiveBox = ReactiveBox(timeout = 30, map = map )
 
     # (TODO) Update the list of control mode scripts with each of the scripts you want to run, in the order that you want them to run in! 
-    mode_scripts = [ airlockBox, intervalBox ]
+    mode_scripts = [ airlockBox, iteratorBox ]
 
     if __name__ != '__main__': # falls into this if the simulation package imported this module
         # (TODO) Add Any Modes that you want to get passed to the Simulation Package in the list here 

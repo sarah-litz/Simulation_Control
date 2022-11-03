@@ -35,6 +35,7 @@ class Vole:
         self.tag  = tag 
         self.map = map 
         self.event_manager = map.event_manager
+        self.active = True 
 
         ## Vole Location Information ## 
         self.curr_loc = self.map.get_chamber(start_chamber)
@@ -99,13 +100,16 @@ class Vole:
         ''' called from vole.attempt_move() in order to simulate a vole's interaction with an interactable '''
         ''' prior to simulation, checks if the requested simulation is valid. returns if not '''
         
+        if not self.active: 
+            self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) Vole Inactive. Cannot perform the requested action.')
+            return 
         
         #
         # Active Check
         #
         if interactable.active is False: 
             self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is inactive')
-            sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is inactive')
+            sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction, simulate_vole_interactable_interaction) {interactable.name} is inactive')
             # we don't care to simulate an inactive interactable
             # vole unable to effect the threshold attribute value of an inactive interactable (so threshold value is the same the entire time)
             return 
@@ -259,6 +263,11 @@ class Vole:
         '''
         converts interactable to component, and calls the move_to_component function. 
         '''
+
+        if not self.active: 
+            self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_to_interactable) Vole Inactive. Cannot perform the requested action.')
+            return 
+
         if goal_interactable.edge_or_chamber_id < 0: 
             # ensure that interactable's location is reachable by a vole 
             # Goal Location does not exist or is not reachable by a vole (e.g. if the interactable is in a chamber with a negative integer for its id)
@@ -294,6 +303,10 @@ class Vole:
             return self.move_to_component(goal_component)
 
     def move_to_component(self, goal_component, interactable_within_component = None): 
+
+        if not self.active: 
+            self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_to_component) Vole Inactive. Cannot perform the requested action.')
+            return 
 
         # if the goal_component is a ComponentSet, then an interactable should be specified with the interactable_within_component argument! 
         if type(goal_component) is self.map.Chamber.ComponentSet and interactable_within_component is None: 
@@ -423,10 +436,14 @@ class Vole:
             we check if the voles current component is able to be freely passed. If so, we move and position ourselves at this new interactable. 
             Once returned from this function, we would be able to attempt an interaction with the new component without getting a physical proximity error. 
         '''
-
         #
         # Edge Cases 
         #
+
+        if not self.active: 
+            self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) Vole Inactive. Cannot perform the requested action.')
+            return 
+
         # inner helper function, getInteractable
         def getInteractable(component): 
             ## try except statement for retrieving components interactable. If component is None, this prevents errors from gettting thrown. ## 
@@ -457,6 +474,8 @@ class Vole:
             goal_nxt = getInteractable(goal_component.nextval)
             goal_prev = getInteractable(goal_component.prevval)
 
+        print(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
+        self.event_manager.new_timestamp(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}', time.time())
         self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         vole_log(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         
@@ -589,7 +608,10 @@ class Vole:
         SETTING the interactable's to meet their goal_value by calling simulate_vole_interaction 
         GETTING the thresholds of each interactable and checking that it is True
         if the threshold of any interactable is not True, then we cannot successfully make the move '''
-
+        
+        if not self.active: 
+            self.event_manager.print_to_terminal(f'(Vole{self.tag}, attempt_move) Vole Inactive. Cannot perform the requested action.')
+            return 
         
 
         self.event_manager.print_to_terminal(f'(Vole{self.tag}, attempt_move) Attempting move from {self.curr_loc.edge_or_chamber}{self.curr_loc.id} -> Chamber{destination}.')
@@ -807,6 +829,10 @@ class Vole:
 
     def attempt_random_action(self): 
         ''' calls random_action to chose an action at random (or w/ weighted probabilities), and then calls the chosen function '''
+        
+        if not self.active: 
+            self.event_manager.print_to_terminal(f'(Vole{self.tag}, attempt_random_action) Vole Inactive. Cannot perform the requested action.')
+            return 
 
         (action_fn, arg) = self.random_action() 
             

@@ -22,19 +22,17 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 
 The terms specified below are 4 attributes assigned to every Interactable that classifies an interactables behavior. The attributes "dependents" and "parents" are lists that get added based on the information provided in map.json. The attributes "barrier" and "autonomous" are booleans that default to Fales, but can/should be specified as True for specific interactables when it applies.
 
-
-
-**parents** 
+**parents**
 : list containing the "parent" interactables belonging to the current interactable. Parents are the interacatables that the current interactable can control. If an interactable has no parent, then we have reached the "top" of this dependency chain.
 
-~~~json 
+~~~json
 {
-    "door1": 
+    "door1":
     {
-        "id":1, 
+        "id":1,
         "threshold_condition": { "attribute":"isOpen", "initial_value": null, "goal_value": true },
-        "parents": [] 
-    } 
+        "parents": []
+    }
 }
 ~~~
 
@@ -59,11 +57,11 @@ The terms specified below are 4 attributes assigned to every Interactable that c
 : defaults to False. Set to True if the interactable is not dependent on other interactables or on a vole interaction. This will basically just be an interactable that gets simulated every single time a vole passes it (This is set to True for RFIDs). 
 
 
-## Adding Interactables to the Map 
+## Adding Interactables to the Map
 
-### Chamber Components 
+### Chamber Components
 
-Components that exist in a chamber should be specified in the components list of a chamber. The ordering of interactables in a chamber are assumed to not be important. If ordering is important, chamber interactables can be referenced along an edge in order to specify a specific order that a vole would pass/interact with each of these interactables in. 
+Components that exist in a chamber should be specified in the components list of a chamber. The ordering of interactables in a chamber are assumed to not be important. If ordering is important, chamber interactables can be referenced along an edge in order to specify a specific order that a vole would pass/interact with each of these interactables in.
 
 ~~~json
 {
@@ -77,13 +75,13 @@ Components that exist in a chamber should be specified in the components list of
 
 ### Edge Components
 
-The list of edge components can be made up of { interactable_name , type } dictionaries for interactables that actually live in this edge. We can also specify { chamber_interactable } for any interactable that actually exists in a bordering chamber. 
+The list of edge components can be made up of { interactable_name , type } dictionaries for interactables that actually live in this edge. We can also specify { chamber_interactable } for any interactable that actually exists in a bordering chamber.
 
-> Chamber Interactables on an Edge 
+> Chamber Interactables on an Edge
 
 It is important to specify chamber_interactable for any chamber interactable that plays a role in a voles movements. Conversely, the only interactables that we should not place on an edge as a chamber_interactable are interactables that do not have any relationships with other interactables (i.e. no parent or dependent interactables), and are also NOT autonomous, meaning a vole would have to make a conscious decision to choose to interact with it.
 
-~~~json 
+~~~json
 {
     "components":[
         { "chamber_interactable": "lever_food"},

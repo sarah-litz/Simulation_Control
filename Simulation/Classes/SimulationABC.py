@@ -68,7 +68,6 @@ class SimulationABC:
         waits for current mode's timeout to end and immediately returns, killing the simulation function as a result 
         '''
 
-
         #
         # Wait for Mode's Timeout Interval
         while not current_mode.inTimeout and current_mode.active: # active mode not in Timeout
@@ -94,46 +93,58 @@ class SimulationABC:
         vole_log(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
 
 
+        # Activate Voles 
+        for v in self.voles: 
+            v.active = True 
 
         #
         # Run the Mode's Simulation Function in separate thread. Exit when the running mode becomes inactive or exits its timeout interval. 
         sim_fn_list = self.simulation_func[current_mode]
 
-        current_mode.simulation_lock.acquire()  # grab lock to denote that simulation is running 
-        for sim_fn in sim_fn_list: 
+        with current_mode.simulation_lock: # grab lock to denote that simulation is running 
+            for sim_fn in sim_fn_list: 
+                self.map.event_manager.print_to_terminal(f'\n     (SimulationABC.py, run_sim) New Simulation Function Running: {sim_fn.__name__}')
+                sim_thread = threading.Thread(target = sim_fn, daemon=True)
+                sim_thread.name = 'run sim function'
+                sim_thread.start() 
 
-            self.map.event_manager.print_to_terminal(f'\n     (SimulationABC.py, run_sim) New Simulation Function Running: {sim_fn.__name__}')
-            sim_thread = threading.Thread(target = sim_fn)
+                while current_mode.inTimeout and current_mode.active and sim_thread.is_alive(): 
+                    
+                    time.sleep(1)  # let the simulation continue to run while mode is both active and in timeout
 
-            sim_thread.start() 
-
-            while current_mode.inTimeout and current_mode.active and sim_thread.is_alive(): 
-                
-                time.sleep(1)  # let the simulation continue to run while mode is both active and in timeout
-
-            if current_mode.inTimeout is False or current_mode.active is False: 
-                # mode ended, don't finish running other sim_fn
-                break 
-                     
-        # If current mode ended before the current simulation, try to exit from simulation cleanly.... 
-        if sim_thread.is_alive(): 
-
-            self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended, simulation is completing its final iteration and then exiting.')
-            sim_log(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended, simulation is completing its final iteration and then exiting.')
-            
-            sim_thread.join(1000) # wait for simulation to finish 
+                if current_mode.inTimeout is False or current_mode.active is False: 
+                    # mode ended, don't finish running other sim_fn
+                    break 
+                        
+            # If current mode ended before the current simulation, try to exit from simulation cleanly.... 
             if sim_thread.is_alive(): 
-                print(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')
-                sim_log(f'(Simulation.py, run_sim) simulation for {current_mode} got stuck running. Forcing exit now.')    
-        
-        if not current_mode.active: 
-            self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) {current_mode} ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
+                # sim_thread.join(5) # see if simulation will stop running on its own     
+                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended with simulation still running.')
+                sim_log(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended with simulation still running.')
+                
+            if not current_mode.active: 
+                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Mode ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
+            if not current_mode.inTimeout: 
+                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Modes Timeout ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
+            if not sim_thread.is_alive(): 
+                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Finished all simulations assigned to mode {current_mode}. Sim Functions that completed this mode: {[fn.__name__ for fn in sim_fn_list]}')
+            
+            # Set Voles to Inactive 
+            for v in self.voles: 
+                v.active = False 
 
-        current_mode.simulation_lock.release() # release lock to denote that simulation for this mode finished running  
-        return
+            sim_thread.join()
+            print(f'RETURNIGN FROM RUN_ACTIVE_MODE_SIM. Sim Thread {sim_thread.name} // isAlive:', sim_thread.is_alive())
+        
+        return sim_thread
         
     @run_in_thread
     def run_sim(self): 
+
+        ''' This Function Runs Continuously Until the Experiment Ends 
+                    Runs on a separate thread 
+                    Get/waits for an active mode
+                    Calls the function that is paired with the currently active mode '''
 
         self.map.print_interactable_table()
         print('\n')
@@ -141,12 +152,6 @@ class SimulationABC:
         self.map.draw_map(voles = self.voles)
         
         sim_log('(Simulation.py, run_sim) Daemon Thread for getting the active mode, and running the specified simulation while active mode is in its timeout period.')
-
-        ''' This Function Runs Continuously Until the Experiment Ends 
-                    Runs on a separate thread 
-                    Get/waits for an active mode
-                    Calls the function that is paired with the currently active mode '''
-
 
         # Validity Check that will only execute once # 
         ''' check validitity of the simulation functions that were set to notify user of potential errors as early as possible '''
@@ -157,8 +162,6 @@ class SimulationABC:
                     sim_log(f'{mode} is paired with {simFn.__name__}')
                 else: 
                     raise Exception(f'specified {simFn} as a simulation function for {self}. Simulation Function Must Belong To {self}. Otherwise 2 diff simulations will get created, and Voles will reset to initial positions.')
-
-
 
         # NOTE: the function that we call should potentially also run on its own thread, so then all this function does is 
         # loop until the active mode is not in Timeout or the current mode is inactive. Basically will just allow for a more immediate 
@@ -189,69 +192,33 @@ class SimulationABC:
             sim_log(f'NEW MODE: (Simulation.py, run_sim) Simulation Updating for Control Entering a New Mode: {(self.current_mode)}')
 
             t = self.run_active_mode_sim(self.current_mode)
+            t.name = 'run_active_mode_sim'
             t.join() 
-
-
-            
-
-
-
-                # (NOTE) Delete This Section with the iterator check!! 
-                # Check if an iterator value was specified (num of times to call the sim function) 
-            '''sim_iterator = None # specifies number of times to call the simulation function (optional)
-                sim_fn = None # simulation function 
-                
-                if type(self.simulation_func[current_mode]) is tuple: # sim_iterator specified
-                    # if the value is a tuple, then there is a specified number of times to run the function 
-                    sim_iterator = self.simulation_func[current_mode][1]
-                    sim_fn = self.simulation_func[current_mode][0]
-
-                    # remove sim function from dictionary since we have a set num of times to run it, we don't want to retrieve it from dict again 
-                    del self.simulation_func[current_mode]
-                
-                else: # no sim_iterator specified
-                    # if the value is not a tuple, then the function should just rerun continuously until while loop can exit 
-
-                while current_mode.inTimeout and current_mode.active:  # active mode is in timeout                  
-                    if sim_iterator is None:  
-                        sim_log(f'(Simulation.py, run_sim) Simulaton is calling the function:{sim_fn}')
-                        sim_fn()  # calling function continuously throught timeout interval 
-                    elif sim_iterator > 0:  
-                        sim_log(f'(Simulation.py, run_sim) Simulaton is calling the function:{sim_fn}')
-                        sim_fn() # function call for running the simulation 
-                        sim_iterator -= 1 # decrement the iterator each run                    
-                    time.sleep(2)'''
-            
+            print(f'BACK FROM RUNNING THE ACTIVE MODE SIM! THREAD STATE: {t.name}, {t.is_alive}')
 
 
 
     def get_active_mode(self): 
-
         '''returns the mode object that is currently running ( assumes there is never more than one active mode at a given point in time ) '''
-       
         for mode in self.modes: 
             if mode.active: 
-                return mode 
-        
+                return mode  
         return None
     
     
     #
     # Vole Getters and Setters 
     #
-    def setup_voles(self):  raise Exception('you need to add a setup_voles() method to your simulation! This is where you should add/initialize any voles that you want to Simulate.')
-
+    def setup_voles(self):  
         # gets voles from the simulation configuration file
-
+        raise Exception('you need to add a setup_voles() method to your simulation! This is where you should add/initialize any voles that you want to Simulate.')
     def get_vole(self, tag): 
         # searches list of voles and returns vole object w/ the specified tag 
         for v in self.voles: 
             if v.tag == tag: return v  
         return None
-
     def new_vole(self, tag, start_chamber): 
         ''' creates a new Vole object and adds it to the list of voles. Returns Vole object on success '''
-
         # ensure vole does not already exist 
         if self.get_vole(tag) is not None: 
             sim_log(f'vole with tag {tag} already exists')
@@ -274,23 +241,15 @@ class SimulationABC:
                     chmbr = self.map.get_chamber(int(start_chamber)) 
                 except ValueError as e: print(f'invalid input. Must be a number or the letter q. ({e})')            
 
-                 
-
         # Create new Vole 
         newVole = Vole(tag, start_chamber, self.map)
         self.voles.append(newVole)
         return newVole
-
-        
     def remove_vole(self, tag): 
         ''' removes vole object specified by the vole's tag '''
         vole = self.get_vole(tag)
         if not vole: sim_log(f'attempting to remove vole {tag} which does not exist, so cannot be removed')
-        self.voles.remove(vole)
-
-
-    #  (NOTE-to-self) Vole/Map Visualization: Moved into Map Class! Reference google doc (https://docs.google.com/document/d/1hulwYFaOrbArYCRNlivxHP25qtzuvBTOqtbG47uTGPY/edit) of scratch work to get the old simulationABC version of draw_helper, draw_edges, draw_chamber
-    
+        self.voles.remove(vole)    
     #
     # Add Simulation Features to Map 
     #
@@ -310,16 +269,14 @@ class SimulationABC:
         # closing JSON file
         f.close() 
 
-
         ## add a simulation boolean attribute to each component that is on an edge in the map ## 
         # if an interactable doesn't exist in the json file, print message and set simulation attribute to be False 
         for (name, i) in self.map.instantiated_interactables.items(): # loop thru interactable names 
-
             # check if name was specified in the config file 
             set = False 
             for interactable_specs in data['interactables']: # find the instantiated interactables in the list of interactable specs
-
                 if interactable_specs['name'] == name:  
+                    
                     # set isSimulation value based on true/false val set in the config file
                     i.isSimulation = interactable_specs['simulate']
                     set = True 
@@ -328,35 +285,22 @@ class SimulationABC:
                     if 'simulate_with_fn' in interactable_specs: 
                         setattr(i, 'simulate_with_fn', eval(interactable_specs['simulate_with_fn']))
             
-                    break 
-                
+                    break   
+
             if not set: # Simulation.json missing a config specification
                 # no configurations for interactable i in simulation.json. Default isSimulation to True and print to screen to let user know.
                 i.messagesReturnedFromSetup+=f'[simulation.json did not contain the interactable {name}. Defaults to True]'
                 sim_log(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
                 i.isSimulation = True 
-        
 
         ## add Voles ## 
         for v in data['voles']: 
             self.new_vole(v['tag'], v['start_chamber'])
-
         return 
-
-
-
 
     #
     # Simulate Vole-Interactable Interactations
     #
-
-
-
-
-
-
-
-
 
 if __name__ == '__main__': 
     

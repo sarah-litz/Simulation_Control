@@ -29,7 +29,7 @@ class modeABC:
     """This is the base class, each mode will be an obstantiation of this class.
     """
 
-    def __init__(self, timeout = None, map = None, output_fp = None, enterFuncs = None, exitFuncs = None, bypass = False, **kwargs):
+    def __init__(self, timeout = None, rounds = None, ITI = None, map = None, output_fp = None, enterFuncs = None, exitFuncs = None, bypass = False, **kwargs):
         
 
         # Set the givens
@@ -37,6 +37,9 @@ class modeABC:
         self.threads = None
         self.active  = False
         self.timeout = timeout
+        self.rounds = rounds
+        self.current_round = 0 
+        self.ITI = ITI # inter-trial interval
         self.optional = kwargs
         self.inTimeout = False 
         self.output_fp = output_fp
@@ -102,15 +105,21 @@ class modeABC:
             self.active = True # mark this mode as being active, triggering a simulation to start running, if a simulation exists
             self.rfidListener() # starts up listener that checks the shared_rfidQ ( if no rfids are present, returns immediately )
 
-            # Starting Mode Timeout and Running the Start() Method of the Mode Script!
-            self.inTimeout = True 
-            mode_thread = threading.Thread(target = self.run, daemon = True) # start running the run() funciton in its own thread as a daemon thread
-            mode_thread.start() 
+            for idx in range(1, self.rounds+1): 
+                self.current_round = idx 
 
-            # countdown for the specified timeout interval 
-            self.event_manager.new_countdown(event_description = f"Mode_Timeout", duration = self.timeout, primary_countdown = True)
+                # Starting Mode Timeout and Running the Start() Method of the Mode Script!
+                self.inTimeout = True 
+                mode_thread = threading.Thread(target = self.run, daemon = True) # start running the run() funciton in its own thread as a daemon thread
+                mode_thread.start() 
 
-            # exit when the timeout countdown finishes
+                # countdown for the specified timeout interval 
+                self.event_manager.new_countdown(event_description = f"Mode_Timeout_Round_{self.current_round}", duration = self.timeout, primary_countdown = True)
+
+                if idx < self.rounds: 
+                    # Prep for next round ( does not include the final round )
+                    self.new_round(mode_thread)
+
             self.exit()   
             mode_thread.join() # ensure that the mode's run() thread finishes before returning 
         
@@ -124,12 +133,36 @@ class modeABC:
     #
     # Exiting/Cleanup Functions
     #
+    def pause_mode(self): 
+        ''' called in between rounds of the same mode to pause mode execution '''
+        self.inTimeout = False # should cause simulation to exit 
+        self.simulation_lock.acquire() # Ensure Simulation Thread ( if it exists ) Cleanly Exits Before we continue 
+        self.simulation_lock.release()
+
+        # ensure that mode finishes 
+    def new_round(self, mode_thread): 
+        ''' called inbetween rounds of the same mode to pause for a inter trial interval '''
+        self.inTimeout = False # should cause simulation to exit 
+        self.active = False # should cause mode to exit 
+
+        # Ensure Simulation Thread ( if it exists ) Cleanly Exits Before we continue 
+        self.simulation_lock.acquire() 
+        self.simulation_lock.release()
+
+        # Ensure Mode Thread Cleanly Exits before we continue 
+        mode_thread.join()
+
+        ''' Inter-Trial Time Pauses Here '''
+        self.event_manager.new_countdown(event_description = f'Inter-Trial Interval', duration = self.ITI, primary_countdown = True)
+
+        self.inTimeout=True 
+        self.active = True 
+
     def exit(self): 
         """This function is run when the mode exits and another mode begins. It closes down all the necessary threads and makes sure the next mode is setup and ready to go. 
         """
         print(f"{self} finished its Timeout Period and is now Exiting")
-        self.inTimeout = False
-        # self.event_manager.new_timestamp(event_description=f'mode_timeout_end', time=time.time())
+        self.inTimeout = False # Should cause simulation to exit 
         self.active = False 
 
         # Waits on Sim to reach clean exiting point # 

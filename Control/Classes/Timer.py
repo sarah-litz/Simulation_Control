@@ -106,7 +106,7 @@ class EventManager:
                 
                 if item is not None: 
                     # write to csv file 
-                    item_round = None 
+                    item_round = item.round 
                     item_event = item.event
                     item_mode_time = item.modal_time
                     item_raw_time = item.time
@@ -117,7 +117,6 @@ class EventManager:
             
             file.close() 
         return     
-
     @run_in_thread
     def watch_print_queue(self): 
         ''' grabs from print queue and prints to terminal at a time where it won't conflict with other statements '''
@@ -154,7 +153,6 @@ class EventManager:
         # sends to message instance 
         try: self.print_queue.put_nowait(message)
         except queue.Full as e: print('(TIMER.PY, PRINT_TO_TERMINAL EXCEPTION)', e), print(f'{message}')
-
     def new_timestamp(self, event_description, time, print_to_screen = True, duration = None ):
         # Streamlined way of marking an event and when it happened! Creates a timestamp and then sends to queues where it will be recorded in the csv file and possibly printed to the terminal 
         
@@ -162,20 +160,20 @@ class EventManager:
             print(f'Skipping timestamp creation for {event_description} because no mode is currently active.')
             return None
 
-        ts = self.Timestamp(event_description, mode_start_time=self.mode.startTime, inTimeout = self.mode.inTimeout, time = time, duration = duration)
+        ts = self.Timestamp(round_num=self.mode.current_round, event_description=event_description, mode_start_time=self.mode.startTime, inTimeout = self.mode.inTimeout, time = time, duration = duration)
         if print_to_screen: 
             ts.print_timestamp()
         # Add to Queue so timestamp is written to output csv file 
         self.write_queue.put(ts)
-        return ts
-    
+        return ts    
     def new_countdown(self, event_description, duration, primary_countdown = False, create_start_and_end_timestamps = True): 
         # creates a new Countdown object and adds to priority queue, where the event that will finish the soonest has the highest priority/will be printed to the screen.
         return self.Countdown(event_description, duration, mode = self.mode, new_timestamp = self.new_timestamp, checkEventManagerActive = self.isActive, start_time = None, primary_countdown = primary_countdown, create_timestamps=create_start_and_end_timestamps)
 
     class Timestamp:
         ''' Specific/Instantaneous Event Occurrence'''
-        def __init__( self, event_description, mode_start_time, inTimeout, time = time.time(), duration = None): 
+        def __init__( self, round_num, event_description, mode_start_time, inTimeout, time = time.time(), duration = None): 
+            self.round = round_num 
             self.event = event_description
             self.time = time 
             self.modal_time = round(time - mode_start_time, 2)

@@ -29,8 +29,8 @@ class AirLockDoorLogic(modeABC):
 
     """
 
-    def __init__(self, timeout, map, output_fp):
-        super().__init__(timeout, map, output_fp)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
         return 'Airlock Doors to Separate Voles'

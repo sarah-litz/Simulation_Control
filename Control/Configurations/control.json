@@ -1,0 +1,20 @@
+
+{ 
+
+    "output_csv_file": "/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv",
+    "map": "map.json", 
+
+    "modes": [
+        {
+            "name": "AirLockDoorLogic", 
+            "timeout": 90, 
+            "rounds": 3, 
+            "ITI": 15 
+        }, 
+        { 
+            "name": "WaitFiveSecondsBeforeRetractOrClose", 
+            "timeout": 15 
+        }
+    ]
+    
+}
