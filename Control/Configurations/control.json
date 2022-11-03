@@ -1,5 +1,7 @@
 
 { 
+    NOT IN USE! 
+    This would replace the "TODOs" in the __main__ file. 
 
     "output_csv_file": "/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv",
     "map": "map.json", 
@@ -16,5 +18,4 @@
             "timeout": 15 
         }
     ]
-    
 }

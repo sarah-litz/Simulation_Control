@@ -7,11 +7,11 @@ from .Classes.Map import Map
 
 # (TODO) Import Your ModeABC Implementations here using the following syntax: from Scripts.your_file_name import mode_name_1, mode_name_2, etc.
 from .Scripts.ModeScripts1 import mode1, mode2 
-from .Scripts.HardwareTesting import LaserTests, LeverTests, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests, DispenserTests
-from .Scripts.StaticBox import ClosedBox, OpenBox, SimpleBox
-from .Scripts.DynamicBox import WaitFiveSecondsBeforeRetractOrClose, IteratorBox, ReactiveBox
-from .Scripts.AirLockBox import AirLockDoorLogic
-from .Scripts.SoftwareTesting import EventManagerTests
+from .Scripts.Testing_Hardware import LaserTests, LeverTests, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests, DispenserTests
+from .Scripts.Box_Static import ClosedBox, OpenBox, SimpleBox
+from .Scripts.Box_Dynamic import WaitFiveSecondsBeforeRetractOrClose, IteratorBox, ReactiveBox
+from .Scripts.Box_AirLock import AirLockDoorLogic
+from .Scripts.Testing_Software import EventManagerTests
 
 OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv' # filepath to where the experiment output should get written 
 
