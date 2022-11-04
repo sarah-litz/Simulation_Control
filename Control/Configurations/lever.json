@@ -20,9 +20,9 @@
             }, 
             "servo_specs": { 
                 "servo_type":"positional", 
-                "servo_pin":14,
+                "servo_pin":3,
                 "extended_angle":40, 
-                "retracted_angle":123
+                "retracted_angle":130
             }
         }
     },
@@ -50,7 +50,7 @@
                 "servo_type":"positional", 
                 "servo_pin":2,
                 "extended_angle":15, 
-                "retracted_angle":98
+                "retracted_angle":100
             }
         }
     }, 
@@ -69,8 +69,8 @@
             "servo_specs": { 
                 "servo_type":"positional", 
                 "servo_pin":12,
-                "extended_angle":15, 
-                "retracted_angle":98 
+                "extended_angle":50, 
+                "retracted_angle":130 
             }
         }, 
         "threshold_condition": { 

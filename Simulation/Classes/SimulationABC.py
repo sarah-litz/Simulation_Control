@@ -292,6 +292,20 @@ class SimulationABC:
                 i.messagesReturnedFromSetup+=f'[simulation.json did not contain the interactable {name}. Defaults to True]'
                 sim_log(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
                 i.isSimulation = True 
+            
+            ''' if an object is set to be a Simulation, then automatically will set any Button and Servo Objects that it uses to be a simulation also. '''
+            if i.isSimulation is True: 
+                # ensure both buttonObj and servoObj are begin simulated
+                if i.buttonObj is not None and i.buttonObj.isSimulation is False: 
+                    i.buttonObj.isSimulation = True
+                    i.buttonObj.pressed_val = -1 # -1 represents a simulated button
+                    i.buttonObj.isPressed = False # set to Boolean value ( as apposed to calling method if it were initially not set to be a simulation )
+                    i.messagesReturnedFromSetup += f' simulating GPIO button. '
+                if i.servoObj is not None and i.servoObj.isSimulation is False: 
+                    i.servoObj.isSimulation = True
+                    i.servoObj.servo = None
+                    i.messagesReturnedFromSetup += f' simulating servo.'
+
 
         ## add Voles ## 
         for v in data['voles']: 

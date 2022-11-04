@@ -71,6 +71,10 @@ class interactableABC:
         self.autonomous = False # set to True if it is not dependent on other interactables OR on vole interactions (i.e. this will be True for RFIDs only )
 
 
+        ## Servo and Button Objects ( Attibutes will be Overriden in the Derived Classes if they use a Button or a Servo )
+        self.buttonObj = None 
+        self.servoObj = None 
+
     
     def __str__(self): 
 
@@ -97,12 +101,13 @@ class interactableABC:
 
             self.buttonQ = queue.Queue() # queue where we append each time a button press is detected
             
+
+            # Setup the isSimulation attribute: isSimulation is True if we were unable to connect to gpio pin 
+            self.isSimulation = False 
+
             # self.pressed_val denotes what value we should look for (0 or 1) that denotes a lever press 
             self.pressed_val = self._setup_gpio()  # defaults to -1 in scenario that gpio setup fails (including if isSimulation)
 
-            # Setup the isSimulation attribute: isSimulation is True if we were unable to connect to gpio pin 
-            if self.pressed_val < 0: self.isSimulation = True 
-            else: self.isSimulation = False 
 
             # 
             # Setup isPressed Variable --> setup depends on if Button is a simulation or not
@@ -117,6 +122,11 @@ class interactableABC:
 
         def _setup_gpio(self): 
 
+            if self.parent.isSimulation: 
+                control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
+                self.parent.messagesReturnedFromSetup += f'simulating gpio connection. '
+                return -1
+
             try: 
                 if self.pullup_pulldown == 'pullup':
                     GPIO.setup(self.pin_num, GPIO.IN, pull_up_down = GPIO.PUD_UP)
@@ -126,10 +136,12 @@ class interactableABC:
                     return 1
                 else: 
                     raise KeyError(f'(InteractableABC.py, Button) {self.parent.name}: Configuration file error when instantiating Button {self.name}, must be "pullup" or "pulldown", but was passed {self.pullup_pulldown}')
-            except AttributeError as e: 
+            
+            except Exception as e: 
                 # attribute error raised 
                 control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
-                self.parent.messagesReturnedFromSetup += f'simulating gpio connection. '
+                self.parent.messagesReturnedFromSetup += f' simulating GPIO button. '
+                self.isSimulation = True
                 return -1
 
         def run_in_thread(func): 
@@ -228,6 +240,7 @@ class interactableABC:
             self.pin_num = servo_specs['servo_pin']
             self.servo_type = servo_specs['servo_type']  
             self.servo = self.__set_servo()   
+            self.isSimulation = False 
             
         def __set_servo(self): 
             #if SERVO_KIT is None: 
@@ -245,7 +258,8 @@ class interactableABC:
             except AttributeError as e: 
                 # attribute error raised if we werent able to import SERVO_KIT and we try to access SERVO_KIT.servo 
                 control_log(f'(InteractableABC.py, Servo) {self.parent.name}: simulating servo connection. ErrMssg: {e}')
-                self.parent.messagesReturnedFromSetup += f'simulating servo connection. ' 
+                self.parent.messagesReturnedFromSetup(f' simulating servo. ')
+                self.isSimulation = True 
                 return None
             
 
@@ -582,7 +596,7 @@ class door(interactableABC):
         self.stop_speed = hardware_specs['servo_specs']['servo_stop_speed']
         self.open_speed = hardware_specs['servo_specs']['servo_open_speed']
         self.close_speed = hardware_specs['servo_specs']['servo_close_speed']
-        self.open_time = hardware_specs['open_time'] # time it takes for a door to open 
+        self.open_timeout = hardware_specs['open_time'] # time it takes for a door to open 
         self.close_timeout = hardware_specs['close_timeout'] # max time we will wait for a door to close before timing out
 
 
@@ -605,7 +619,7 @@ class door(interactableABC):
     def sim_open(self): 
         if self.isSimulation: 
             self.buttonObj.isPressed = True 
-            self.event_manager.new_countdown(f'sim_{self.name}_open', self.close_timeout)
+            self.event_manager.new_countdown(f'sim_{self.name}_open', self.open_timeout)
     def sim_close(self): 
         if self.isSimulation: 
             self.event_manager.new_countdown(f'sim_{self.name}_close', self.close_timeout)
@@ -716,6 +730,7 @@ class door(interactableABC):
         self.event_manager.new_timestamp(f'{self}_close_Failure', time=t, duration = t - ts_start.time)
         control_log(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
         self.event_manager.print_to_terminal(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
+        return 
         # raise Exception(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
 
 
@@ -745,7 +760,7 @@ class door(interactableABC):
         self.servoObj.servo.throttle = self.open_speed 
 
         start = time.time() 
-        while time.time() < ( start + self.open_time ): 
+        while time.time() < ( start + self.open_timeout ): 
             #wait for the door to open -- we just have to assume this will take the exact same time of <open_time> each time, since we don't have a switch to monitor for if it opens all the way or not. 
             time.sleep(0.005) 
         

@@ -131,8 +131,8 @@ class LeverTests(modeABC):
         
     """
 
-    def __init__(self, timeout, map):
-        super().__init__(timeout, map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
         return 'Lever Tests'
@@ -182,8 +182,8 @@ class DoorTests(modeABC):
         DOOR TESTING
     """
     
-    def __init__(self, timeout, map):
-        super().__init__(timeout, map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
         return 'Door Tests'
@@ -203,11 +203,24 @@ class DoorTests(modeABC):
         door2 = self.map.instantiated_interactables['door2']
         door1 = self.map.instantiated_interactables['door1']
 
+        door2.stop()
+        door1.stop()
+        print('STOPPED')
 
 
         # Door 1 Tests
         print("opening door2 // current switch value: ", door2.isOpen)
         door2.open() 
+
+        time.sleep(1)
+        print('Closing...')
+        door2.close()
+
+        return 
+        door1.open()
+        door1.close()
+
+        
         
         
         return
@@ -224,8 +237,8 @@ class LeverDoorConnectionTests(modeABC):
     
     """
     
-    def __init__(self, timeout, map):
-        super().__init__(timeout, map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
         return 'Lever-Door Tests'
@@ -275,8 +288,8 @@ class DispenserTests(modeABC):
     this mode is used for testing basic functional of the food dipenser throughout its code building process!
     '''
 
-    def __init__(self, timeout, map): 
-        super().__init__(timeout, map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
     
     def __str__(self): 
         return 'Dispenser Tests'
@@ -298,8 +311,8 @@ class LaserTests(modeABC):
     used for testing basic functionality of the Lasers throughout its code building process!
     '''
 
-    def __init__(self, timeout, map): 
-        super().__init__(timeout,map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
     
     def __str__(self): 
         return 'Laser Tests'

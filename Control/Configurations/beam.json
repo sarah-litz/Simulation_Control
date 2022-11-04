@@ -28,7 +28,7 @@
         "parents": [], 
         "hardware_specs": { 
             "button_specs": { 
-                "button_pin": 12, 
+                "button_pin": 13, 
                 "pullup_pulldown":"pullup"
             }
         }

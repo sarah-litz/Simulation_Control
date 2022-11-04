@@ -42,11 +42,13 @@ sim_log('\n\n\n\n-----------------------------Simulation Package Started--------
 
 
 # (TODO) Instantiate the Simulation Classes that you want to run.
-SimulationScript = AirLockDoorsSim( modes = modes ) # create simulation, pass list of modes as argument 
 
+# SimulationScript = AirLockDoorsSim( modes = modes ) # create simulation, pass list of modes as argument 
+SimulationScript = LeverTests( modes = modes )
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.non_threaded_vole_movements , SimulationScript.threaded_vole_movements ] 
+SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.mode1_timeout ]
+# SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.non_threaded_vole_movements , SimulationScript.threaded_vole_movements ] 
 # SimulationScript.simulation_func[ modes[1] ] = [ SimulationScript.non_threaded_vole_movements ] 
 # SimulationScript.simulation_func[ modes[2] ] = [ SimulationScript.non_threaded_vole_movements ] 
 
