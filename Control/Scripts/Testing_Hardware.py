@@ -14,7 +14,7 @@ from tkinter import Button
 from ..Classes.Map import Map
 from ..Classes.ModeABC import modeABC
 
-from ..Classes.InteractableABC import interactableABC
+from ..Classes.InteractableABC import interactableABC, door, lever, buttonInteractable, rfid
 Button = interactableABC.Button # button class (nested w/in interactableABC)
 
 from Logging.logging_specs import control_log 
@@ -122,58 +122,64 @@ class ButtonTests(modeABC):
         #
         # in order to simulate a button, we can set its pressed_val = self.isPressed; this simulates the button currently being in a pressed state. 
 
-class LeverTests(modeABC):
-    
-    """
-    Description: 
-        LEVER TESTING 
-        extends and retracts levers
-        
-    """
 
+class Lever1(modeABC): 
+    '''
+    description: extends and retracts levers
+    '''
     def __init__(self, timeout, rounds, ITI, map, output_fp):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
-        return 'Lever Tests'
+        return 'Lever Tests: Lever 1'
     
     def setup(self): 
         ''' any tasks to setup before run() gets called '''
 
-          
     def run(self):
-        # Run code of the class. This basically waits for the timeout
+        ''' control script logic '''
+        self.map.lever_door1.extend()
+        time.sleep(10)
+        self.map.lever_door1.retract()
 
-        lever_food = self.map.instantiated_interactables['lever_food']
-        lever_door1 = self.map.instantiated_interactables['lever_door1']
-        lever_door2 = self.map.instantiated_interactables['lever_door2']
-        
-        # Food Lever Tests 
-        print("extending food lever")
-        lever_food.extend() 
-        time.sleep(5)
-        print("retracting food lever")
-        lever_food.retract() 
+class Lever2(modeABC): 
+    '''
+    description: extends and retracts levers
+    '''
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
-        time.sleep(2)
+    def __str__(self): 
+        return 'Lever Tests: Lever 2'
+    
+    def setup(self): 
+        ''' any tasks to setup before run() gets called '''
 
-        # Door1 Lever Tests
-        print("extending door1 lever")
-        lever_door1.extend() 
-        time.sleep(5)
-        print("retracting door1 lever")
-        lever_door1.retract() 
+    def run(self):
+        ''' control script logic '''
+        self.map.lever_door2.extend()
+        time.sleep(10)
+        self.map.lever_door2.retract()
 
-        time.sleep(2)
+class LeverFood(modeABC): 
+    '''
+    description: extends and retracts levers
+    '''
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
-        # Door2 Lever Tests
-        print("extending door2 lever")
-        lever_door2.extend() 
-        time.sleep(5)
-        print("retracting door2 lever")
-        lever_door2.retract() 
+    def __str__(self): 
+        return 'Lever Tests: Food Lever'
+    
+    def setup(self): 
+        ''' any tasks to setup before run() gets called '''
 
-        return 
+    def run(self):
+        ''' control script logic '''
+        self.map.lever_food.extend()
+        time.sleep(10)
+        self.map.lever_food.retract()
+
 
 
 class DoorTests(modeABC):
@@ -195,35 +201,17 @@ class DoorTests(modeABC):
         pass 
 
     def run(self):
-
-        ## Timeout Logic ## 
-
-        control_log('NEW MODE: Door Tests ')
-
-        door2 = self.map.instantiated_interactables['door2']
-        door1 = self.map.instantiated_interactables['door1']
-
-        door2.stop()
-        door1.stop()
-        print('STOPPED')
-
-
-        # Door 1 Tests
-        print("opening door2 // current switch value: ", door2.isOpen)
-        door2.open() 
-
-        time.sleep(1)
-        print('Closing...')
-        door2.close()
-
-        return 
-        door1.open()
-        door1.close()
-
+        door_lst = []
+        for (name, item) in self.map.instantiated_interactables.items(): 
+            if type(item) == door: 
+                door_lst.append(item) 
         
-        
-        
-        return
+        for d in door_lst:         
+            d.open()
+            time.sleep(8)
+            d.close()
+
+
 
 
 class LeverDoorConnectionTests(modeABC): 

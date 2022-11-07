@@ -26,8 +26,7 @@ from Simulation import modes # references Simulation/__init__ file to retrieve l
 
 
 # (TODO) Import your SimulationABC Implementations Here using the following syntax: from .Scripts.your_file_name import SimulationClassName
-from .Scripts.VoleTests import OperantMapVole
-from .Scripts.InteractableTests import BeamTests, LeverTests, ButtonTests, RfidSimulatedPings, DispenserTests
+from .Scripts.OperantBoxSim import OperantSim
 from .Scripts.DynamicBoxSim import DynamicBoxSimulation
 from .Scripts.AirLockDoorsSim import AirLockDoorsSim
 
@@ -44,13 +43,14 @@ sim_log('\n\n\n\n-----------------------------Simulation Package Started--------
 # (TODO) Instantiate the Simulation Classes that you want to run.
 
 # SimulationScript = AirLockDoorsSim( modes = modes ) # create simulation, pass list of modes as argument 
-SimulationScript = LeverTests( modes = modes )
+SimulationScript = OperantSim( modes = modes )
+
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
-SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.mode1_timeout ]
-# SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.non_threaded_vole_movements , SimulationScript.threaded_vole_movements ] 
-# SimulationScript.simulation_func[ modes[1] ] = [ SimulationScript.non_threaded_vole_movements ] 
-# SimulationScript.simulation_func[ modes[2] ] = [ SimulationScript.non_threaded_vole_movements ] 
+SimulationScript.simulation_func[ modes[0] ] = [ SimulationScript.lever1 ]
+SimulationScript.simulation_func[ modes[1] ] = [ SimulationScript.lever2 ] 
+SimulationScript.simulation_func[ modes[2] ] = [ SimulationScript.foodlever ]
+SimulationScript.simulation_func[ modes[3] ] = [ SimulationScript.move_request1, SimulationScript.move_request2, SimulationScript.move_request3 ]
 
 
 # Nothing to change here; this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 

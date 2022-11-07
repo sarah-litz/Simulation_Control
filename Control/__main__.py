@@ -6,7 +6,7 @@ from .Logging.logging_specs import control_log
 from .Classes.Map import Map 
 
 # (TODO) Import Your ModeABC Implementations here using the following syntax: from Scripts.your_file_name import mode_name_1, mode_name_2, etc.
-from .Scripts.Testing_Hardware import LaserTests, LeverTests, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests, DispenserTests
+from .Scripts.Testing_Hardware import LaserTests, Lever1, Lever2, LeverFood, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests, DispenserTests
 from .Scripts.Box_Static import ClosedBox, OpenBox, SimpleBox
 from .Scripts.Box_Dynamic import WaitFiveSecondsBeforeRetractOrClose, IteratorBox, ReactiveBox
 from .Scripts.Box_AirLock import AirLockDoorLogic
@@ -28,17 +28,16 @@ def main():
 
 
     # (TODO) Map Instantiation (which will also instantiate the hardware components) 
-    map = Map(cwd+'/Control/Configurations', 'map_for_tests.json') # optional argument: map_file_name to specify filepath to a different map configuration file 
+    map = Map(cwd+'/Control/Configurations', 'map_operant.json') # optional argument: map_file_name to specify filepath to a different map configuration file 
     
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-    testingLevers = LeverTests(timeout = 60, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
-    testingDoors = DoorTests(timeout = 60, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
+    lever1 = Lever1(timeout = 15, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
+    lever2 = Lever2(timeout = 15, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
+    leverfood = LeverFood(timeout = 15, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
     airlockBox = AirLockDoorLogic(timeout = 20, rounds = 3, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
-    iteratorBox = IteratorBox(timeout = 20, rounds = 1, ITI = 0, map = map, output_fp = OUTPUT_CSV_FILE)
-    # reactiveBox = ReactiveBox(timeout = 30, map = map )
 
     # (TODO) Update the list of control mode scripts with each of the scripts you want to run, in the order that you want them to run in! 
-    mode_scripts = [ testingDoors, testingLevers, airlockBox, iteratorBox ]
+    mode_scripts = [ lever1, lever2, leverfood, airlockBox ]
 
     if __name__ != '__main__': # falls into this if the simulation package imported this module
         # (TODO) Add Any Modes that you want to get passed to the Simulation Package in the list here 

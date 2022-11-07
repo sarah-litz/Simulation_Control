@@ -15,7 +15,7 @@ from Simulation.Logging.logging_specs import vole_log, clear_log
 from .Vole import Vole
 
 # Standard Lib Imports 
-import threading, time, json, inspect, random
+import threading, time, json, inspect, random, sys
 import os
 cwd = os.getcwd() 
 
@@ -156,13 +156,13 @@ class SimulationABC:
         # Validity Check that will only execute once # 
         ''' check validitity of the simulation functions that were set to notify user of potential errors as early as possible '''
         for (mode, simFnList) in self.simulation_func.items(): 
-             # DON'T ALLOW SOMEONE TO PASS IN FUNCITON FROM A DIFFERENT CLASS BECAUSE THEN THE BOX BASICALLY RESETS AKA IT WONT RECALL WHERE THE VOLES LEFT OFF!
+             # WARN SOMEONE IF THEY PASS IN FUNCITON FROM A DIFFERENT CLASS BECAUSE THEN THE BOX BASICALLY RESETS AKA IT WONT RECALL WHERE THE VOLES LEFT OFF!
             for simFn in simFnList:
                 if hasattr(self, simFn.__name__): 
                     sim_log(f'{mode} is paired with {simFn.__name__}')
                 else: 
-                    raise Exception(f'specified {simFn} as a simulation function for {self}. Simulation Function Must Belong To {self}. Otherwise 2 diff simulations will get created, and Voles will reset to initial positions.')
-
+                    raise Exception(f'(SimulationABC.py, run_sim()) Error: specified {simFn} as a simulation function for {self}. Because this simulation function does not Belong To {self}, 2 diff simulations will get created, and Voles will reset to initial positions.')
+                       
         # NOTE: the function that we call should potentially also run on its own thread, so then all this function does is 
         # loop until the active mode is not in Timeout or the current mode is inactive. Basically will just allow for a more immediate 
         # stopage of the simulation when a mode gets out of timeout and/or stops running 
@@ -194,9 +194,13 @@ class SimulationABC:
             t = self.run_active_mode_sim(self.current_mode)
             t.name = 'run_active_mode_sim'
             t.join() 
+
+            
             print(f'BACK FROM RUNNING THE ACTIVE MODE SIM! THREAD STATE: {t.name}, {t.is_alive}')
 
-
+            # if the current mode is still active, wait here until it finishes so we don't run a mode's simulation more than once. 
+            while self.current_mode.active: 
+                time.sleep(0.5)
 
     def get_active_mode(self): 
         '''returns the mode object that is currently running ( assumes there is never more than one active mode at a given point in time ) '''

@@ -87,6 +87,7 @@ class modeABC:
             self.startTime = time.time()
 
             print(f'\nnew mode entered: {self}') # print to console 
+            control_log(f'New Mode Entered: {self}')
 
             self.map.activate_interactables() # ensure that interactables are running for the new mode 
             
@@ -107,6 +108,7 @@ class modeABC:
 
             for idx in range(1, self.rounds+1): 
                 self.current_round = idx 
+                control_log(f'Mode {self} Starting Round {self.current_round}')
 
                 # Starting Mode Timeout and Running the Start() Method of the Mode Script!
                 self.inTimeout = True 

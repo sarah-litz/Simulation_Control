@@ -424,12 +424,12 @@ class lever(interactableABC):
 
         # we want Button to be updating the num_pressed value
 
-        if self.buttonObj.pressed_val < 0: # simulating gpio connection
+        '''if self.buttonObj.pressed_val < 0: # simulating gpio connection
             self.isPressed = None 
             # self.num_pressed = 0 
         else: 
             self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
-            # self.num_pressed = self.pressed
+            # self.num_pressed = self.pressed'''
             
         #self.required_presses = self.threshold_condition["goal_value"] # Threshold Goal Value specifies the threshold goal, i.e. required_presses to meet the threshold
         #self.threshold_attribute = self.threshold_condition["attribute"] # points to the attribute we should check to see if we have reached goal. For lever, this is simply a pointer to the self.pressed attribute. 
@@ -439,6 +439,14 @@ class lever(interactableABC):
         # self.autonomous = False
 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
+    
+    def __str__(self): 
+        return f'{self.name}(isExtended:{self.isExtended})'
+
+    @property 
+    def isPressed(self): 
+        '''True if the button object is in a pressed state, false otherwise'''
+        return self.buttonObj.isPressed 
 
     @property
     def num_pressed(self): 
@@ -447,6 +455,7 @@ class lever(interactableABC):
 
     def reset_press_count(self): 
         ''' sets self.buttonObj.num_pressed to start from the initial value '''
+        print('RESETTING BUTTON OBJECT NUM PRESSED')
         self.buttonObj.num_pressed = self.threshold_condition['initial_value'] 
 
     def set_press_count(self, count): 
@@ -492,6 +501,12 @@ class lever(interactableABC):
 
         # add timestamp 
         self.event_manager.new_timestamp(event, time=time.time())
+
+        # wait for lever to reach unpressed state
+        # while self.num_pressed == self.threshold_condition['goal_value'] and self.active: 
+        #    ''' ''' 
+        #     print('..')
+        #    time.sleep(0.3)
         
 
     #@threader
@@ -499,11 +514,14 @@ class lever(interactableABC):
         """Extends the lever to the correct value
         """
         control_log(f'(InteractableABC, Lever.extend) extending {self.name} ')
+        self.activate()
 
         if self.isExtended: 
             # already extended 
             self.event_manager.print_to_terminal(f'(InteractableABC, Lever.extend) {self.name} already extended.')
             return 
+
+        self.event_manager.new_timestamp(f'{self}_Extend', time.time())
 
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation: 
@@ -536,24 +554,26 @@ class lever(interactableABC):
     def retract(self):
         """Retracts lever to the property value
         """
-        control_log(f'(InteractableABC, Lever.extend) retracting {self.name} ')
+        control_log(f'(InteractableABC, Lever.retract) retracting {self.name} ')
+        self.deactivate()
 
         if not self.isExtended: 
-            self.event_manager.print_to_terminal(f'(InteractableABC, Lever.extend) {self.name} already retracted.')
+            self.event_manager.print_to_terminal(f'(InteractableABC, Lever.retract) {self.name} already retracted.')
+            self.event_manager.new_timestamp(f'{self}_Already_Retracted', time.time())
             # already retracted 
             return 
 
+        
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation: 
             self.isExtended = False 
-            # self.deactivate() 
+            self.event_manager.new_timestamp(f'{self}_Retract', time.time())
             return 
         
         #
         # HARDWARE THINGS
         #
         else: 
-
             # set to the fully retracted angle 
             self.servoObj.servo.angle = self.retracted_angle
             self.isExtended = False 

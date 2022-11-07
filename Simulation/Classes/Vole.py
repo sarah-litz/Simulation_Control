@@ -101,14 +101,15 @@ class Vole:
         ''' prior to simulation, checks if the requested simulation is valid. returns if not '''
         
         if not self.active: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) Vole Inactive. Cannot perform the requested action.')
+            sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) Vole Inactive. Cannot perform the requested action.')
+            # self.event_manager.new_timestamp(f'(Vole{self.tag}, simulate_vole_interactable_interaction) Vole Inactive. Cannot perform the requested action.', time.time(), print_to_screen = False )
             return 
         
         #
         # Active Check
         #
         if interactable.active is False: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is inactive')
+            # self.event_manager.new_timestamp(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is inactive', time.time(), print_to_screen = False )
             sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction, simulate_vole_interactable_interaction) {interactable.name} is inactive')
             # we don't care to simulate an inactive interactable
             # vole unable to effect the threshold attribute value of an inactive interactable (so threshold value is the same the entire time)
@@ -119,7 +120,7 @@ class Vole:
         # Physical Proximity Check 
         #
         if not self.at_location_of(interactable): 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
+            # self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
             sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) vole{self.tag} is not at_location_of({interactable.name}). Failed the physical proximity check; cannot simulate.')
             return 
 
@@ -136,7 +137,7 @@ class Vole:
         if interactable.barrier: 
             # ensure that barrier is also autonomous 
             if not interactable.autonomous: 
-                self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is a Barrier but is NOT autonomous. Interactables of this type do not allow for direct vole interactions.')
+                # self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is a Barrier but is NOT autonomous. Interactables of this type do not allow for direct vole interactions.')
                 sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) {interactable.name} is a barrier and not autonomous. Interactables of this type do not allow for direct vole interactions. Vole must attempt simulating with {interactable.name} controllers ( interactables who have {interactable.name} as a parent )')
                 return 
 
@@ -146,7 +147,7 @@ class Vole:
         if interactable.isSimulation: 
 
             vole_log( f'(Vole{self.tag}, simulate_vole_interactable_interaction) simulating vole{self.tag} interaction with {interactable.name}' ) 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) Simulating vole{self.tag} interaction with {interactable.name}')
+            # self.event_manager.print_to_terminal(f'(Vole{self.tag}, simulate_vole_interactable_interaction) Simulating vole{self.tag} interaction with {interactable.name}')
     
             if hasattr(interactable, 'simulate_with_fn'):
                 
@@ -174,7 +175,7 @@ class Vole:
         
         else:  # component should not be simulated, as the hardware for this component is present. 
             # assumes that there is a person present to perform a lever press, interrupt the rfid reader so it sends a ping, etc. 
-            print ( f'\nif testing the hardware for {interactable.name}, take any necessary actions now.')
+            print ( f'\nif testing the hardware for {interactable.name}, take any necessary actions now. \n ')
             time.sleep(5)
             
     
@@ -239,7 +240,7 @@ class Vole:
         self.prev_component = self.curr_component 
         self.curr_component = newcomponent 
 
-        self.event_manager.print_to_terminal(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
+        self.event_manager.new_timestamp(f'(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}', time.time())
         vole_log(f'\n(Vole{self.tag}, update_location) {self.prev_component} to {self.curr_component}\n')
 
         location_visual = self.map.draw_location(location = self.curr_loc)
@@ -265,7 +266,7 @@ class Vole:
         '''
 
         if not self.active: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_to_interactable) Vole Inactive. Cannot perform the requested action.')
+            sim_log(f'(Vole{self.tag}, move_to_interactable) Vole Inactive. Cannot perform the requested action.')
             return 
 
         if goal_interactable.edge_or_chamber_id < 0: 
@@ -275,11 +276,11 @@ class Vole:
 
 
         if self.curr_component is not None: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_to_interactable) {self.curr_component}->{goal_interactable}')
+            # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_to_interactable) {self.curr_component}->{goal_interactable}')
             vole_log(f'(Vole{self.tag}, move_to_interactable) {self.curr_component}->{goal_interactable}')
 
         else: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_to_interactable) {self.curr_loc.edge_or_chamber}{self.curr_loc.id}(Empty)->{goal_interactable}')
+            # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_to_interactable) {self.curr_loc.edge_or_chamber}{self.curr_loc.id}(Empty)->{goal_interactable}')
             vole_log(f'(Vole{self.tag}, move_to_interactable)  {self.curr_loc.edge_or_chamber}{self.curr_loc.id}(Empty)->{goal_interactable}')
 
         interactable_loc = self.map.get_location_object(goal_interactable)
@@ -305,7 +306,7 @@ class Vole:
     def move_to_component(self, goal_component, interactable_within_component = None): 
 
         if not self.active: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_to_component) Vole Inactive. Cannot perform the requested action.')
+            sim_log(f'(Vole{self.tag}, move_to_component) Vole Inactive. Cannot perform the requested action.')
             return 
 
         # if the goal_component is a ComponentSet, then an interactable should be specified with the interactable_within_component argument! 
@@ -344,6 +345,9 @@ class Vole:
         #
         while self.curr_component is None: # Loop Until We Find the first Component along our path that we can position the vole at! 
             
+            if not self.active: 
+                return 
+
             #
             # This entire while loop is just to get the vole positioned at some component, since its current component is None and that is unhelpful to start out on!  
             # 
@@ -397,7 +401,6 @@ class Vole:
         
         # END of While loop that ensures voles current location is not "None" 
 
-
         #
         # Get list of components in between current location and goal location 
         #
@@ -410,6 +413,8 @@ class Vole:
         for c in component_lst: 
 
             # move from current component to the next component in the path 
+            if not self.active: 
+                return 
             
             res = self.move_next_component(c)
             if not res: 
@@ -441,7 +446,7 @@ class Vole:
         #
 
         if not self.active: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) Vole Inactive. Cannot perform the requested action.')
+            sim_log(f'(Vole{self.tag}, move_next_component) Vole Inactive. Cannot perform the requested action.')
             return 
 
         # inner helper function, getInteractable
@@ -474,13 +479,13 @@ class Vole:
             goal_nxt = getInteractable(goal_component.nextval)
             goal_prev = getInteractable(goal_component.prevval)
 
-        print(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
-        self.event_manager.new_timestamp(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}', time.time())
-        self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
+        # print(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
+        self.event_manager.new_timestamp(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}', time.time(), print_to_screen = False)
+        # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         vole_log(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         
         if curr_interactable == goal_interactable: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
+            # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
             vole_log(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
             return True 
         
@@ -501,7 +506,8 @@ class Vole:
 
                 # the goal component is not a chamber interactable, so did not fall into the first if() check. 
                 # However, there are no components that stand in between the current component and the goal component, so this is a valid move request. 
-                self.event_manager.print_to_terminal('\n NEW LOGIC! Potentially can get rid of the other if/elif checks that follow this if statement. Hopefully falls into this everytime. \n')    
+                # self.event_manager.print_to_terminal('\n NEW LOGIC! Potentially can get rid of the other if/elif checks that follow this if statement. Hopefully falls into this everytime. \n')    
+                pass 
 
             # extra check for scenario that current component is a reference to a chamber component
             elif goal_prev == curr_interactable or goal_nxt == curr_interactable: # this scenario will happen when chamber interactables are added to an edge 
@@ -509,7 +515,7 @@ class Vole:
                 # if goal->nxt == curr_component ( goal component links forward to our current component )
                 
                 # valid move requested from a chamber component -> adjacent edge component
-                self.event_manager.print_to_terminal('Logic for checking if the current component is a referenced as a chamber component on an edge. If we always fall into both this if statement and the NEW LOGIC statement, then we can delete this if statement cause it gets covered by the first if statement. ')
+                # self.event_manager.print_to_terminal('Logic for checking if the current component is a referenced as a chamber component on an edge. If we always fall into both this if statement and the NEW LOGIC statement, then we can delete this if statement cause it gets covered by the first if statement. ')
                 pass 
             else: 
                 # invalid move request 
@@ -610,7 +616,7 @@ class Vole:
         if the threshold of any interactable is not True, then we cannot successfully make the move '''
         
         if not self.active: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, attempt_move) Vole Inactive. Cannot perform the requested action.')
+            sim_log(f'(Vole{self.tag}, attempt_move) Vole Inactive. Cannot perform the requested action.')
             return 
         
 
@@ -831,7 +837,7 @@ class Vole:
         ''' calls random_action to chose an action at random (or w/ weighted probabilities), and then calls the chosen function '''
         
         if not self.active: 
-            self.event_manager.print_to_terminal(f'(Vole{self.tag}, attempt_random_action) Vole Inactive. Cannot perform the requested action.')
+            sim_log(f'(Vole{self.tag}, attempt_random_action) Vole Inactive. Cannot perform the requested action.')
             return 
 
         (action_fn, arg) = self.random_action() 

@@ -1,0 +1,72 @@
+{ 
+    "chambers": [ 
+        {
+            "id": 1, 
+            "descriptive_name": "Main Chamber", 
+            "components": [
+                { "interactable_name":"lever_door1", "type":"lever"}, 
+                { "interactable_name":"lever_food", "type":"lever"}, 
+                { "interactable_name":"food_trough", "type":"dispenser"},
+                { "interactable_name":"lever_door2", "type":"lever" }
+            ] 
+        }, 
+
+        {
+            "id": 2, 
+            "descriptive_name": "Chamber 2", 
+            "components": [
+            ]
+        }, 
+
+        {
+            "id": 3, 
+            "descriptive_name": "Chamber 3 ",
+            "components": [
+            ]
+        }, 
+
+        { 
+            "id": -1, 
+            "descriptive_name": "Fake Chamber for Storing Override Buttons", 
+            "components": [
+                { "interactable_name":"open_door1_button", "type":"buttonInteractable" }, 
+                { "interactable_name":"open_door2_button", "type":"buttonInteractable" }, 
+                { "interactable_name":"close_door1_button", "type":"buttonInteractable" }, 
+                { "interactable_name":"close_door2_button", "type":"buttonInteractable" }            
+            ]
+        }
+    
+    ], 
+
+    "edges": [
+        {
+            "start_chamber_id":1, 
+            "target_chamber_id":2, 
+            "id":12, 
+            "type":"shared", 
+            "components":[
+                { "chamber_interactable": "lever_door1" },
+                { "interactable_name":"beam1_door1", "type":"beam"}, 
+                { "interactable_name":"door1", "type":"door" }
+            ]
+        }, 
+
+        { 
+            "start_chamber_id":1, 
+            "target_chamber_id":3, 
+            "id": 13, 
+            "type":"shared", 
+            "components":[
+                { "chamber_interactable": "lever_door2" }, 
+                { "interactable_name":"beam2_door2", "type":"beam"},
+                { "interactable_name":"door2", "type":"door" }
+            ]
+        }
+    ], 
+
+    "voles": [
+
+        { "tag":1, "start_chamber":1 }, 
+        { "tag":2, "start_chamber":2 }        
+    ]
+}

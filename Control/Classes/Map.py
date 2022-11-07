@@ -692,6 +692,8 @@ class Map:
             
 
 
+            else: 
+                raise Exception('(Map.py, new_edge) Not Yet Implemented: Unidirectional Edge. Please set type to "shared" for now (representing an edge that allows for bidirectional movement).')
 
             ## Not Implemented: Unidirectional Edges ## 
             '''
@@ -710,7 +712,7 @@ class Map:
         for (cid, chamber) in self.graph.items(): 
             chamber._set_unordered_component()
 
-        # FISH)) DELETE ME)) self.set_dependent_interactables()
+        # Create relationships between what interactables can control other interactables
         self.set_parent_interactables() 
 
 
@@ -719,7 +721,6 @@ class Map:
 
         # Lastly, set attributes for convenient access to all of the hardware components 
         for (name, interactable) in self.instantiated_interactables.items(): 
-
             setattr( self, name, interactable )
 
     
@@ -1210,11 +1211,9 @@ class Map:
         goal_idx = component_path.index(goal_component)   
         
         if start_idx > goal_idx: 
-            self.event_manager.print_to_terminal(f'(Map.py, get_component_path) COMPONENT PATH: {[*(str(ele) for ele in component_path[goal_idx:start_idx+1])]}')
 
             return component_path[goal_idx:start_idx+1]
         
-        self.event_manager.print_to_terminal(f'(Map.py, get_component_path) COMPONENT PATH: {[*(str(ele) for ele in component_path[start_idx:goal_idx+1])]}')
         return component_path[start_idx:goal_idx+1] 
 
             

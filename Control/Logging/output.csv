@@ -1,6 +1,13 @@
 
-Control Mode,Door Tests,<class 'Control.Scripts.Testing_Hardware.DoorTests'>
+Control Mode,Lever Tests: Lever 1,<class 'Control.Scripts.Testing_Hardware.Lever1'>
 Round,Event,Modal Time,Time,Duration,In Timeout?
-0,Mode_Setup,0.38,1667605412.4751172,,False
-1,Mode_Timeout_Round_1_Start,0.87,1667605412.968067,,True
-,Early_Interrupt_Caused_Exit,4.57,1667605416.6633546,,True
+0,Mode_Setup,3.83,1667851751.5929923,,False
+1,Mode_Timeout_Round_1_Start,5.31,1667851753.0778697,,True
+1,lever_door1(isExtended:False)_Extend,6.24,1667851754.0086393,,True
+1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_food(isExtended:False)",7.28,1667851755.04877,,True
+1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_door1(isExtended:True)",8.68,1667851756.4510918,,True
+1,"(Vole1, update_location) ['lever_food', 'food_trough'] to lever_door1",9.52,1667851757.2897093,,True
+1,lever_door1(isExtended:True)_1_Presses,12.95,1667851760.7163267,,True
+1,lever_door1(isExtended:True)_1_Presses,13.3,1667851761.066214,,True
+1,lever_door1(isExtended:False)_Retract,17.98,1667851765.742853,,True
+1,Mode_Timeout_Round_1_Finish,20.76,1667851768.5300982,15.452228546142578,True

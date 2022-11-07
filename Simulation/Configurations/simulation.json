@@ -29,15 +29,15 @@
 
         
         {"name":"lever_food", 
-            "simulate":false, 
+            "simulate":true, 
             "simulate_with_fn":"lambda self, vole: self.set_press_count( self.threshold_condition['goal_value'] )"
         }, 
         {"name":"lever_door1", 
-            "simulate":false, 
+            "simulate":true, 
             "simulate_with_fn":"lambda self, vole: self.set_press_count( self.threshold_condition['goal_value'] )"
         },
         {"name":"lever_door2", 
-            "simulate":false
+            "simulate":true
         }, 
         {"name":"lever_door3", 
         "simulate":true, 
@@ -48,32 +48,32 @@
 
 
         {"name":"open_door1_button", 
-            "simulate":true
+            "simulate":false
         }, 
         {"name":"close_door1_button", 
-            "simulate":true
+            "simulate":false
         }, 
         {"name":"close_door2_button", 
-            "simulate":true
+            "simulate":false
         }, 
         {"name":"open_door2_button", 
-        "simulate":true}, 
+        "simulate":false}, 
 
 
 
         {"name":"food_trough",
-        "simulate":true, 
+        "simulate":false, 
         "simulate_with_fn": "lambda self, vole: self.sim_vole_retrieval()"
         }, 
 
 
 
         {"name":"beam1_door1", 
-        "simulate":true, 
+        "simulate":false, 
         "simulate_with_fn": "lambda self, vole: self.simulate_break_for_n_seconds( random.uniform(0.3, 1.3) )"
         }, 
         {"name":"beam2_door2", 
-        "simulate":true, 
+        "simulate":false, 
         "simulate_with_fn": "lambda self, vole: self.simulate_break_for_n_seconds( random.uniform(0.3, 1.3) )"
         }
         
