@@ -21,4 +21,31 @@ For example, within a door's open() function we write:
 
 ## Map
 
+    Map class represents the physical layout of the box, and has access to all of the physical (or simulated) objects that control the box. Map class packages up all of the hardware objects into a single object that can be accessed by a Control Mode or a Simulation Script. 
+
+```mermaid
+graph LR
+A[Chamber1 Main] -- Edge12 --- B[Chamber2]
+Chamber3 -- Edge13  --- A
+```
+
+```mermaid 
+flowchart TB
+    subgraph Chamber3
+        
+    end
+
+    subgraph Chamber1 
+        direction LR
+        lever1
+        food_lever 
+        food_dispenser/trough
+    end 
+
+    Chamber2 --> Chamber1
+
+
+
+```
+
 ## ModeABC

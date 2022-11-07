@@ -243,9 +243,9 @@ class interactableABC:
             self.isSimulation = False 
             
         def __set_servo(self): 
-            #if SERVO_KIT is None: 
-            #    # simulating servo kit
-            #    return None 
+            if SERVO_KIT is None: 
+                # simulating servo kit
+                return None 
             
             try: 
                 if self.servo_type == 'positional':
@@ -297,13 +297,14 @@ class interactableABC:
         '''
         pass 
 
-    def activate(self):
+    def activate(self, initial_activation = True ):
         ''' 
         called at the start of each mode. begins tracking for thresholds for both itself as well as its dependents. 
         '''
 
-        try: self.validate_hardware_setup() # validate that this hardware was properly setup (e.g. the button and servos ) if interactable is not being simulated
-        except Exception as e: print(e), sys.exit(0)
+        if initial_activation: 
+            try: self.validate_hardware_setup() # validate that this hardware was properly setup (e.g. the button and servos ) if interactable is not being simulated
+            except Exception as e: print(e), sys.exit(0)
 
         control_log(f"(InteractableABC.py, activate) {self.name} has been activated. starting contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
         
@@ -462,10 +463,13 @@ class lever(interactableABC):
         ''' sets self.buttonObj.num_pressed to specified value '''
         self.buttonObj.num_pressed = count 
         
-    def activate(self): 
+    def activate(self, initial_activation = True ): 
         ''' activate lever as usual, and once it is active we can begin the button object listening for presses'''
-        interactableABC.activate(self)
-        self.buttonObj.listen_for_event()
+        if self.active: 
+            return # was already active. This is to avoid calling buttonObj.listen_for_event multiple times, as it is a threaded funciton.
+        if self.isExtended: 
+            interactableABC.activate(self, initial_activation)
+            self.buttonObj.listen_for_event() # Threaded fn call 
 
 
     def validate_hardware_setup(self):
@@ -514,11 +518,12 @@ class lever(interactableABC):
         """Extends the lever to the correct value
         """
         control_log(f'(InteractableABC, Lever.extend) extending {self.name} ')
-        self.activate()
+        self.activate(initial_activation=False)
 
         if self.isExtended: 
             # already extended 
             self.event_manager.print_to_terminal(f'(InteractableABC, Lever.extend) {self.name} already extended.')
+            self.activate(initial_activation=False)
             return 
 
         self.event_manager.new_timestamp(f'{self}_Extend', time.time())
@@ -526,6 +531,7 @@ class lever(interactableABC):
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation: 
             self.isExtended = True 
+            self.activate(initial_activation=False)
             # self.activate() 
             return 
         

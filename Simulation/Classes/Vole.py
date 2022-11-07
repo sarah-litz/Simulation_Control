@@ -480,7 +480,7 @@ class Vole:
             goal_prev = getInteractable(goal_component.prevval)
 
         # print(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
-        self.event_manager.new_timestamp(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}', time.time(), print_to_screen = False)
+        self.event_manager.new_timestamp(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}', time.time(), print_to_screen = True)
         # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         vole_log(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         
