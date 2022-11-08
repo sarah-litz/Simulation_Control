@@ -1,12 +1,11 @@
 
 Control Mode,Lever Tests: Lever 1,<class 'Control.Scripts.Testing_Hardware.Lever1'>
 Round,Event,Modal Time,Time,Duration,In Timeout?
-0,Mode_Setup,1.75,1667853022.605794,,False
-1,Mode_Timeout_Round_1_Start,2.19,1667853023.045493,,True
-1,lever_door1(isExtended:False)_Extend,2.2,1667853023.05818,,True
-1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_food(isExtended:False)",3.67,1667853024.526666,,True
-1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_door1(isExtended:True)",4.56,1667853025.4164,,True
-1,"(Vole1, update_location) ['lever_food', 'food_trough'] to lever_door1",5.03,1667853025.8797498,,True
-1,lever_door1(isExtended:True)_1_Presses,6.9,1667853027.749505,,True
-1,lever_door1(isExtended:False)_Retract,13.0,1667853033.85666,,True
-1,Mode_Timeout_Round_1_Finish,17.78,1667853038.63218,15.586687088012695,True
+0,Mode_Setup,2.28,1667866855.3296902,,False
+1,Mode_Timeout_Round_1_Start,2.89,1667866855.9347572,,True
+1,lever_door1(isExtended:False)_Extend,2.91,1667866855.9586802,,True
+1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_door1(isExtended:True)",4.72,1667866857.771224,,True
+1,"(Vole1, update_location) ['lever_food', 'food_trough'] to lever_door1",5.04,1667866858.086179,,True
+1,lever_door1(isExtended:True)_1_Presses,6.46,1667866859.510577,,True
+1,lever_door1(isExtended:False)_Retract,13.69,1667866866.740631,,True
+1,Mode_Timeout_Round_1_Finish,18.94,1667866871.9850528,16.05029559135437,True

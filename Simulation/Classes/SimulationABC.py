@@ -134,7 +134,7 @@ class SimulationABC:
                 v.active = False 
 
             sim_thread.join()
-            print(f'RETURNIGN FROM RUN_ACTIVE_MODE_SIM. Sim Thread {sim_thread.name} // isAlive:', sim_thread.is_alive())
+            print(f'RETURNING FROM RUN_ACTIVE_MODE_SIM(). Sim Thread {sim_thread.name} // isAlive:', sim_thread.is_alive())
         
         return sim_thread
         

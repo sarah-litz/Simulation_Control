@@ -479,15 +479,16 @@ class Vole:
             goal_nxt = getInteractable(goal_component.nextval)
             goal_prev = getInteractable(goal_component.prevval)
 
-        # print(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
-        self.event_manager.new_timestamp(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}', time.time(), print_to_screen = True)
-        # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         vole_log(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         
         if curr_interactable == goal_interactable: 
             # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
             vole_log(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
             return True 
+        
+        self.event_manager.new_timestamp(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}', time.time(), print_to_screen = True)
+        # print(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
+        # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         
         if self.prev_component == goal_component: 
             # Case: Vole is Turning Around!
