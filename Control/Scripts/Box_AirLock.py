@@ -8,9 +8,9 @@ from ..Classes.ModeABC import modeABC
 
 from ..Logging.logging_specs import script_log, control_log
 
+'''
+Home Cage's Airlock Logic 
 
-
-class AirLockDoorLogic(modeABC):
     """
     Description: 
         << TODO >>
@@ -28,28 +28,25 @@ class AirLockDoorLogic(modeABC):
         -> Otherwise, we will assume that there is only a single vole in between the 2 doors, and we should procede by opening the next door so the vole can walk into the empty chamber. 
 
     """
-
+'''
+        
+class Chamber1Access(modeABC): 
     def __init__(self, timeout, rounds, ITI, map, output_fp):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
-        return 'Airlock Doors to Separate Voles'
+        return 'Both Voles starting in Chamber 1 ( the food/water chamber ) '
     
     def setup(self): 
-
-        ''' any tasks to setup before run() gets called '''
-        if not self.map.door1.isOpen: 
-            self.map.door1.open() 
-        if self.map.door3.isOpen:
-            self.map.door3.close() 
-        if self.map.door2.isOpen:
-            self.map.door2.close() 
-        if self.map.door4.isOpen:
-            self.map.door4.close() 
-
-    def run(self):
-
-        script_log(f'------------------------ \n\n{self} is Running!')
+        ''' '''
+        self.map.rfid1.threshold_event_queue.clear()
+        self.map.beam1_door1.clear()
+        
+        if not self.map.door1.isOpen(): self.map.door1.open()
+        if self.map.door2.isOpen(): self.map.door2.close()
+    
+    def run(self): 
+        ''' allow only one vole at a time to travel into chamber 2'''
 
         def num_pings_by_vole(rfid, vole_tag): 
             ''' sorts the rfid pings by which vole caused that ping '''
@@ -59,18 +56,16 @@ class AirLockDoorLogic(modeABC):
                     count += 1      
             return count
 
-        def check_for_move(b1, wait = False): 
+        def check_for_move(b, wait = False): 
             ''' returns when a vole crosses over b1 ( a beam object ) '''
             while self.active: 
-                try: return b1.threshold_event_queue.get_nowait()
+                try: return b.threshold_event_queue.get_nowait()
                 except queue.Empty: pass 
                 if wait is False: 
                     return None # if wait is false then we do not loop because we just check once to see a move occurred 
             return None # mode deactivated, no move ever completed. 
         
-        def close_door_and_check_beam(beam, door): 
-            ''' performs another beam check, closes the door, and performs another beam check to verify that voles are separate'''
-
+       
         # List beams in order that we want to check them when the function executes
         beam1 = self.map.beam1_door1 # Door that starts open that we will close 
         beam2 = self.map.beam2_door2 # Door that starts closed that we will open 
@@ -145,13 +140,131 @@ class AirLockDoorLogic(modeABC):
                 print(f'Successfully Separated Voles! Vole in Edge: {[*(str(v) for v in voles_in_edge)]}')
                 self.map.draw_map()
 
-                # Open The Next Door 
-                self.map.door2.open() 
-
-                return
-
-
+                return Edge12Access
         return 
+
+
+class Edge12Access(modeABC): 
+    ''' voles were successfuly separated in the airlock movement mode
+    this mode procedes with allowing a singular vole time in chamber2 and tracking its movement between edge12 and chamber2 '''
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
+
+    def __str__(self): 
+        return 'Edge Access for Movement into Chamber2'
+    
+    def run(self):
+
+        # Open The Door to allow vole access into chamber2
+        self.map.door2.open() 
+
+        # wait for a beam break to occur to confirm that the vole travels into chamber2 
+        def check_for_move(b, wait = False): 
+            ''' returns when a vole crosses over b1 ( a beam object ) '''
+            while self.active: 
+                try: return b.threshold_event_queue.get_nowait()
+                except queue.Empty: pass 
+                if wait is False: 
+                    return None # if wait is false then we do not loop because we just check once to see a move occurred 
+            return None # mode deactivated, no move ever completed.        
+        
+
+        move = check_for_move(self.map.beam1_door2, wait=True)
+        if move is None: 
+            # experiment timed out
+            return 
+        else: 
+            return Chamber2Access
+        
+class Chamber2Access(modeABC): 
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
+
+    def __str__(self): 
+        return 'Voles in separate chambers'
+
+    def setup(self):
+        ''' reset rfid threshold event queue so we can only look for new ones (all pings will remain in the rfid's ping_history 
+            reset beam threshold event queue so we can only look for new ones (all breaks will remain in the rfid's break_history ''' 
+        self.map.rfid1.threshold_event_queue.clear()
+        self.map.beam1_door1.clear()
+
+        if self.map.door1.isOpen(): self.map.door1.close()
+        if not self.map.door2.isOpen(): self.map.door2.open()
+
+    def run(self): 
+        ''' 
+        one vole in chamber 1 (food chamber) and one vole is either in edge 12 or chamber 2 (wheel chamber) 
+        only allow vole movement from chamber 2 into chamber 1 to prevent both voles from being in chamber 2
+        an rfid ping ( that is not followed by a beam2 break ) 
+        '''
+
+        def num_pings_by_vole(rfid, vole_tag): 
+            ''' sorts the rfid pings by which vole caused that ping '''
+            count = 0
+            for e in list(rfid.threshold_event_queue.queue): 
+                if e.vole_tag == vole_tag: 
+                    count += 1      
+            return count
+
+        def check_for_move(b, wait = False): 
+            ''' returns when a vole crosses over b ( a beam object or an rfid object ) '''
+            while self.active: 
+                try: return b.threshold_event_queue.get_nowait()
+                except queue.Empty: pass 
+                if wait is False: 
+                    return None # if wait is false then we do not loop because we just check once to see a move occurred 
+            return None # mode deactivated, no move ever completed. 
+
+
+        # track rfid1 for pings. 
+        #   If the ping comes from the vole that we know to be in chamber2/edge12, procede with closing door2 to allow the vole back into chamber1 
+        #   If the ping comes from the vole that we thought was in chamber1, then close door2 and call the configuring mode to figure out where the voles are. 
+        
+        # figure out which vole should be in edge12/chamber2
+        track_v = None 
+        for v in self.map.voles: 
+            if v.curr_loc != map.get_chamber(1): 
+                if track_v is None: 
+                    track_v = v
+                else: 
+                    raise Exception('More than one vole has its location set to either chamber2/edge12')
+        if track_v is None: 
+            raise Exception('All voles have their location set to chamber 1.')
+        
+
+        while self.active: 
+            
+            self.setup() # puts box back in this mode's start state 
+
+            while self.active: 
+
+                # begin checking beam1_door2 for breaks 
+                move = check_for_move(self.map.beam1_door2, wait=True) # waits until a beam break occurs 
+                if move is None: 
+                    return 
+                
+
+                # vole triggered a new beam break; begin closing door2 to start airlock move process 
+                self.map.door2.close() # close door2 behind the vole so it cannot access beam2 again 
+
+                # Check for new beam2 breaks
+                move = check_for_move(self.map.beam1_door2, wait=False)
+                if move is not None: 
+                    print('vole traveled back into chamber2 before door could close. open door 2 again')
+                    break 
+                    
+                
+                # begin checking rfid1 for pings 
+                ping = check_for_move(self.map.rfid1, wait=True) # waits until a ping occurs
+                if ping is None: 
+                    return 
+                if ping.vole_tag != track_v.tag: 
+                    raise Exception('More than one vole has its location set to either chamber2/edge12')
+
+                self.map.door1.open() # Open The Door to allow vole access into chamber2
+                return Chamber1Access
+
 
 
 

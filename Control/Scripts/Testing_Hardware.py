@@ -142,6 +142,18 @@ class Lever1(modeABC):
         time.sleep(10)
         self.map.lever_door1.retract()
 
+        try: pressed = self.map.lever_door1.threshold_event_queue.get_nowait() 
+        except queue.Empty: pressed = None 
+        
+        if pressed is not None: 
+            # Pass Control to different mode :: Runtime Mode Creation
+            lf = LeverFood(self.timeout, self.rounds, self.ITI, self.map, self.output_fp)
+            lf.startTime = self.startTime 
+            return lf
+            
+        else: 
+            return 
+
 class Lever2(modeABC): 
     '''
     description: extends and retracts levers

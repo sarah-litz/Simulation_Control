@@ -1,11 +1,4 @@
 
-Control Mode,Lever Tests: Lever 1,<class 'Control.Scripts.Testing_Hardware.Lever1'>
-Round,Event,Modal Time,Time,Duration,In Timeout?
-0,Mode_Setup,2.28,1667866855.3296902,,False
-1,Mode_Timeout_Round_1_Start,2.89,1667866855.9347572,,True
-1,lever_door1(isExtended:False)_Extend,2.91,1667866855.9586802,,True
-1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_door1(isExtended:True)",4.72,1667866857.771224,,True
-1,"(Vole1, update_location) ['lever_food', 'food_trough'] to lever_door1",5.04,1667866858.086179,,True
-1,lever_door1(isExtended:True)_1_Presses,6.46,1667866859.510577,,True
-1,lever_door1(isExtended:False)_Retract,13.69,1667866866.740631,,True
-1,Mode_Timeout_Round_1_Finish,18.94,1667866871.9850528,16.05029559135437,True
+Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
+0,Mode_Setup,1.89,1668038051.1487,,False,Both Voles starting in Chamber 1 ( the food/water chamber ) 
+1,Early_Interrupt_Caused_Exit,8.63,1668038057.884136,,True,Both Voles starting in Chamber 1 ( the food/water chamber ) 

@@ -29,15 +29,19 @@ class EventManager:
             self.output_fp = self.mode.output_fp
             self.setup_output_file()
     
-    def update_for_new_mode(self, mode): 
+    def update_for_new_mode(self, mode, initial_enter = True ): 
         ''' map contains 1 instance of event manager that will be shared among all the modes. 
         this gets called when one mode ends and another starts running '''
         self.mode = mode
-        self.output_fp = mode.output_fp 
-        self.setup_output_file()
-    def activate(self, new_mode = None):
+        if initial_enter: 
+            # if multiple modes are chained together, then we want to keep writing to the same output file. 
+            # we only perform the following actions if it is the first mode in a series of modes to run. 
+            self.output_fp = mode.output_fp 
+            self.setup_output_file()
+
+    def activate(self, new_mode = None, initial_enter = True):
         if new_mode is not None: 
-            self.update_for_new_mode(new_mode) 
+            self.update_for_new_mode(new_mode, initial_enter) 
         self.active = True 
         self.watch_write_queue()
         return 
@@ -64,10 +68,9 @@ class EventManager:
         with open(self.output_fp, 'w') as file:  # w - mode start at the BEGINNING of a file, so will overwrite any existing contents if the file already existed.
             spacer = []
             title = [f'Control Mode', str(self.mode), type(self.mode)]
-            header = ['Round', 'Event', 'Modal Time', 'Time', 'Duration', 'In Timeout?']
+            header = ['Round', 'Event', 'Modal Time', 'Time', 'Duration', 'In Timeout?', 'Mode Name']
             csv_writer = csv.writer(file, delimiter = ',')
             csv_writer.writerow(spacer)
-            csv_writer.writerow(title)
             csv_writer.writerow(header)
             print('done output file setup')
             return 
@@ -87,7 +90,7 @@ class EventManager:
             csv_writer = csv.writer(f, delimiter=',')
             while len(self.write_queue.queue) > 0: 
                 item = self.write_queue.get() 
-                csv_writer.writerow([None, item.event, item.modal_time, item.time, item.duration, item.inTimeout])
+                csv_writer.writerow([item.round, item.event, item.modal_time, item.time, item.duration, item.inTimeout, item.mode])
             f.close()
             return 
         if len(self.write_queue.queue) > 19: 
@@ -112,7 +115,8 @@ class EventManager:
                     item_raw_time = item.time
                     item_duration = item.duration
                     item_in_timeout = item.inTimeout
-                    csv_writer.writerow([item_round, item_event, item_mode_time, item_raw_time, item_duration, item_in_timeout])
+                    item_mode = item.mode
+                    csv_writer.writerow([item_round, item_event, item_mode_time, item_raw_time, item_duration, item_in_timeout, item_mode])
                     file.flush() 
             
             file.close() 
@@ -160,7 +164,7 @@ class EventManager:
             print(f'Skipping timestamp creation for {event_description} because no mode is currently active.')
             return None
 
-        ts = self.Timestamp(round_num=self.mode.current_round, event_description=event_description, mode_start_time=self.mode.startTime, inTimeout = self.mode.inTimeout, time = time, duration = duration)
+        ts = self.Timestamp(mode = str(self.mode), round_num=self.mode.current_round, event_description=event_description, mode_start_time=self.mode.startTime, inTimeout = self.mode.inTimeout, time = time, duration = duration)
         if print_to_screen: 
             ts.print_timestamp()
         # Add to Queue so timestamp is written to output csv file 
@@ -172,7 +176,8 @@ class EventManager:
 
     class Timestamp:
         ''' Specific/Instantaneous Event Occurrence'''
-        def __init__( self, round_num, event_description, mode_start_time, inTimeout, time = time.time(), duration = None): 
+        def __init__( self, mode, round_num, event_description, mode_start_time, inTimeout, time = time.time(), duration = None): 
+            self.mode = mode
             self.round = round_num 
             self.event = event_description
             self.time = time 

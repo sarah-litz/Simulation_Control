@@ -33,10 +33,14 @@ class SimulationABC:
         
         self.map = modes[0].map # default to the map of the first mode in the list. We will update map to the active modes map throughout experiemnt. 
 
+        self.event_manager = self.map.event_manager 
+
         # configure sim: updates interactables w/ simulation attributes & instantiates voles 
         self.configure_simulation(cwd + '/Simulation/Configurations/simulation.json') 
 
         self.simulation_func = {} # dict for pairing a mode with a simulation function ( or list of simulation functions )
+
+        self.control_sim_pairs = {} # dict (assigned in __main__) that pairs a Mode Name with a Simulation Class
 
         self.modes = modes
 
@@ -79,15 +83,25 @@ class SimulationABC:
         #
         # Check for if simulation function exists for the current mode 
         if current_mode not in self.simulation_func.keys(): # no simulation function specified for this mode 
-            # do nothing loop until current mode is inactive 
-            sim_log(f'(Simulation.py, run_sim) No simulation function for {type(current_mode)}.')
-            print(f'(Simulation.py, run_sim) No simulation function for {type(current_mode)}.')      
-            while current_mode.active: 
-                time.sleep(0.5)
-            return 
+            
+            # Check dictionary to make sure a simulation wasn't specified there 
+            if current_mode.__class__.__name__ in self.control_sim_pairs: 
+                
+                # create the simulation and run it!
+                sim = self.control_sim_pairs[current_mode.__class__.__name__]
+                self.simulation_func[current_mode] = sim(self.current_mode)
+            
+            else: 
+
+                # do nothing loop until current mode is inactive 
+                sim_log(f'(Simulation.py, run_sim) No simulation function for {type(current_mode)}.')
+                print(f'(Simulation.py, run_sim) No simulation function for {type(current_mode)}.')      
+                while current_mode.active: 
+                    time.sleep(0.5)
+                return 
 
    
-        sim_log(f'(Simulation.py, run_sim) {current_mode} is paired with the simulation function: {[*(f.__name__ for f in self.simulation_func[current_mode])]}')
+        sim_log(f'(Simulation.py, run_sim) {current_mode} is paired with the simulation function:  {self.simulation_func[current_mode]}') # {[*(f.__name__ for f in self.simulation_func[current_mode])]}')
 
         # print(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
         vole_log(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
@@ -99,14 +113,21 @@ class SimulationABC:
 
         #
         # Run the Mode's Simulation Function in separate thread. Exit when the running mode becomes inactive or exits its timeout interval. 
-        sim_fn_list = self.simulation_func[current_mode]
+        # sim_fn_list = self.simulation_func[current_mode]
+        
+        sim = self.simulation_func[current_mode]
 
         with current_mode.simulation_lock: # grab lock to denote that simulation is running 
-            for sim_fn in sim_fn_list: 
+            '''for sim_fn in sim_fn_list: 
                 self.map.event_manager.print_to_terminal(f'\n     (SimulationABC.py, run_sim) New Simulation Function Running: {sim_fn.__name__}')
                 sim_thread = threading.Thread(target = sim_fn, daemon=True)
                 sim_thread.name = 'run sim function'
-                sim_thread.start() 
+                sim_thread.start() '''
+            if sim is not None: 
+                self.map.event_manager.print_to_terminal(f'\n     (SimulationABC.py, run_sim) New Simulation Function Running: {sim}')
+                sim_thread = threading.Thread(target = sim.run, daemon=True)
+                sim_thread.name = 'simulations run function'
+                sim_thread.start()
 
                 while current_mode.inTimeout and current_mode.active and sim_thread.is_alive(): 
                     
@@ -114,7 +135,8 @@ class SimulationABC:
 
                 if current_mode.inTimeout is False or current_mode.active is False: 
                     # mode ended, don't finish running other sim_fn
-                    break 
+                    # break 
+                    pass   
                         
             # If current mode ended before the current simulation, try to exit from simulation cleanly.... 
             if sim_thread.is_alive(): 
@@ -123,11 +145,11 @@ class SimulationABC:
                 sim_log(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended with simulation still running.')
                 
             if not current_mode.active: 
-                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Mode ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
+                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Mode ended, final simulation function that ran was {sim}.') #  ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
             if not current_mode.inTimeout: 
-                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Modes Timeout ended, final simulation function that ran was {sim_fn.__name__}. ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
+                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Modes Timeout ended, final simulation function that ran was {sim}.') # ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
             if not sim_thread.is_alive(): 
-                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Finished all simulations assigned to mode {current_mode}. Sim Functions that completed this mode: {[fn.__name__ for fn in sim_fn_list]}')
+                self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Finished all simulations assigned to mode {current_mode}. ') # Sim Functions that completed this mode: {[fn.__name__ for fn in sim_fn_list]}')
             
             # Set Voles to Inactive 
             for v in self.voles: 
@@ -155,13 +177,14 @@ class SimulationABC:
 
         # Validity Check that will only execute once # 
         ''' check validitity of the simulation functions that were set to notify user of potential errors as early as possible '''
-        for (mode, simFnList) in self.simulation_func.items(): 
+        '''for (mode, simList) in self.simulation_func.items(): 
              # WARN SOMEONE IF THEY PASS IN FUNCITON FROM A DIFFERENT CLASS BECAUSE THEN THE BOX BASICALLY RESETS AKA IT WONT RECALL WHERE THE VOLES LEFT OFF!
-            for simFn in simFnList:
-                if hasattr(self, simFn.__name__): 
-                    sim_log(f'{mode} is paired with {simFn.__name__}')
+            for sim in simList:
+                if hasattr(self, sim.__name__): 
+                    sim_log(f'{mode} is paired with {sim.__name__}')
                 else: 
-                    raise Exception(f'(SimulationABC.py, run_sim()) Error: specified {simFn} as a simulation function for {self}. Because this simulation function does not Belong To {self}, 2 diff simulations will get created, and Voles will reset to initial positions.')
+                    raise Exception(f'(SimulationABC.py, run_sim()) Error: specified {sim} as a simulation function for {self}. Because this simulation function does not Belong To {self}, 2 diff simulations will get created, and Voles will reset to initial positions.')
+        '''
                        
         # NOTE: the function that we call should potentially also run on its own thread, so then all this function does is 
         # loop until the active mode is not in Timeout or the current mode is inactive. Basically will just allow for a more immediate 
@@ -204,12 +227,15 @@ class SimulationABC:
 
     def get_active_mode(self): 
         '''returns the mode object that is currently running ( assumes there is never more than one active mode at a given point in time ) '''
-        for mode in self.modes: 
+        '''for mode in self.modes: 
             if mode.active: 
-                return mode  
+                return mode  '''
+        
+        # If mode is running, then it gets registered with the event_manager 
+        if self.event_manager.mode is not None and self.event_manager.mode.active: 
+            return self.event_manager.mode 
         return None
-    
-    
+        
     #
     # Vole Getters and Setters 
     #

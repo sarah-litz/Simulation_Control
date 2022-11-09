@@ -526,14 +526,11 @@ class lever(interactableABC):
             self.activate(initial_activation=False)
             return 
 
-        self.event_manager.new_timestamp(f'{self}_Extend', time.time())
 
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation: 
             self.isExtended = True 
             self.activate(initial_activation=False)
-            # self.activate() 
-            return 
         
 
         #
@@ -553,7 +550,8 @@ class lever(interactableABC):
             
             self.isExtended = True 
 
-            return 
+        return self.event_manager.new_timestamp(f'{self}_Extend', time.time())
+        
 
             
     #@threader
@@ -561,12 +559,11 @@ class lever(interactableABC):
         """Retracts lever to the property value
         """
         control_log(f'(InteractableABC, Lever.retract) retracting {self.name} ')
-        self.deactivate()
 
         if not self.isExtended: 
             self.event_manager.print_to_terminal(f'(InteractableABC, Lever.retract) {self.name} already retracted.')
             self.event_manager.new_timestamp(f'{self}_Already_Retracted', time.time())
-            # already retracted 
+            self.deactivate()
             return 
 
         
@@ -574,6 +571,7 @@ class lever(interactableABC):
         if self.isSimulation: 
             self.isExtended = False 
             self.event_manager.new_timestamp(f'{self}_Retract', time.time())
+            self.deactivate()
             return 
         
         #
@@ -583,6 +581,7 @@ class lever(interactableABC):
             # set to the fully retracted angle 
             self.servoObj.servo.angle = self.retracted_angle
             self.isExtended = False 
+            self.deactivate()
             return 
 
 

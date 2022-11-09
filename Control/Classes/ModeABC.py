@@ -14,6 +14,7 @@ import inspect
 from Logging.logging_specs import control_log
 import time
 import threading
+from threading import Thread
 import queue 
 import traceback
 from .InteractableABC import rfid
@@ -23,13 +24,12 @@ import sys
 
 
 
-
 # Classes
 class modeABC:
     """This is the base class, each mode will be an obstantiation of this class.
     """
 
-    def __init__(self, timeout = None, rounds = None, ITI = None, map = None, output_fp = None, enterFuncs = None, exitFuncs = None, bypass = False, **kwargs):
+    def __init__(self, timeout = None, rounds = None, ITI = None, map = None, output_fp = None, startTime = time.time(), enterFuncs = None, exitFuncs = None, bypass = False, **kwargs):
         
 
         # Set the givens
@@ -43,7 +43,7 @@ class modeABC:
         self.optional = kwargs
         self.inTimeout = False 
         self.output_fp = output_fp
-        self.startTime = time.time()
+        self.startTime = startTime
         self.event_manager = self.map.event_manager
 
 
@@ -74,57 +74,105 @@ class modeABC:
             t.start() 
             return t
         return run 
-
+    
 
     #
     # Called prior to running a Mode to ensure everything gets setup properly before a script starts running
     #
-    def enter(self):
+
+    def enter(self, initial_enter = True):
         try: 
             """This method runs when the mode is entered from another mode. Essentially it is the startup method. This differs from the __init__ method because it should not run when the object is created, rather it should run every time this mode of operation is started. 
             """
-            # Set Start Time now that Mode has been entered and interactables activated 
-            self.startTime = time.time()
 
-            print(f'\nnew mode entered: {self}') # print to console 
-            control_log(f'New Mode Entered: {self}')
+            if initial_enter: 
 
-            self.map.activate_interactables() # ensure that interactables are running for the new mode 
+                #
+                # Parent Mode: Set attributes and activate interactables before runnning mode. 
+                # 
+
+                # Set Start Time now that Mode has been entered and interactables activated 
+                self.startTime = time.time()
+
+                print(f'\nnew mode entered: {self}') # print to console 
+                control_log(f'New Mode Entered: {self}')
+
+                self.map.activate_interactables() # ensure that interactables are running for the new mode 
+
+                rounds = self.rounds 
+
+                # Startup Event Manager
+                self.event_manager.activate(new_mode = self, initial_enter=True) # Start Tracking for Mode Events 
             
+            else:
+        
+                #                         
+                # This Mode was Created at Runtime  
+                #    
+                                     
+                print(f'\nInner mode entered: {self}') # print to console 
+                control_log(f'Inner Mode Entered: {self}')
+
+                rounds = 1
+
+                self.event_manager.activate(new_mode = self, initial_enter=False) # Start Tracking for Mode Events 
+            
+
             #
-            # Mode Setup
+            # Start Running Mode ( begins with Mode Setup )
             #
-            # Startup Event Manager
-            self.event_manager.activate(new_mode = self) # Start Tracking for Mode Events 
             self.event_manager.new_timestamp(event_description='Mode_Setup', time=time.time())
             
             # Mode Prep ( Run in Separate Thread so we can still catch any Interrupts )
-            setup_thread = threading.Thread(target=self.setup, daemon=False)
-            setup_thread.start()
-            setup_thread.join()
+            try: self.setup()
+            except Exception as e: 
+                print('(ModeABC.py, enter()) Exception Thrown in call to mode setup()): ', e)
             
             self.active = True # mark this mode as being active, triggering a simulation to start running, if a simulation exists
-            self.rfidListener() # starts up listener that checks the shared_rfidQ ( if no rfids are present, returns immediately )
+            self.rfidListener() # starts up listener that checks the shared_rfidQ ( if no rfids are present, returns immediately ) --> Relies on the mode being active! 
 
-            for idx in range(1, self.rounds+1): 
-                self.current_round = idx 
+            for idx in range(1, rounds+1): # Initial mode of the round dictates how many rounds there will be. Any "inner" mode will run once each round. 
+
+                if initial_enter: 
+                    # Parent Mode iterates its index, and will dictate the round number for all child modes. 
+                    self.current_round = idx 
+
+                print(f'Mode {self} Starting Round {self.current_round}')
                 control_log(f'Mode {self} Starting Round {self.current_round}')
 
                 # Starting Mode Timeout and Running the Start() Method of the Mode Script!
                 self.inTimeout = True 
-                mode_thread = threading.Thread(target = self.run, daemon = True) # start running the run() funciton in its own thread as a daemon thread
-                mode_thread.start() 
+                try: 
+                    next_mode = self.run() # Run the Mode 
+                    self.exit() 
+                except Exception as e: 
+                    print(f'{str(self)} encountered an error during its run() or exit() function. Returning now.')
+                    return 
+
+                if next_mode is not None: 
+                    
+                    print(f'MODE W/IN A MODE: Transferring Control to {str(next_mode)} for round {idx}')
+                    next_mode.current_round = idx # to keep round numbers consistent, manually set the round number. ( Otherwise round will be set back to 1 in the output file )
+                    next_mode.enter(initial_enter=False) # Recursively call enter() on next mode! 
+            
+                if initial_enter is False: 
+                    # if Inner mode, only run once so break out of loop immediately. 
+                    return  # Acts as a Base Case to Recursive Call! the top level call ( the initial mode entered ) will call final_exit. 
 
                 # countdown for the specified timeout interval 
-                self.event_manager.new_countdown(event_description = f"Mode_Timeout_Round_{self.current_round}", duration = self.timeout, primary_countdown = True)
+                # self.event_manager.new_countdown(event_description = f"Mode_Timeout_Round_{self.current_round}", duration = self.timeout, primary_countdown = True)
+                
+                self.event_manager.activate(new_mode = self, initial_enter=False)
 
                 if idx < self.rounds: 
                     # Prep for next round ( does not include the final round )
-                    self.new_round(mode_thread)
+                    self.new_round()
 
-            self.exit()   
-            mode_thread.join() # ensure that the mode's run() thread finishes before returning 
         
+            if initial_enter: self.final_exit() # Deactivates Interactables 
+            else: return # Acts as a Base Case to Recursive Call! the top level call ( the initial mode entered ) will call final_exit. 
+
+
         except Exception as e: 
             ''' if any errors/exceptions get raised, code will fall into this except statement where we can ensure nothing gets left running '''
             print(e) # printing exception message
@@ -142,7 +190,7 @@ class modeABC:
         self.simulation_lock.release()
 
         # ensure that mode finishes 
-    def new_round(self, mode_thread): 
+    def new_round(self, mode_thread=None): 
         ''' called inbetween rounds of the same mode to pause for a inter trial interval '''
         self.inTimeout = False # should cause simulation to exit 
         self.active = False # should cause mode to exit 
@@ -152,7 +200,7 @@ class modeABC:
         self.simulation_lock.release()
 
         # Ensure Mode Thread Cleanly Exits before we continue 
-        mode_thread.join()
+        if mode_thread is not None: mode_thread.join()
 
         ''' Inter-Trial Time Pauses Here '''
         self.event_manager.new_countdown(event_description = f'Inter-Trial Interval', duration = self.ITI, primary_countdown = True)
@@ -171,6 +219,17 @@ class modeABC:
         self.simulation_lock.acquire() # if sim is running, wait for lock to ensure that it exits cleanly
         self.simulation_lock.release() # immediately release so next sim can use it 
 
+        return 
+    
+    def final_exit(self): 
+        
+        print(f"{self} finished its Timeout Period and is now Exiting")
+        self.inTimeout = False # Should cause simulation to exit 
+        self.active = False 
+
+        # Waits on Sim to reach clean exiting point # 
+        self.simulation_lock.acquire() # if sim is running, wait for lock to ensure that it exits cleanly
+        self.simulation_lock.release() # immediately release so next sim can use it 
         # Deactivate Interactables and Event Manager
         self.map.deactivate_interactables(clear_threshold_queue = True) # empties the interactable's threshold event queue and sets active = False
         self.event_manager.deactivate() # Stop Event Tracking for this Mode 
