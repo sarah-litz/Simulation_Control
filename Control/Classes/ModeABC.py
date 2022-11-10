@@ -144,13 +144,19 @@ class modeABC:
                 self.inTimeout = True 
                 try: 
                     next_mode = self.run() # Run the Mode 
+                    # self.event_manager.new_countdown(event_description = f"Mode_Timeout_Round_{self.current_round}", duration = self.timeout, primary_countdown = True)
                     self.exit() 
                 except Exception as e: 
+                    print(e)
                     print(f'{str(self)} encountered an error during its run() or exit() function. Returning now.')
                     return 
 
                 if next_mode is not None: 
                     
+                    # Create the next mode! 
+                    # next_mode(map = self.map, output_fp = self.output_fp, startTime = self.startTime)
+                    next_mode.startTime = self.startTime
+
                     print(f'MODE W/IN A MODE: Transferring Control to {str(next_mode)} for round {idx}')
                     next_mode.current_round = idx # to keep round numbers consistent, manually set the round number. ( Otherwise round will be set back to 1 in the output file )
                     next_mode.enter(initial_enter=False) # Recursively call enter() on next mode! 
@@ -323,6 +329,20 @@ class modeABC:
     def setup(self): 
         ''' any tasks for setting up box before run() gets called '''
         raise NameError(f'{__name__} this function should be overriden')
+
+
+    def threader(func):
+        ''' decorator function to run function on its own daemon thread '''
+        def run(*k, **kw): 
+            t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+            t.start() 
+            return t
+        return run 
+
+    @threader
+    def countdown_to_exit(self): 
+        self.event_manager.new_countdown(event_description = f"Mode_Timeout_Round_{self.current_round}", duration = self.timeout, primary_countdown = True)
+        self.exit() # exit the mode upon timeout ending
 
     def run(self):
         """This is the main method that contains the logic for the specific mode. It should be overwritten for each specific mode class that inherits this one. Because of that, if this function is not overwritten it will raise an error on its default. 

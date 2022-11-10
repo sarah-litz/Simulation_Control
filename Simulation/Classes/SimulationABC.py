@@ -232,7 +232,9 @@ class SimulationABC:
                 return mode  '''
         
         # If mode is running, then it gets registered with the event_manager 
+
         if self.event_manager.mode is not None and self.event_manager.mode.active: 
+            print('Active Mode: ', self.event_manager.mode)
             return self.event_manager.mode 
         return None
         

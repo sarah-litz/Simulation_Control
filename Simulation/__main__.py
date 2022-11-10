@@ -31,7 +31,7 @@ from .Scripts.OperantBoxSim import OperantSim
 from .Scripts.DynamicBoxSim import DynamicBoxSimulation
 from .Scripts.AirLockDoorsSim import AirLockDoorsSim
 from .Scripts.Operant_NewFormat import Lever1_Clicks, Lever2_Clicks, LeverFood_Clicks
-from .Scripts.AirLockSimClasses import Move1
+from .Scripts.AirLockSimClasses import MoveTo2, MoveTo1
 
 from .Classes.SimulationABC import SimulationABC
 
@@ -41,9 +41,9 @@ CONTROL_SIM_PAIRS = {
     "Lever1": Lever1_Clicks, 
     "Lever2": Lever2_Clicks, 
     "LeverFood": LeverFood_Clicks, 
-    "Chamber1Access": Move1, 
-    "Chamber2Access": None, 
-    "Edge12Access": None 
+    "Chamber1Access": MoveTo2, 
+    "Edge12Access": MoveTo2, 
+    "Chamber2Access": MoveTo1 
 }
 
 def main(): 

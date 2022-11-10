@@ -27,6 +27,7 @@ class SimulationScriptABC:
 
         self.mode = mode # the mode that this simulation script is paired with  
         self.map = self.mode.map 
+        self.event_manager = self.map.event_manager
         
     def run(self): 
         ''' override with logic '''
