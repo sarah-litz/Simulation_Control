@@ -25,11 +25,12 @@ from .ModeABC import modeABC
 from . import InteractableABC
 from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser, laser, beam
 from .Timer import EventManager 
+from .CANBus import CANBus 
 
 class Map: 
     def __init__(self, config_directory, map_file_name = None ): 
         ''' key is id assigned to vertex: Chamber instance'''
-        
+
         self.graph = {} # { chamberid: chamber instance }
 
         self.edges = [] # list of all edge objects that have been created ( can also access thru each Chamber instance )
@@ -45,6 +46,8 @@ class Map:
         if map_file_name is not None: 
             self.configure_setup(config_directory + f'/{map_file_name}')
         else: self.configure_setup(config_directory + '/map.json') 
+
+        self.canbus = CANBus(isserial=True)
 
     #
     # Map Visualization Methods

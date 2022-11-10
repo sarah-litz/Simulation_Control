@@ -836,6 +836,7 @@ class rfid(interactableABC):
         # self.shared_rfidQ.put((vole, self.ID, (time.time() + (random.randint(1,3) - random.random())) ))
         [self.shared_rfidQ.put((vole, self.ID, (time.time() + ( i - random.random() )))) for i in range (1,3)]
 
+
     class Ping: 
         ''' class for packaging rfid pings into pairs in order to represent the time that a vole first scanned an the rfid reader, 
         to the time that the vole left that rfid reader '''
