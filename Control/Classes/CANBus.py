@@ -8,10 +8,18 @@ http://www.zdonaldsonlab.com/
 Code located at - 
 """
 
-import can 
-import serial 
+try: 
+    import can 
+    from can.interfaces.serial.serial_can import *
+except Exception as e: 
+    print(e)
+    can = None 
+try: 
+    import serial 
+except Exception as e: 
+    print(e)
+    serial = None 
 import queue
-from can.interfaces.serial.serial_can import *
 import os
 import threading
 
