@@ -10,15 +10,17 @@ Code located at -
 
 import can 
 import serial 
+import queue
 from can.interfaces.serial.serial_can import *
 import os
 import threading
 
+
 class CANBus: 
 
-    def __init__(self, map, isserial=False): 
+    def __init__(self, isserial=False): 
         
-        try: self.config_canbus()
+        try: self.config_canbus(isserial)
         except OSError as e: 
             print(e)
             print('Simu')
@@ -26,7 +28,7 @@ class CANBus:
         self.shared_rfidQ = queue.Queue() # queue shared among the rfids 
 
     
-    def config_canbus(self):
+    def config_canbus(self, isserial):
 
         print('initializing can bus')
         try: 

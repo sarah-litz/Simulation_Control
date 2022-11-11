@@ -23,18 +23,18 @@ from .Timer import Visuals
 
 try: 
     import RPi.GPIO as GPIO 
-except ModuleNotFoundError as e: 
+except Exception as e: 
     print(e)
     GPIO = None
 try: 
     import pigpio as pigpio
-except ModuleNotFoundError as e: 
+except Exception as e: 
     print(e)
     pigpio = None
 try: 
     from adafruit_servokit import ServoKit
     SERVO_KIT = ServoKit(channels=16) 
-except ModuleNotFoundError as e: 
+except Exception as e: 
     print(e)
     SERVO_KIT = None
 
