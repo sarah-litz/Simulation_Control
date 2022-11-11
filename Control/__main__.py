@@ -13,7 +13,7 @@ from .Scripts.Box_AirLock import Chamber1Access
 from .Scripts.Testing_Software import EventManagerTests
 
 # OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv' # filepath to where the experiment output should get written 
-OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv'
+OUTPUT_CSV_FILE = '/home/pi/Simulation_Control/Control/Logging/output.csv'
 
 
 def main(): 

@@ -45,10 +45,11 @@ class modeABC:
         self.output_fp = output_fp
         self.startTime = startTime
         self.event_manager = self.map.event_manager
+        self.canbus = self.map.canbus
 
 
         # Shared rfidQ ( if no rfids present, this will just sit idle )
-        self.shared_rfidQ = queue.Queue() # if any of the rfids are pinged, a message will be added to this queue 
+        self.shared_rfidQ = self.canbus.shared_rfidQ # if any of the rfids are pinged, a message will be added to this queue 
                                         # listener is activated in the modes activate function
 
         # Set variables as the enter and exit strings
@@ -276,6 +277,10 @@ class modeABC:
                 
                 rfid_objects[i.ID] =  i # add to dictionary to keep track of rfids 
 
+                if not i.isSimulation: 
+                    # ensure that canbus class will add messages to this rfid to the shared_rfidQ 
+                    self.canbus.watch_RFIDs.append(i.ID)
+
                 setattr(rfid_objects[i.ID], 'shared_rfidQ', self.shared_rfidQ)  # assign all rfid objects the same instance of shared_rfidQ
 
         # Exit if No RFIDs Present # 
@@ -283,7 +288,9 @@ class modeABC:
             # if there are no rfid objects, exit now
             return 
         
+        self.canbus.listen() # Runs in its own DAEMON thread while ModeABC is active!
 
+        # Distribute Pings to specific RFIDs 
         # Wait For Pings and Notify Specific RFIDs if Pinged # 
         while self.active: 
 
@@ -302,7 +309,7 @@ class modeABC:
             # Mode Deactivated #
             if not self.active: 
                 # while loop was exited because self.active was set to False # 
-                return 
+                break 
             
 
             # Handle New Ping # 
@@ -322,6 +329,10 @@ class modeABC:
                 # # Make Updates to Voles Location in the Map Class # # 
                 self.map.update_vole_location( tag = ping[0], loc = self.map.get_location_object(rfid_interactable) )
 
+
+        # Mode Inactivated 
+        self.canbus.stop_listen()
+        return 
 
    #
    # Running Modal Scripts 

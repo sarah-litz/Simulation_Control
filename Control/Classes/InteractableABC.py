@@ -123,7 +123,7 @@ class interactableABC:
         def _setup_gpio(self): 
 
             if self.parent.isSimulation: 
-                control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
+                control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection.')
                 self.parent.messagesReturnedFromSetup += f'simulating gpio connection. '
                 return -1
 
@@ -821,6 +821,7 @@ class rfid(interactableABC):
         super().__init__(threshold_condition, name, event_manager)
         self.ID = ID 
         self.rfidQ = queue.Queue()
+
         
         # self.shared_rfidQ: after initialization, assinged a shared_rfidQ attribute in ModeABC. This is a shared queue among all of the rfids. 
 
@@ -829,6 +830,20 @@ class rfid(interactableABC):
         self.barrier = False # if rfid doesnt reach threshold, it wont prevent a voles movement
         self.autonomous = True # operates independent of direct interaction with a vole or other interactales. This will ensure that vole interacts with rfids on every pass. 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
+
+    def validate_hardware_setup(self):
+        ''' ensures that hardware was setup correctly '''
+        if self.isSimulation: 
+            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
+            return
+        
+        else: 
+            # not simulating rfid. Check that connections occurred correctly 
+            # 
+            #  (TODO) setup RFID hardware things here! 
+            #
+            # print('rfid hardware doesnt exist yet!')
+            return 
 
 
     def sim_ping(self, vole): 
@@ -908,19 +923,6 @@ class rfid(interactableABC):
 
         # do not deactivate the rfids. always monitoring for pings. 
     
-    def validate_hardware_setup(self):
-        ''' ensures that hardware was setup correctly '''
-        if self.isSimulation: 
-            # doesn't matter if the hardware has been setup or not if we are simulating the interactable
-            return
-        
-        else: 
-            # not simulating rfid. Check that connections occurred correctly 
-            # 
-            #  (TODO) setup RFID hardware things here! 
-            #
-            # print('rfid hardware doesnt exist yet!')
-            return 
 
     def stop(self): 
         ''' '''
