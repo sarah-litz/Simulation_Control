@@ -41,8 +41,8 @@ CONTROL_SIM_PAIRS = {
     "Lever1": Lever1_Clicks, 
     "Lever2": Lever2_Clicks, 
     "LeverFood": LeverFood_Clicks, 
-    "Chamber1Access": MoveTo2, 
-    "Edge12Access": MoveTo2, 
+    # "Chamber1Access": MoveTo2, 
+    # "Edge12Access": MoveTo2, 
     "Chamber2Access": MoveTo1 
 }
 

@@ -47,7 +47,7 @@ class Map:
             self.configure_setup(config_directory + f'/{map_file_name}')
         else: self.configure_setup(config_directory + '/map.json') 
 
-        self.canbus = CANBus(isserial=True)
+        self.canbus = CANBus(isserial=False)
 
     #
     # Map Visualization Methods

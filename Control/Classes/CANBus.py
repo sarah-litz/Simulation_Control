@@ -44,6 +44,40 @@ class CANBus:
 
         self.active = True 
     
+    class MessageListener(can.Listener): 
+        def __init__(self, shared_rfidQ, watch_RFIDs): 
+            super().__init__(self)
+
+            self.shared_rfidQ = shared_rfidQ
+            self.watch_RFIDs = watch_RFIDs
+
+        
+        def on_message_received(self,msg): 
+            # registered as a listener. when a message is recieved, this fnctn gets called 
+
+            #
+            # FILTER MESSAGES HERE ( trash messages that are for an rfid we are not tracking )
+            #
+            if msg.arbitration_id not in self.watch_RFIDs: 
+
+                # do nothing 
+                return 
+
+            # format for shared_rfidQ || Tuple: ( vole_id, rfid_id, timestamp )
+            print('Raw Message: ', msg)
+            print('Raw Data: ', msg.data)
+            print('Hex Data: ', msg.data.hex()) 
+            print('Decode Byte Array Data: ', msg.data.decode('utf-16'))
+            print('Formatted Message: ', (msg.data.hex(), msg.arbitration_id, msg.timestamp), '\n')
+            return 
+            formatted_msg = (msg.data, msg.arbitration_id, msg.timestamp)
+             
+            # REFORMAT MESSAGES FOR THE SHARED_RFIDQ HERE 
+
+            self.shared_rfidQ.put(formatted_msg)
+
+            return 
+
     def config_canbus(self, isserial):
 
         if can is None or serial is None: 
@@ -85,14 +119,6 @@ class CANBus:
     def stop_listen(self): 
         self.active = False 
 
-    class Message(can.Listener): 
-        def __init__(self): 
-            super().__init__(self)
-        def on_message_received(self, message): 
-            ''' registered as a listener. when a message is recieved, this fnctn gets called '''
-            print('do something!')
-            print(message)
-
     def __listen(self):
         """Internal method for the listen method to call that actually has all the functionality and can be threaded.
         """
@@ -102,24 +128,11 @@ class CANBus:
         print("Listening...")
 
         # Create Notifier 
-        listener = can.Message()
-        notifier = can.Notifier(bus=self.bus,listeners=[can.Printer(), listener]) # listeners are the callback functions!
+        listener = self.MessageListener(self.shared_rfidQ, self.watch_RFIDs)
+        notifier = can.Notifier(bus=self.bus,listeners=[listener]) # listeners are the callback functions!
 
         while self.active: 
             # deactivated when a mode is deactivated
             time.sleep(0.5)
 
         notifier.stop() # cleanup 
-    
-
-    def new_message(self, message): 
-        
-        print('NEW MESSAGE recieved!')
-
-        #
-        # FILTER MESSAGES HERE
-        #
-
-        self.shared_rfidQ.put(message)
-
-        return 

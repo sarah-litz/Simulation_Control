@@ -2,7 +2,7 @@
 {
     "rfid1":
     {
-        "id":1, 
+        "id":3, 
         "threshold_condition": { 
             "attribute":"check_threshold_with_fn", 
             "initial_value":true, "goal_value": false, 
@@ -12,7 +12,7 @@
     }, 
     "rfid2":
     {
-        "id":2,
+        "id":4,
         "threshold_condition": { 
             "attribute":"check_threshold_with_fn", 
             "initial_value":true, 
@@ -23,22 +23,12 @@
     },
     "rfid3":
     {
-        "id":3,
+        "id":5,
         "parents":[],
         "threshold_condition": { 
             "attribute":"check_threshold_with_fn", 
             "initial_value":true, 
             "goal_value": false, 
-            "check_threshold_with_fn": "lambda self: self.rfidQ.empty()", 
-            "onThreshold_callback_fn": []
-        }
-    },
-    "rfid4":
-    {
-        "id":4,
-        "threshold_condition": { 
-            "attribute":"check_threshold_with_fn", 
-            "initial_value":true, "goal_value": false, 
             "check_threshold_with_fn": "lambda self: self.rfidQ.empty()", 
             "onThreshold_callback_fn": []
         }

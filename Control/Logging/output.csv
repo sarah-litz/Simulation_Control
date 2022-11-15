@@ -1,5 +1,5 @@
 
 Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
-0,Mode_Setup,2.76,1668209731.2197676,,False,Both Voles starting in Chamber 1 ( the food/water chamber ) 
-1,Mode_Timeout_Round_1_Start,5.99,1668209734.457371,,True,Both Voles starting in Chamber 1 ( the food/water chamber ) 
-1,Early_Interrupt_Caused_Exit,16.94,1668209745.4093378,,True,Both Voles starting in Chamber 1 ( the food/water chamber ) 
+0,Mode_Setup,4.94,1668554530.916143,,False,Both Voles starting in Chamber 1 ( the food/water chamber ) 
+1,Mode_Timeout_Round_1_Start,8.16,1668554534.141245,,True,Both Voles starting in Chamber 1 ( the food/water chamber ) 
+1,Early_Interrupt_Caused_Exit,13.31,1668554539.2897868,,True,Both Voles starting in Chamber 1 ( the food/water chamber ) 
