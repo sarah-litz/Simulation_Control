@@ -53,7 +53,15 @@ class Map:
     # Map Visualization Methods
     #
     def draw_map(self, voles=[]): 
-        '''prints the chambers, edges, and components to the screen. If this is called from a Simulation, there is an option to pass the voles argument to also print the vole positions in the map'''
+        """        
+        [summary] parent function that calls other methods in order to print the chambers, edges, and components/voles within them to the terminal. 
+        
+        Args:         
+            voles ([Voles], optional) : If this is called from a Simulation, there is an option to pass the voles argument to also print the vole positions in the map. Otherwise uses voles that were assigned in Map.json (i.e. when a simulation is not running).
+        Returns:
+            None : this method calls helper functions that will print its results to the terminal and does not return anything.
+        """
+        
         print('\n')
         # * note - do NOT aquire the printing mutex here because that would cause deadlock since both functions we call will also attempt to acquire the mutex
         self.draw_chambers(voles)
@@ -61,10 +69,16 @@ class Map:
         print('\n')
     
     def draw_helper(self, voles, interactables): 
+        """        
+        [summary] Orders interactables and voles into a list so the map drawing can accurately represent where a vole is currently positioned relative to surrounding hardware interactables. 
+    
+        Args:         
+            voles ([Voles]) : list of voles that need to be ordered among the list of interactables 
+            interactables ([Interactables]) : list of interactables that should be included in the list we return 
 
-        # arguments: 
-        #   interactables are string representations of interactable names 
-        #       - to retrieve the actual object, use the function
+        Returns:
+            [string] : list of string representations of the ordered voles/interactables 
+        """
 
         # If in a chamber, then interactables is a list with [ordered components + [ list of unordered component] + ordered components]
         vole_interactable_lst = [] 
@@ -123,7 +137,7 @@ class Map:
                     else: 
                         # the voles prev location is None. Place vole before i 
                         voles_before_i.append('Vole'+str(v.tag))
-                        
+
                     # Finish looping/printing the Unordered Component Set so we don't reprint the vole everytime 
                     # idx = idx + len(unordered_component) + 1 # skip the index iterator forward 
 
@@ -184,7 +198,13 @@ class Map:
         return vole_interactable_lst
     
     def draw_chambers(self, voles=[]): 
-
+        """        
+        [summary] helper function to draw_map in charge of printing the chamber visualizations to the terminal.
+        Args:         
+            voles ([Voles], optional) : If this is called from a Simulation, there is an option to pass the voles argument to also print the vole positions in the map. Otherwise uses voles that were assigned in Map.json (i.e. when a simulation is not running).
+        Returns:
+            None : this method prints its results to the terminal and does not return anything.
+        """
         if len(voles) == 0: 
             voles = self.voles 
 
@@ -252,7 +272,13 @@ class Map:
         PRINTING_MUTEX.release() # # End of Active Printing Section, Release Lock # # 
     
     def draw_edges(self, voles=[]): 
-
+        """        
+        [summary] helper function to draw_map in charge of printing the edge visualizations to the terminal.
+        Args:         
+            voles ([Voles], optional) : If this is called from a Simulation, there is an option to pass the voles argument to also print the vole positions in the map. Otherwise uses voles that were assigned in Map.json (i.e. when a simulation is not running).
+        Returns:
+            None : this method prints its results to the terminal and does not return anything.
+        """
         if len(voles) == 0: 
             voles = self.voles
 
@@ -278,9 +304,16 @@ class Map:
 
 
     def draw_location(self, location, voles=[]): 
+        """        
+        [summary] Draws a specific location and the components/voles within the location.
+        Args: 
+            location (Chamber|Edge) : the specific location that will get drawn         
+            voles ([Voles], optional) : if this is called from a Simulation, a list of voles will be passed in so more detailed vole positioning can be displayed. Otherwise uses voles that were assigned in Map.json (i.e. when a simulation is not running).
+        Returns:
+            string : returns a string that represents all of the things to print ( this way we can write the drawings to the logging files )
+        """
         
-        # draws the specified location, not the entire map 
-        drawing = '' # we return a string that represents all of the things to print ( this way we can write the drawings to the logging files )
+        drawing = '' # appends the drawing to this variable so we can return the drawing in a variable 
 
         if len(voles) == 0:
             voles = self.voles
@@ -331,6 +364,15 @@ class Map:
     # Summary Tables
     #
     def print_map_summary(self): 
+        """        
+        [summary] Prints info for each chamber and the edges that it is connected to. Does not display any information on vole location.
+            For each chamber in the map, specifies a chamber id, chambers that are stored as its adjacent chambers, and any interactables it contains. 
+            For each edge in the map, specifies the edge id, the chambers that it connects, and the interactables that it contains. 
+        Args: 
+            None
+        Returns: 
+            None
+        """
         ''' prints info for each chamber and the edges that it is connected to '''
         for chamber in self.graph.values(): 
             print(chamber)                       # chamber id and adjacent vertices
@@ -340,9 +382,14 @@ class Map:
 
     
     def print_interactable_table(self): 
-        ''' 
-        outputs a table of interactables, if they are being simulated or not, and any returned messages that occurred during the setup process 
-        '''
+        """        
+        [summary] Prints a table displaying all interactables, if they are being simulated or not, and any returned messages that occurred during the setup process 
+        Args: 
+            None
+        Returns:
+            None
+        """
+
         row1 = ['Interactable', 'is Simulation?', 'Returned Messages During Setup (reference Logging Files for error specifics)']
         data = [ row1 ] 
         for i_name in self.instantiated_interactables.keys(): 
@@ -350,9 +397,14 @@ class Map:
         Visuals.draw_table(data, cellwidth=20)
     
     def print_dependency_chain(self): 
-        '''
-        prints table to display the relationships between interactables ( parents and dependency )
-        '''
+        """        
+        [summary] prints table to display the relationships between interactables ( parents and dependency )
+        Args: 
+            None
+        Returns:
+            None
+        """
+
         row1 = ['Interactable', 'Can Control (Parent)']
         data = [row1]
         for i_name in self.instantiated_interactables.keys(): 
@@ -367,15 +419,16 @@ class Map:
     # Getters and Setters 
     #        
     def instantiate_interactable_hardware( self, name, type ): 
-
-        ''' anytime that an interactable is added (either to a chamber or to an edge), first a call to this function is made. 
-            called from configure_setup in 2 places: 
-                (1) first called to instantiate objects that are added to chamber.interactables 
-                (2) second called to instantiate objects that are added to chamber.connections[adjacent_chmbr_id].components
+        """        
+        [summary] called from configure_setup() 
+            anytime that an interactable is added (either to a chamber or to an edge) this method is called.
             based on the object type and object id, instantiates a new interactableABC subclass object
-            the specified "type" is a string representation of an existing interactableABC subclass, specified in the map configuration file
-        '''
-
+        Args: 
+            name (string) : a string that represents the new interactable, as specified in the map configuration file 
+            type (string) : a string representation of an existing interactableABC subclass, as specified in the map configuration file
+        Returns:
+            Object(InteractableABC) : some class that derives from InteractableABC
+        """
 
         # Edge Case: if type is not a valid subclass of interactableABC, raise Exception
         try: getattr(InteractableABC, type)
@@ -477,11 +530,25 @@ class Map:
     # Handling Instantiated Interacables: Activate, Deactivate, and Reset all Interactables
     #
     def reset_interactables(self): 
-        ''' loops thru all instantiated interactables and resets them (emptys their threshold event queue '''
+        """        
+        [summary] loops thru all instantiated interactables and resets them (emptys their threshold event queue) 
+        Args: 
+            None
+        Returns:
+            None
+        """
+        
         for (n,i) in self.instantiated_interactables.items() :
             i.reset() 
     def activate_interactables(self): 
-        ''' loops thru all instantiated interactables and ensures that all are actively running '''
+        """        
+        [summary] loops thru all instantiated interactables and ensures that all are actively running 
+        Args: 
+            None
+        Returns:
+            None
+        """
+        
         
         control_log('\n\n')
         for (n,i) in self.instantiated_interactables.items(): 
@@ -490,7 +557,14 @@ class Map:
         control_log('\n')
         
     def deactivate_interactables(self, clear_threshold_queue = True): 
-        ''' loops thru all instantiated interactables and sets each of them to be inactive. Called in between modes '''
+        """        
+        [summary] loops thru all instantiated interactables and sets each of them to be inactive. Called in between modes 
+        Args: 
+            clear_threshold_queue (Bool, defaults to True) : default behavior is clearing the threshold_event_queue for each of the interactables. If set to false, this step is skipped.
+        Returns:
+            None
+        """
+        
         
         control_log('\n')
 
@@ -502,15 +576,20 @@ class Map:
         control_log('\n')
 
     
-                
-        
-            
-
-
     #
     # Map Configuration 
     #
     def validate_chmbr_interactable_references(self, new_edge, all_edge_components): 
+
+        """        
+        [summary] 
+        Args: 
+            new_edge
+            all_edge_component
+        Returns:
+            None
+        """
+        
         '''argument should be list of the actual interactable objects that are w/in a chamber'''
         '''loop thru the edges chmbr_interactable_lst and return True if the ordering of the references reflects the ordering provided in the chamber config''' 
 

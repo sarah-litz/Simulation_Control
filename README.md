@@ -73,3 +73,15 @@ while self.active:
 
 
 ~~~
+
+~~~python
+    """        
+    [summary] 
+
+    Args:         
+        arg (type) : description
+
+    Returns:
+        type : description
+    """
+~~~
