@@ -1,63 +1,27 @@
+
+"""
+Authors: Sarah Litz, Ryan Cameron
+Date Created: 1/24/2022
+Date Modified: 11/16/2022
+Description: This is a simualion script file which derives from the abstract class SimulationScriptABC. Each run() method defines what vole movements and interactions we want to simulate.
+
+Property of Donaldson Lab at the University of Colorado at Boulder
+"""
+
+
 import sys, time, threading
 import concurrent.futures
 import random
 
 # Local Imports
 from ..Logging.logging_specs import sim_log
-from ..Classes.SimulationABC import SimulationABC
+from ..Classes.SimulationScriptABC import SimulationScriptABC
 
 
-class AirLockDoorsSim(SimulationABC): 
-
-    def __init__(self, modes): 
-        
-        super().__init__(modes) 
-
-        self.modes = modes 
-    
-    def __str__(self): 
-
-        return 'Simulation for running with the Map Containing a 2-door Airlock System'
-
-
-    
-    def non_threaded_vole_movements(self): 
-
-
-        #
-        # the Non-Parallel Execution of the Vole Movements works OK. 
-        #
-
-        vole1 = self.get_vole(1)
-        vole2 = self.get_vole(2)
-
-        v1_success = vole1.attempt_move(2) 
-        v2_success = vole2.attempt_move(2)
-
-        if not v1_success or not v2_success: 
-
-            for n in range(1): 
-
-                if not self.current_mode.active: # and not v2_success 
-
-                    return 
-                
-                else: 
-                    
-                    # 3 attempts to succeed on attempted move into chamber 2
-
-                    if not v1_success: 
-
-                        # Second Attempt 
-                        v1_success = vole1.attempt_move(2)
-                    
-                    if not v2_success: 
-
-                        v2_success = vole2.attempt_move(2)
-
-        return 
-
-    def threaded_vole_movements(self): 
+class ThreadedMovements(SimulationScriptABC): 
+    def __init__(self, mode): 
+        super().__init__(mode)
+    def run(self): 
 
         vole1 = self.get_vole(1)
         vole2 = self.get_vole(2)
@@ -65,14 +29,11 @@ class AirLockDoorsSim(SimulationABC):
         #
         # Voles will attempt to make a move at the same time. Goal Result: This should Fail the Recheck and door2 should not open!
         #
-
         print('\n\n    Both Voles Attempt Move into Chamber 2')
         v1 = threading.Thread(target = vole1.attempt_move, args=(2,), daemon=True) # attempt move into chamber 2
         v2 = threading.Thread(target = vole2.attempt_move, args=(2,), daemon=True) # attempt move into chamber 2
-
         v1.start()
         v2.start()
-
         v1.join() 
         v2.join()
 
@@ -83,10 +44,8 @@ class AirLockDoorsSim(SimulationABC):
         print('\n\n    Moving Both Voles Back Into Chamber 1')
         v1 = threading.Thread(target = vole1.attempt_move, args=(1,), daemon=True) # attempt move into chamber 1
         v2 = threading.Thread(target = vole2.attempt_move, args=(1,), daemon=True) # attempt move into chamber 1
-
         v1.start()
         v2.start()
-
         v1.join()
         v2.join()
 
@@ -96,7 +55,6 @@ class AirLockDoorsSim(SimulationABC):
         print('\n\n    Vole 1 Interacts with lever_food while Vole 2 Attempts Move into Chamber 2')
         v1 = threading.Thread(target = vole1.simulate_move_and_interactable, args=(self.map.lever_food,), daemon=True) # interact with the food lever 
         v2 = threading.Thread(target = vole2.attempt_move, args=(2,), daemon=True) # attempt move into chamber 2
-
         v1.start()
         v2.start()
 
@@ -111,8 +69,10 @@ class AirLockDoorsSim(SimulationABC):
         self.map.draw_map()
     
 
-
-    def three_threaded_voles(self): 
+class ThreadedMovements_ThreeVoles(SimulationScriptABC): 
+    def __init__(self, mode): 
+        super().__init__(mode)
+    def run(self): 
         ''' 3 voles make moves at same time '''
 
         vole1 = self.map.get_vole(1)

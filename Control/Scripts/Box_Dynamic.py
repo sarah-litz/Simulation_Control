@@ -10,8 +10,8 @@ from ..Logging.logging_specs import script_log, control_log
 
 
 class WaitFiveSecondsBeforeRetractOrClose(modeABC): 
-    def __init__(self, timeout, map, output_fp): 
-        super().__init__(timeout,map, output_fp)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
     
     def __str__(self): 
         return '5 Sec Intervals b4 Close/Retract'
@@ -111,8 +111,8 @@ class ReactiveBox(modeABC):
         -> will only retract a lever once a vole has pressed it the required number of times.
         -> will only close a door once a vole has passed thru that door ( as picked up by the rfid readers )
     """
-    def __init__(self, timeout, map):
-        super().__init__(timeout, map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
         return 'Reactive Box'

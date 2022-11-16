@@ -71,7 +71,7 @@ Finally, the user specified 3 different voles to instantiate when running the ex
 
 ## Writing a Simulation Script
 
-    create a new file in the Simulation/Scripts directory. Within this file, you will implement a single new subclass of SimulationABC. 
+    create a new file in the Simulation/Scripts directory. Within this file, you will implement a single new subclass of Simulation. 
 
 ## Linking a Simulation with an Experiment
 

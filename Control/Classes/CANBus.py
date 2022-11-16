@@ -43,40 +43,11 @@ class CANBus:
         self.watch_RFIDs = [] # ModeABC adds any non-simulated rfids to this list so CANBus can perform quick cleaning and trash unimportant messages that it recieves
 
         self.active = True 
-    
-    class MessageListener(can.Listener): 
-        def __init__(self, shared_rfidQ, watch_RFIDs): 
-            super().__init__(self)
 
-            self.shared_rfidQ = shared_rfidQ
-            self.watch_RFIDs = watch_RFIDs
-
-        
-        def on_message_received(self,msg): 
-            # registered as a listener. when a message is recieved, this fnctn gets called 
-
-            #
-            # FILTER MESSAGES HERE ( trash messages that are for an rfid we are not tracking )
-            #
-            if msg.arbitration_id not in self.watch_RFIDs: 
-
-                # do nothing 
-                return 
-
-            # format for shared_rfidQ || Tuple: ( vole_id, rfid_id, timestamp )
-            print('Raw Message: ', msg)
-            print('Raw Data: ', msg.data)
-            print('Hex Data: ', msg.data.hex()) 
-            print('Decode Byte Array Data: ', msg.data.decode('utf-16'))
-            print('Formatted Message: ', (msg.data.hex(), msg.arbitration_id, msg.timestamp), '\n')
+        if self.isSimulation and len(self.watch_RFIDs) > 0: 
+            raise Exception(f'must simulate all rfids because can bus connection was not successful')
             return 
-            formatted_msg = (msg.data, msg.arbitration_id, msg.timestamp)
-             
-            # REFORMAT MESSAGES FOR THE SHARED_RFIDQ HERE 
 
-            self.shared_rfidQ.put(formatted_msg)
-
-            return 
 
     def config_canbus(self, isserial):
 
@@ -104,8 +75,7 @@ class CANBus:
         
 
         print('CANBus Created')
-        return False 
-    
+        return False
 
     def listen(self):
         """This function creates a listener on its own thread and listens for messages sent over the serial connection, it uses the can Notifier base class to listen. 
@@ -125,10 +95,15 @@ class CANBus:
         # activated when a mode is activated 
         if not self.active: return 
 
+        if self.isSimulation: return 
+
         print("Listening...")
 
         # Create Notifier 
-        listener = self.MessageListener(self.shared_rfidQ, self.watch_RFIDs)
+        if self.isSimulation: 
+            MessageListener = SimulatedMessageListener 
+
+        listener = MessageListener(self.shared_rfidQ, self.watch_RFIDs)
         notifier = can.Notifier(bus=self.bus,listeners=[listener]) # listeners are the callback functions!
 
         while self.active: 
@@ -136,3 +111,46 @@ class CANBus:
             time.sleep(0.5)
 
         notifier.stop() # cleanup 
+
+    
+        class SimulatedMessageListener(): 
+            def __init__(self, shared_rfidQ, watch_RFIDs): 
+                pass 
+
+        class MessageListener(can.Listener): 
+            def __init__(self, shared_rfidQ, watch_RFIDs): 
+                super().__init__(self)
+
+                print('Inner Class!')
+
+                self.shared_rfidQ = shared_rfidQ
+                self.watch_RFIDs = watch_RFIDs
+
+            
+            def on_message_received(self,msg): 
+                # registered as a listener. when a message is recieved, this fnctn gets called 
+
+                #
+                # FILTER MESSAGES HERE ( trash messages that are for an rfid we are not tracking )
+                #
+                if msg.arbitration_id not in self.watch_RFIDs: 
+
+                    # do nothing 
+                    return 
+
+                # format for shared_rfidQ || Tuple: ( vole_id, rfid_id, timestamp )
+                print('Raw Message: ', msg)
+                print('Raw Data: ', msg.data)
+                print('Hex Data: ', msg.data.hex()) 
+                print('Decode Byte Array Data: ', msg.data.decode('utf-16'))
+                print('Formatted Message: ', (msg.data.hex(), msg.arbitration_id, msg.timestamp), '\n')
+                return 
+                formatted_msg = (msg.data, msg.arbitration_id, msg.timestamp)
+                
+                # REFORMAT MESSAGES FOR THE SHARED_RFIDQ HERE 
+
+                self.shared_rfidQ.put(formatted_msg)
+
+                return 
+
+    

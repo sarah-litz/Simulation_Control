@@ -120,6 +120,10 @@ class Map:
                             # The voles prev location is some interactable on an adjacent Edge. Place Vole Wherever I guess? 
                             voles_before_i.append('Vole'+str(v.tag)) 
                     
+                    else: 
+                        # the voles prev location is None. Place vole before i 
+                        voles_before_i.append('Vole'+str(v.tag))
+                        
                     # Finish looping/printing the Unordered Component Set so we don't reprint the vole everytime 
                     # idx = idx + len(unordered_component) + 1 # skip the index iterator forward 
 
@@ -1198,7 +1202,7 @@ class Map:
                 component_path.extend(curr_loc_components)
                 
 
-            self.event_manager.print_to_terminal(f'RAW COMPONENT PATH: {[*(str(c) for c in component_path)]}')
+            # self.event_manager.print_to_terminal(f'RAW COMPONENT PATH: {[*(str(c) for c in component_path)]}')
 
 
 

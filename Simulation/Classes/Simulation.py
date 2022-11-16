@@ -20,7 +20,7 @@ import os
 cwd = os.getcwd() 
 
 
-class SimulationABC: 
+class Simulation: 
 
     def __init__(self, modes): 
         
@@ -119,12 +119,12 @@ class SimulationABC:
 
         with current_mode.simulation_lock: # grab lock to denote that simulation is running 
             '''for sim_fn in sim_fn_list: 
-                self.map.event_manager.print_to_terminal(f'\n     (SimulationABC.py, run_sim) New Simulation Function Running: {sim_fn.__name__}')
+                self.map.event_manager.print_to_terminal(f'\n     (Simulation.py, run_sim) New Simulation Function Running: {sim_fn.__name__}')
                 sim_thread = threading.Thread(target = sim_fn, daemon=True)
                 sim_thread.name = 'run sim function'
                 sim_thread.start() '''
             if sim is not None: 
-                self.map.event_manager.print_to_terminal(f'\n     (SimulationABC.py, run_sim) New Simulation Function Running: {sim}')
+                self.map.event_manager.print_to_terminal(f'\n     (Simulation.py, run_sim) New Simulation Function Running: {sim}')
                 sim_thread = threading.Thread(target = sim.run, daemon=True)
                 sim_thread.name = 'simulations run function'
                 sim_thread.start()
@@ -183,7 +183,7 @@ class SimulationABC:
                 if hasattr(self, sim.__name__): 
                     sim_log(f'{mode} is paired with {sim.__name__}')
                 else: 
-                    raise Exception(f'(SimulationABC.py, run_sim()) Error: specified {sim} as a simulation function for {self}. Because this simulation function does not Belong To {self}, 2 diff simulations will get created, and Voles will reset to initial positions.')
+                    raise Exception(f'(Simulation.py, run_sim()) Error: specified {sim} as a simulation function for {self}. Because this simulation function does not Belong To {self}, 2 diff simulations will get created, and Voles will reset to initial positions.')
         '''
                        
         # NOTE: the function that we call should potentially also run on its own thread, so then all this function does is 
@@ -204,12 +204,12 @@ class SimulationABC:
                 time.sleep(0.5)
                 self.current_mode = self.get_active_mode() # update the current mode when one becomes active 
 
-            # update the map to match the new current mode map; if the current map does not match the previous map, this may cause errors, so we should raise Exception explaining that a different instance of SimulationABC should get created to run for a different MAP instance 
+            # update the map to match the new current mode map; if the current map does not match the previous map, this may cause errors, so we should raise Exception explaining that a different instance of Simulation should get created to run for a different MAP instance 
             self.prevmap = self.map
             self.map = self.current_mode.map 
 
             if self.prevmap != self.map: 
-                raise Exception(f'Modes Have Different Maps! The control modes that are running have different maps. Please create unique instances of the SimulationABC class for every unique Map instance that the Control Modes is running to avoid errors. Not running the simulation for this mode.')
+                raise Exception(f'Modes Have Different Maps! The control modes that are running have different maps. Please create unique instances of the Simulation class for every unique Map instance that the Control Modes is running to avoid errors. Not running the simulation for this mode.')
 
 
             sim_log(f'NEW MODE: (Simulation.py, run_sim) Simulation Updating for Control Entering a New Mode: {(self.current_mode)}')
@@ -350,4 +350,4 @@ class SimulationABC:
 
 if __name__ == '__main__': 
     
-    print('SimulationABC is an Abstract Base Class, meaning you cannot run it directly. In order to run a Simulation, create a subclass of SimulationABC')
+    print('Simulation is an Abstract Base Class, meaning you cannot run it directly. In order to run a Simulation, create a subclass of Simulation')

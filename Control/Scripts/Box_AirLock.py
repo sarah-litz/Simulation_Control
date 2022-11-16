@@ -36,7 +36,7 @@ class Chamber1Access(modeABC):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
-        return 'Both Voles starting in Chamber 1 ( the food/water chamber ) '
+        return 'Start: Both Voles In Chamber 1'
     
     def setup(self): 
         ''' '''

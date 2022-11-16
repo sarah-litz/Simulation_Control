@@ -49,7 +49,7 @@
 ~~~
 the threshold attribute is used purely for VOLE simulation needs. This value should NOT be used anywhere in User Written Scripts. Users should instead use the threshold_event_queue to check if any threshold events occur, as shown in the example below 
 ~~~
-*( this would be within a SimulationABC class, which belong in the directory Simulation/Scripts ).*
+*( this would be within a Simulation class, which belong in the directory Simulation/Scripts ).*
 
 
 ~~~python

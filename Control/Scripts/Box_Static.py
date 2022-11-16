@@ -1,7 +1,9 @@
 '''
 
-CONTROL SCRIPT
-
+        Static Boxes: Control Scripts 
+These boxes have no logic in their run function! Each has a different initial setup, 
+but then they just sit idle until timeout finishes. All logic for box controls will 
+be coming from the configuration files. 
 '''
 
 import os
@@ -17,8 +19,8 @@ from Logging.logging_specs import control_log
 #---------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------
 class ClosedBox(modeABC): 
-    def __init__(self, timeout, map): 
-        super().__init__(timeout,map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
     
     def __str__(self): 
         return 'Closed Box'
@@ -37,18 +39,23 @@ class OpenBox(modeABC):
     Description: (Need To Implement!)
         Open Cage -- vole is free to roam in box. The door sits open the entire time. Lever presses have no effect on door functionality.
     """
-    def __init__(self, timeout, map):
-        super().__init__(timeout, map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
         return 'Open Box'
     
     def setup(self): 
         ''' any tasks to setup before run() gets called '''
-        # self.map.instantiated_interactables['door1'].open() # open the door
+        self.map.door1.open() 
+        self.map.door2.open()
    
     def run(self):
-        pass 
+
+        self.countdown_to_exit() # automatically exits when timeout period runs out 
+        while self.active: 
+            time.sleep(1)
+        return None 
 
 
 
@@ -57,8 +64,8 @@ class SimpleBox(modeABC):
     Description: 
         << utilizes a simple map with 2 chambers and 1 edge, where there is a single rfid and door along the edge >> 
     '''
-    def __init__(self, timeout, map):
-        super().__init__(timeout, map)
+    def __init__(self, timeout, rounds, ITI, map, output_fp):
+        super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
         return 'Simple Box'

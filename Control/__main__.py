@@ -12,8 +12,8 @@ from .Scripts.Box_Dynamic import WaitFiveSecondsBeforeRetractOrClose, IteratorBo
 from .Scripts.Box_AirLock import Chamber1Access
 from .Scripts.Testing_Software import EventManagerTests
 
-# OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv' # filepath to where the experiment output should get written 
-OUTPUT_CSV_FILE = '/home/pi/Simulation_Control/Control/Logging/output.csv'
+OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv' # filepath to where the experiment output should get written 
+# OUTPUT_CSV_FILE = '/home/pi/Simulation_Control/Control/Logging/output.csv'
 
 
 def main(): 
@@ -31,11 +31,12 @@ def main():
     map = Map(cwd+'/Control/Configurations', 'map_homecage.json') # optional argument: map_file_name to specify filepath to a different map configuration file 
     
     # (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
+    openbox = OpenBox(timeout = 50, rounds = 1, ITI = 10, map = map, output_fp = OUTPUT_CSV_FILE)
     lever1 = Lever1(timeout = 15, rounds = 2, ITI = 10, map = map, output_fp = OUTPUT_CSV_FILE)
-    airlockBox = Chamber1Access(timeout = 20, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
+    airlockBox = Chamber1Access(timeout = 60, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
 
     # (TODO) Update the list of control mode scripts with each of the scripts you may want to run ( can be conditionally ran as well )
-    mode_scripts = [ airlockBox ]
+    mode_scripts = [ openbox, airlockBox ]
 
     if __name__ != '__main__': # falls into this if the simulation package imported this module
         # (TODO) Add Any Modes that you want to get passed to the Simulation Package in the list here 

@@ -67,6 +67,6 @@
     "voles": [
 
         { "tag":1, "start_chamber":1 }, 
-        { "tag":2, "start_chamber":2 }        
+        { "tag":2, "start_chamber":1 }        
     ]
 }
