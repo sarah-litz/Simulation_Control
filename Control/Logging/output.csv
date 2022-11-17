@@ -1,5 +1,22 @@
 
 Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
-0,Mode_Setup,3.87,1668718308.9476373,,False,Open Box
-1,Mode_Timeout_Round_1_Start,11.76,1668718316.8341386,,True,Open Box
-1,Early_Interrupt_Caused_Exit,34.83,1668718339.905078,,True,Open Box
+0,Mode_Setup,2.87,1668720038.383698,,False,Open Box
+0,sim_door1_open_Start,3.25,1668720038.7612212,,False,Open Box
+0,door1_Open,3.42,1668720038.9309099,,False,Open Box
+0,sim_door1_open_Finish,5.53,1668720041.04352,2.2822988033294678,False,Open Box
+0,sim_door2_open_Start,5.78,1668720041.291892,,False,Open Box
+0,door2_Open,5.9,1668720041.4152288,,False,Open Box
+0,sim_door2_open_Finish,7.93,1668720043.438571,2.146678924560547,False,Open Box
+1,Mode_Timeout_Round_1_Start,8.33,1668720043.836807,,True,Open Box
+1,"(Vole1, move_next_component) New Move: food_trough->beam1_door1",12.0,1668720047.5109692,,True,Open Box
+1,"(Vole1, update_location) ['food_trough'] to beam1_door1",12.37,1668720047.881441,,True,Open Box
+1,"(Vole1, move_next_component) New Move: beam1_door1->door1(Open:True)",13.45,1668720048.958314,,True,Open Box
+1,beam1_door1_beam_break,13.81,1668720049.324119,,True,Open Box
+1,beam1_door1_beam_unbroken,14.18,1668720049.6864462,0.36232709884643555,True,Open Box
+1,"(Vole1, update_location) beam1_door1 to door1",16.2,1668720051.7106152,,True,Open Box
+1,"(Vole1, move_next_component) New Move: door1(Open:True)->rfid1",16.98,1668720052.487791,,True,Open Box
+1,"(Vole1, update_location) door1 to rfid1",17.08,1668720052.5951848,,True,Open Box
+1,"(Vole1, move_next_component) New Move: rfid1->rfid2",17.92,1668720053.433336,,True,Open Box
+1,rfid3_ping1_vole1,19.15,1668720054.6641562,,True,Open Box
+1,rfid3_ping2_vole1,19.55,1668720055.0619483,0.39779210090637207,True,Open Box
+1,Early_Interrupt_Caused_Exit,19.88,1668720055.39466,,True,Open Box

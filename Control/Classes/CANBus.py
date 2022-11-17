@@ -92,14 +92,22 @@ class CANBus:
         """Internal method for the listen method to call that actually has all the functionality and can be threaded.
         """
 
-        class SimulatedMessageListener(): 
+        # activated when a mode is activated 
+        if not self.active: return 
+
+        if self.isSimulation: 
+            if len(self.watch_RFIDs)>0: 
+                    raise Exception(f'(CANBus.py, SimulatedMessageListener) Must simulate all RFIDs because can bus connection was not successful.')
+            return 
+
+        '''class SimulatedMessageListener(): 
             def __init__(self, shared_rfidQ, watch_RFIDs): 
                 self.shared_rfidQ = shared_rfidQ
                 self.watch_RFIDs = watch_RFIDs 
 
                 if len(self.watch_RFIDs)>0: 
                     raise Exception(f'(CANBus.py, SimulatedMessageListener) Must simulate all RFIDs because can bus connection was not successful.')
-                    return 
+                    return'''
 
         class MessageListener(can.Listener): 
             def __init__(self, shared_rfidQ, watch_RFIDs): 
@@ -134,20 +142,10 @@ class CANBus:
 
                 return 
 
-
-        # activated when a mode is activated 
-        if not self.active: return 
-
-        if self.isSimulation: return 
-
         print("Listening...")
 
         # Create Notifier 
-        # if self.isSimulation: 
-        #    MessageListener = SimulatedMessageListener 
-
-        if self.isSimulation: listener = SimulatedMessageListener(self.shared_rfidQ, self.watch_RFIDs)
-        else: listener = MessageListener(self.shared_rfidQ, self.watch_RFIDs)
+        listener = MessageListener(self.shared_rfidQ, self.watch_RFIDs)
         notifier = can.Notifier(bus=self.bus,listeners=[listener]) # listeners are the callback functions!
 
         while self.active: 
@@ -159,4 +157,3 @@ class CANBus:
     
 
 
-    
