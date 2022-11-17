@@ -44,10 +44,6 @@ class CANBus:
 
         self.active = True 
 
-        if self.isSimulation and len(self.watch_RFIDs) > 0: 
-            raise Exception(f'must simulate all rfids because can bus connection was not successful')
-            return 
-
 
     def config_canbus(self, isserial):
 
@@ -75,6 +71,9 @@ class CANBus:
         
 
         print('CANBus Created')
+        print('CAN :', self.bus)
+        attrs = vars(self.bus)
+        print(', '.join("%s: %s" % item for item in attrs.items()))
         return False
 
     def listen(self):
@@ -92,37 +91,19 @@ class CANBus:
     def __listen(self):
         """Internal method for the listen method to call that actually has all the functionality and can be threaded.
         """
-        # activated when a mode is activated 
-        if not self.active: return 
 
-        if self.isSimulation: return 
-
-        print("Listening...")
-
-        # Create Notifier 
-        if self.isSimulation: 
-            MessageListener = SimulatedMessageListener 
-
-        listener = MessageListener(self.shared_rfidQ, self.watch_RFIDs)
-        notifier = can.Notifier(bus=self.bus,listeners=[listener]) # listeners are the callback functions!
-
-        while self.active: 
-            # deactivated when a mode is deactivated
-            time.sleep(0.5)
-
-        notifier.stop() # cleanup 
-
-    
         class SimulatedMessageListener(): 
             def __init__(self, shared_rfidQ, watch_RFIDs): 
-                pass 
+                self.shared_rfidQ = shared_rfidQ
+                self.watch_RFIDs = watch_RFIDs 
+
+                if len(self.watch_RFIDs)>0: 
+                    raise Exception(f'(CANBus.py, SimulatedMessageListener) Must simulate all RFIDs because can bus connection was not successful.')
+                    return 
 
         class MessageListener(can.Listener): 
             def __init__(self, shared_rfidQ, watch_RFIDs): 
                 super().__init__(self)
-
-                print('Inner Class!')
-
                 self.shared_rfidQ = shared_rfidQ
                 self.watch_RFIDs = watch_RFIDs
 
@@ -134,7 +115,6 @@ class CANBus:
                 # FILTER MESSAGES HERE ( trash messages that are for an rfid we are not tracking )
                 #
                 if msg.arbitration_id not in self.watch_RFIDs: 
-
                     # do nothing 
                     return 
 
@@ -143,6 +123,7 @@ class CANBus:
                 print('Raw Data: ', msg.data)
                 print('Hex Data: ', msg.data.hex()) 
                 print('Decode Byte Array Data: ', msg.data.decode('utf-16'))
+                print(int.from_bytes(msg.data, byteorder='big', signed=False))
                 print('Formatted Message: ', (msg.data.hex(), msg.arbitration_id, msg.timestamp), '\n')
                 return 
                 formatted_msg = (msg.data, msg.arbitration_id, msg.timestamp)
@@ -152,5 +133,30 @@ class CANBus:
                 self.shared_rfidQ.put(formatted_msg)
 
                 return 
+
+
+        # activated when a mode is activated 
+        if not self.active: return 
+
+        if self.isSimulation: return 
+
+        print("Listening...")
+
+        # Create Notifier 
+        # if self.isSimulation: 
+        #    MessageListener = SimulatedMessageListener 
+
+        if self.isSimulation: listener = SimulatedMessageListener(self.shared_rfidQ, self.watch_RFIDs)
+        else: listener = MessageListener(self.shared_rfidQ, self.watch_RFIDs)
+        notifier = can.Notifier(bus=self.bus,listeners=[listener]) # listeners are the callback functions!
+
+        while self.active: 
+            # deactivated when a mode is deactivated
+            time.sleep(0.5)
+
+        notifier.stop() # cleanup 
+
+    
+
 
     
