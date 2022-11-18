@@ -28,11 +28,12 @@ SIMULATED VOLE
 ##
 
 
-class Vole: 
+class SimVole: 
 
-    def __init__(self, tag, start_chamber, map): 
+    def __init__(self, tag, start_chamber, rfid_id, map): 
         
-        self.tag  = tag 
+        self.rfid_id = rfid_id # rfid hex value 
+        self.tag  = tag # human assigned value for simplicity 
         self.map = map 
         self.event_manager = map.event_manager
         self.active = True 
@@ -49,13 +50,13 @@ class Vole:
         try: self.curr_component = self.curr_loc.unorderedComponent # current interactable the vole is closest to ( when in a chamber, this can be a list of Unordered interactables! Vole is free to simulate with any of them )
         except AttributeError: self.curr_component = None # (interactable1, interactable2)
 
-        print(f'VOLE {self.tag} STARTING IN {self.curr_loc.edge_or_chamber}{self.curr_loc.id}, POSITIONED BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
-        vole_log(f'VOLE {self.tag} STARTING POSITION BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
+        print(f'SIMULATED VOLE {self.tag} STARTING IN {self.curr_loc.edge_or_chamber}{self.curr_loc.id}, POSITIONED BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
+        vole_log(f'SIMULATED VOLE {self.tag} STARTING POSITION BETWEEN INTERACTABLES: {self.prev_component}, {self.curr_component}')
 
 
 
     def __str__(self): 
-        return f'Vole{self.tag}'
+        return f'SimVole{self.tag}'
     def at_location_of(self, interactable): 
         ''' 
 

@@ -310,14 +310,10 @@ class interactableABC:
         
         self.threshold = False # "resets" the interactable's threshold value so it'll check for a new threshold occurence
         self.active = True 
-        # self.activate_inner_objects()
         self.watch_for_threshold_event() # begins continuous thread for monitoring for a threshold event
-        # self.dependents_loop() 
         
 
     def deactivate(self): 
-        print(f"(InteractableABC.py, deactivate) {self.name} has been deactivated. Final contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")        
-        control_log(f"(InteractableABC.py, deactivate) {self.name} has been deactivated. Final contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
         
         self.threshold = False # "resets" the threshold value so it'll only check for a new threshold occurence in anything following its deactivation
         self.active = False 
@@ -325,6 +321,9 @@ class interactableABC:
         if hasattr(self, 'stop'): 
             self.stop() # stops things that could be left running
 
+        self.event_manager.print_to_terminal(f"(InteractableABC.py, deactivate) {self.name} has been deactivated. Final contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")        
+        control_log(f"(InteractableABC.py, deactivate) {self.name} has been deactivated. Final contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
+    
     def reset(self): 
         self.threshold_event_queue.queue.clear() # empty the threshold_event_queue
     

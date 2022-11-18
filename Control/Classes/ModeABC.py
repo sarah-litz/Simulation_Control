@@ -319,8 +319,9 @@ class modeABC:
                 # # we want to prioritize the passing of a ping from the shared_rfidQ to the individual rfidQ where the handling of a ping will happen # # 
                 # In order to do this, before allowing an indivual rfid to pull from its rfidQ, we want to empty out the shared_rfidQ # 
                 
-                id = ping[1] # parse the ping information 
+                # parse the ping information 
 
+                id = ping[1] # the rfid antenna that was pinged 
                 rfid_interactable = rfid_objects[id] # retrieve the corresponding rfid object 
 
                 rfid_interactable.rfidQ.put( (ping) ) 

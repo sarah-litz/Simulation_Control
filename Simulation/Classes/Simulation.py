@@ -12,7 +12,7 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 from code import interact
 from Logging.logging_specs import sim_log
 from Simulation.Logging.logging_specs import vole_log, clear_log
-from .Vole import Vole
+from .Vole import SimVole
 
 # Standard Lib Imports 
 import threading, time, json, inspect, random, sys
@@ -25,13 +25,13 @@ class Simulation:
     def __init__(self, modes): 
         
         print(f'\nSimulation Created: {self}')
-
-        self.voles = []
         
         # Start Vole Log From Scratch 
         # clear_log('volepaths.log')
         
         self.map = modes[0].map # default to the map of the first mode in the list. We will update map to the active modes map throughout experiemnt. 
+
+        self.voles = self.map.voles 
 
         self.event_manager = self.map.event_manager 
 
@@ -46,7 +46,7 @@ class Simulation:
 
         self.current_mode = None # contains the Mode object that the control software is currently running. 
 
-        self.map.voles = self.voles # Replace the Control Voles w/ the Simulation Voles so we can provide more information in the visualilzations
+        ##       self.map.voles = self.voles # Replace the Control Voles w/ the Simulation Voles so we can provide more information in the visualilzations
 
 
     def __str__(self): 
@@ -241,23 +241,40 @@ class Simulation:
     #
     # Vole Getters and Setters 
     #
-    def setup_voles(self):  
-        # gets voles from the simulation configuration file
-        raise Exception('you need to add a setup_voles() method to your simulation! This is where you should add/initialize any voles that you want to Simulate.')
     def get_vole(self, tag): 
         # searches list of voles and returns vole object w/ the specified tag 
         for v in self.voles: 
             if v.tag == tag: return v  
         return None
-    def new_vole(self, tag, start_chamber): 
+    def get_vole_by_rfid_id(self, rfid_id): 
+        # searches list of voles and returns vole object w/ the specified rfid id 
+        for v in self.voles: 
+            if v.rfid_id == rfid_id: return v
+        return None 
+    def new_vole(self, tag, start_chamber, rfid_id): 
         ''' creates a new Vole object and adds it to the list of voles. Returns Vole object on success '''
+
+        if rfid_id is None: 
+            # for simulated voles, if no rfid_id was specified then match this value to the tag value. This way, when we simulate an rfid ping, the Map class's rfidListener will still be able to search for the vole using the rfid_id
+            rfid_id = tag 
+
         # ensure vole does not already exist 
         if self.get_vole(tag) is not None: 
             sim_log(f'vole with tag {tag} already exists')
             print(f'you are trying to create a vole with the tag {tag} twice')
-            input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
-            if 'y': return 
-            if 'n': exit() 
+            inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
+            if inp == 'y': return 
+            if inp == 'n': sys.exit(0)
+            else: sys.exit(0)
+        
+        # ensure vole with same rfid_id does not already exist 
+        if rfid_id is not None and self.get_vole_by_rfid_id(rfid_id) is not None: 
+            sim_log(f'vole with rfid_id {rfid_id} already exists')
+            print(f'you are trying to create a vole with the rfid_id {rfid_id} twice')
+            inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
+            if inp == 'y': return 
+            if inp == 'n': sys.exit(0)
+            else: sys.exit(0)        
         
         # ensure that start_chamber exists in map
         chmbr = self.map.get_chamber(start_chamber) 
@@ -274,7 +291,7 @@ class Simulation:
                 except ValueError as e: print(f'invalid input. Must be a number or the letter q. ({e})')            
 
         # Create new Vole 
-        newVole = Vole(tag, start_chamber, self.map)
+        newVole = SimVole(tag, start_chamber, rfid_id, self.map)
         self.voles.append(newVole)
         return newVole
     def remove_vole(self, tag): 
@@ -341,7 +358,7 @@ class Simulation:
 
         ## add Voles ## 
         for v in data['voles']: 
-            self.new_vole(v['tag'], v['start_chamber'])
+            self.new_vole(v['tag'], v['start_chamber'], v['rfid_id'])
         return 
 
     #

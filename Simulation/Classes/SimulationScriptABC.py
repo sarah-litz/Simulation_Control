@@ -13,7 +13,7 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 from code import interact
 from Logging.logging_specs import sim_log
 from Simulation.Logging.logging_specs import vole_log, clear_log
-from .Vole import Vole
+from .Vole import SimVole
 
 # Standard Lib Imports 
 import threading, time, json, inspect, random, sys

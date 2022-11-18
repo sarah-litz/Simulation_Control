@@ -17,6 +17,7 @@ import time
 import json 
 import os
 import threading
+import sys
 
 # Local Imports 
 from .Timer import Visuals, PRINTING_MUTEX
@@ -696,7 +697,10 @@ class Map:
                 raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) configuration for Edge{new_edge.id} Components are invalid because chamber interactables {[*(c.name for c in chmbrRefs)]} are not an ordered subset to what is specified in chamber{chmbrRefs[0].edge_or_chamber_id} interactables: {[*(ele.name for ele in chmbrinteractables )]}')
 
     def configure_setup(self, config_filepath): 
-        ''' function to read/parse configuration file map.py and set up map accordingly '''
+        ''' 
+        function to read/parse configuration file map.py and set up map accordingly 
+        sets up 
+        '''
 
         # opening JSON file 
         f = open(config_filepath)
@@ -1860,23 +1864,29 @@ class Map:
 
         ''' allows map to perform some basic vole tracking '''
 
-        def __init__(self, tag, start_chamber, map): 
+        def __init__(self, tag, start_chamber, rfid_id, map): 
             
-            self.tag  = tag 
+            self.rfid_id = rfid_id # rfid hex value 
+            self.tag  = tag # human assigned value for simplicity 
 
             ## Vole Location Information ## 
             self.curr_loc = map.get_chamber(start_chamber)
             self.prev_loc = None # object representing the voles previous location.
 
+            print(f'VOLE {self.tag} STARTING IN {self.curr_loc.edge_or_chamber}{self.curr_loc.id}')
+
+        def __str__(self): 
+            return f'Vole{self.tag}'
+
         
     def _setup_voles(self, data): 
         # uses data in the map config file to create voles and set their start location
         for v in data['voles']: 
-            self.new_vole(v['tag'], v['start_chamber'])
+            self.new_vole(v['tag'], v['start_chamber'], v['rfid_id'])
 
     def update_vole_location(self, tag, loc): 
         ''' retrieves the vole object specified by <tag> and updates its location to <loc> '''
-        v = self.get_vole(tag)
+        v = self.get_vole_by_rfid_id(tag)
         v.prev_loc = v.curr_loc 
         v.curr_loc = loc 
 
@@ -1885,8 +1895,12 @@ class Map:
         for v in self.voles: 
             if v.tag == tag: return v  
         return None
-
-    def new_vole(self, tag, start_chamber): 
+    def get_vole_by_rfid_id(self, rfid_id): 
+        # searches list of voles and returns vole object w/ the specified rfid id 
+        for v in self.voles: 
+            if v.rfid_id == rfid_id: return v
+        return None 
+    def new_vole(self, tag, start_chamber, rfid_id): 
         
         ''' creates a new Vole object and adds it to the list of voles. Returns Vole object on success '''
 
@@ -1897,7 +1911,15 @@ class Map:
             input(f'Would you like to skip the creating of this vole and continue running the experiment? If no, the experiment will stop running immediately. Please enter: "y" or "n". ')
             if 'y': return 
             if 'n': exit() 
-        
+
+        # ensure vole with same rfid_id does not already exist 
+        if rfid_id is not None and self.get_vole_by_rfid_id(rfid_id) is not None: 
+            sim_log(f'vole with rfid_id {rfid_id} already exists')
+            print(f'you are trying to create a vole with the rfid_id {rfid_id} twice')
+            inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
+            if inp == 'y': return 
+            if inp == 'n': sys.exit(0)
+            else: sys.exit(0)            
         # ensure that start_chamber exists in map
         chmbr = self.get_chamber(start_chamber) 
         if chmbr is None: 
@@ -1915,6 +1937,6 @@ class Map:
                 
 
         # Create new Vole 
-        newVole = self.Vole(tag, start_chamber, self)
+        newVole = self.Vole(tag, start_chamber, rfid_id, self)
         self.voles.append(newVole)
         return newVole

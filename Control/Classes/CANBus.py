@@ -44,6 +44,8 @@ class CANBus:
 
         self.active = True 
 
+        
+
 
     def config_canbus(self, isserial):
 
@@ -100,14 +102,6 @@ class CANBus:
                     raise Exception(f'(CANBus.py, SimulatedMessageListener) Must simulate all RFIDs because can bus connection was not successful.')
             return 
 
-        '''class SimulatedMessageListener(): 
-            def __init__(self, shared_rfidQ, watch_RFIDs): 
-                self.shared_rfidQ = shared_rfidQ
-                self.watch_RFIDs = watch_RFIDs 
-
-                if len(self.watch_RFIDs)>0: 
-                    raise Exception(f'(CANBus.py, SimulatedMessageListener) Must simulate all RFIDs because can bus connection was not successful.')
-                    return'''
 
         class MessageListener(can.Listener): 
             def __init__(self, shared_rfidQ, watch_RFIDs): 
@@ -126,20 +120,18 @@ class CANBus:
                     # do nothing 
                     return 
 
+                # convert msg data to a vole_id 
+
+
                 # format for shared_rfidQ || Tuple: ( vole_id, rfid_id, timestamp )
-                print('Raw Message: ', msg)
-                print('Raw Data: ', msg.data)
-                print('Hex Data: ', msg.data.hex()) 
-                print('Decode Byte Array Data: ', msg.data.decode('utf-16'))
-                print(int.from_bytes(msg.data, byteorder='big', signed=False))
-                print('Formatted Message: ', (msg.data.hex(), msg.arbitration_id, msg.timestamp), '\n')
-                return 
-                formatted_msg = (msg.data, msg.arbitration_id, msg.timestamp)
+                # print('CANBus Pinged: ', msg)
+                # print('Hex Data: ', msg.data.hex()) 
+                # print(int.from_bytes(msg.data, byteorder='big', signed=False))
+                print('CANBus Pinged: ', (msg.data.hex(), msg.arbitration_id, msg.timestamp), '\n')
+                formatted_msg = (msg.data.hex(), msg.arbitration_id, msg.timestamp)
                 
                 # REFORMAT MESSAGES FOR THE SHARED_RFIDQ HERE 
-
                 self.shared_rfidQ.put(formatted_msg)
-
                 return 
 
         print("Listening...")

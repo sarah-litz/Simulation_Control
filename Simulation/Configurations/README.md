@@ -26,6 +26,14 @@
 ~~~
 
 
+# Vole Configurations # 
+
+    Vole configuration can occur in 2 places: in a map configuration, where a user would be defining *real* voles that are running in the experiment, or in a simulation configuration, where a user is defining *simulated* voles that are running in an experiment. 
+
+    When a simulation runs, the initial vole objects that are created are the Control version of a vole object (as defined in the map class). However, once the simulation is created, the map.voles object is replaced with the vole objects that the Simulation created, replacing all objects that were created with the more detailed, Simulation version of a vole. 
+
+
+
 ## How do I know if I need to specify the optional "simulate_with_fn" attribute? ## 
 
 **Component Types that Need "simulate_with_fn" specified**
