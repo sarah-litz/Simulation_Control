@@ -330,7 +330,7 @@ class modeABC:
                     vole_tag = None  
 
                 print('PLACING ON RFIDS RFIDQ: ', (vole_tag, id, ping[2]))
-                rfid_interactable.rfidQ.put( ping ) # (vole_tag, id, ping[2]) ) 
+                rfid_interactable.rfidQ.put( (vole_tag, id, ping[2]) ) 
 
                 # # # the Map's Vole Location Tracking relies on the RFIDs for making any location updates # # # 
                 # # Make Updates to Voles Location in the Map Class # # 
