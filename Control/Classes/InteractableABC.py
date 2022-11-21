@@ -855,8 +855,8 @@ class rfid(interactableABC):
         ''' class for packaging rfid pings into pairs in order to represent the time that a vole first scanned an the rfid reader, 
         to the time that the vole left that rfid reader '''
         def __init__(self, ping1, ping2 = None, latency = None): 
-            self.vole_tag = ping1[0]
-            self.rfid_id = ping1[1]
+            self.vole_tag = ping1[0] # the rfid chip id 
+            self.rfid_id = ping1[1] # the rfid antenna id 
             self.ping1 = ping1
             self.ping2 = ping2
             self.latency = latency 
@@ -886,11 +886,27 @@ class rfid(interactableABC):
             self.event_manager.print_to_terminal('PING: ', ping)
             # Check if the new ping is the 2nd ping ( a vole leaving an rfid reader ) or a first ( a vole arriving at the rfid reader )
             # Starting at the end of the end of the ping history list ( so the most recent pings ), look for a ping from this vole
+
+            ## if a voletag is None, then we can assume that if the most recent ping has a voletag recorded and does NOT have a ping2 that pairs with it yet, we should pair this ping with it. 
             voletag = ping[0]
             newEntry = True 
-            for idx in range(len(self.ping_history)-1, -1, -1): 
+
+            if not voletag:
+                newEntry = False 
+                # check the latest ping 
+                
+
+            for idx in range(len(self.ping_history)-1, -1, -1): # decrements by step sizes of -1 until the last position of -1 ( not inclusive, so all check at position 0 )
                 p = self.ping_history[idx]
-                if p.vole_tag == voletag: 
+                if not voletag: 
+                    if p.ping2 is None: 
+                        # pairs with the most recent ping that does not have a ping2 and returns
+                        p.set_ping2(ping)
+                        # Record Timestamp for Ping 2 
+                        self.event_manager.new_timestamp(f'rfid{p.rfid_id}_ping2_vole{p.vole_tag}', time=p.ping2[2], duration = p.latency)
+                        return 
+
+                elif p.vole_tag == voletag: 
                     # check to see if a 2nd ping was recorded 
                     if p.ping2 is None: 
                         # The new ping should be recorded as the 2nd ping in this Ping Object! Do not add a new threshold event. 
@@ -905,6 +921,11 @@ class rfid(interactableABC):
                     else: 
                         newEntry = True 
                         break 
+
+            if not voletag: 
+                # Error: Unknown Vole Signal Sent. Was Unable to Pair with a Previous Ping
+                raise Exception(f'(RFID, add_new_threshold_event) Unknown Ping {ping} sent from CANBus. Not recording this ping.')
+
             if newEntry: 
                 # create new Ping object and add to threshold event queue! 
                 ping2 = None
@@ -914,6 +935,7 @@ class rfid(interactableABC):
                 self.threshold_event_queue.put(newPing)
                 # Record Timestamp for Ping 1 
                 ping1_timestamp = self.event_manager.new_timestamp(f'rfid{newPing.rfid_id}_ping1_vole{newPing.vole_tag}', time=newPing.ping1[2])
+
 
             
         

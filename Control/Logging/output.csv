@@ -1,22 +1,13 @@
 
 Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
-0,Mode_Setup,2.46,1668815097.6895978,,False,Start: Both Voles In Chamber 1
-0,sim_door2_close_Start,2.53,1668815097.76477,,False,Start: Both Voles In Chamber 1
-0,sim_door2_close_Finish,8.04,1668815103.276265,5.511494874954224,False,Start: Both Voles In Chamber 1
-1,Mode_Timeout_Round_1_Start,8.47,1668815103.705825,,True,Start: Both Voles In Chamber 1
-1,"(Vole1, move_next_component) New Move: door1(Open:True)->rfid1",11.53,1668815106.759973,,True,Start: Both Voles In Chamber 1
-1,"(Vole1, update_location) door1 to rfid1",11.6,1668815106.831496,,True,Start: Both Voles In Chamber 1
-1,"(Vole1, move_next_component) New Move: rfid1->rfid2",13.07,1668815108.3058739,,True,Start: Both Voles In Chamber 1
-1,rfid3_ping1_vole1,14.12,1668815109.3471205,,True,Start: Both Voles In Chamber 1
-1,rfid3_ping2_vole1,14.93,1668815110.1611805,0.8140599727630615,True,Start: Both Voles In Chamber 1
-1,"(Vole1, update_location) rfid1 to rfid2",15.43,1668815110.662316,,True,Start: Both Voles In Chamber 1
-1,"(Vole1, move_next_component) New Move: rfid2->rfid3",16.53,1668815111.764829,,True,Start: Both Voles In Chamber 1
-1,rfid4_ping1_vole1,17.83,1668815113.0599153,,True,Start: Both Voles In Chamber 1
-1,rfid4_ping2_vole1,19.24,1668815114.4712563,1.4113409519195557,True,Start: Both Voles In Chamber 1
-1,"(Vole1, update_location) rfid2 to rfid3",19.35,1668815114.578924,,True,Start: Both Voles In Chamber 1
-1,"(Vole1, move_next_component) New Move: rfid3->door2(Open:False)",20.26,1668815115.492526,,True,Start: Both Voles In Chamber 1
-1,rfid5_ping1_vole1,21.44,1668815116.6705067,,True,Start: Both Voles In Chamber 1
-1,rfid5_ping2_vole1,22.17,1668815117.3985481,0.728041410446167,True,Start: Both Voles In Chamber 1
-1,"(Vole1, update_location) rfid3 to door2",22.66,1668815117.895862,,True,Start: Both Voles In Chamber 1
-1,"(Vole1, move_next_component) New Move: door2(Open:False)->beam2_door2",24.07,1668815119.303422,,True,Start: Both Voles In Chamber 1
-1,Mode_Timeout_Round_1_Finish,69.44,1668815164.666782,60.96095681190491,True,Start: Both Voles In Chamber 1
+0,Mode_Setup,4.05,1669073563.040675,,False,Open Box
+1,Mode_Timeout_Round_1_Start,11.23,1669073570.2183087,,True,Open Box
+1,rfid5_ping1_vole906467d63b840080,12.74,1669073571.7316847,,True,Open Box
+1,rfid5_ping2_vole906467d63b840080,13.53,1669073572.5265431,0.794858455657959,True,Open Box
+1,rfid5_ping1_vole906467d63b840080,27.69,1669073586.6782107,,True,Open Box
+1,rfid5_ping2_vole906467d63b840080,28.41,1669073587.4029882,0.7247774600982666,True,Open Box
+1,rfid4_ping1_vole906467d63b840080,55.25,1669073614.245836,,True,Open Box
+1,rfid4_ping2_vole906467d63b840080,56.18,1669073615.1678076,0.9219715595245361,True,Open Box
+1,rfid3_ping1_vole906467d63b840080,55.84,1669073614.8355553,,True,Open Box
+1,rfid3_ping2_vole906467d63b840080,56.04,1669073615.0369217,0.20136642456054688,True,Open Box
+1,Mode_Timeout_Round_1_Finish,61.73,1669073620.721439,50.503130197525024,True,Open Box

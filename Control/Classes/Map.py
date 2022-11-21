@@ -86,7 +86,7 @@ class Map:
         if len(interactables) == 0: 
             # chamber or edge has no interactables. just draw voles 
             for v in voles: 
-                vole_interactable_lst.append('Vole'+str(v.tag))
+                vole_interactable_lst.append(str(v))
         
         else: # Check if voles have interactable info. If vole does not have component info, just draw in front of the interactables. 
             for v in voles: 
@@ -127,17 +127,17 @@ class Map:
                         if v.prev_component.interactable in interactables: # where interactables is the entire set of Chamber interactables (ordered and unordered)
                             # figure out if this interactable comes before or after the set of Unordered Interactables ( where the vole currently stands )
                             if interactables.index(v.prev_component.interactable) > interactables.index(unordered_component): 
-                                voles_after_i.append('Vole'+str(v.tag))
+                                voles_after_i.append(str(v))
                             else: 
-                                voles_before_i.append('Vole'+str(v.tag))
+                                voles_before_i.append(str(v))
 
                         else: 
                             # The voles prev location is some interactable on an adjacent Edge. Place Vole Wherever I guess? 
-                            voles_before_i.append('Vole'+str(v.tag)) 
+                            voles_before_i.append(str(v)) 
                     
                     else: 
                         # the voles prev location is None. Place vole before i 
-                        voles_before_i.append('Vole'+str(v.tag))
+                        voles_before_i.append(str(v))
 
                     # Finish looping/printing the Unordered Component Set so we don't reprint the vole everytime 
                     # idx = idx + len(unordered_component) + 1 # skip the index iterator forward 
@@ -166,20 +166,20 @@ class Map:
                         if idx == 0 or idx == (len(interactables)-1): # if vole in first or last position of linked list 
                             if idx == 0: 
                                 # vole before interactable
-                                voles_before_i.append('Vole'+str(v.tag))
+                                voles_before_i.append(str(v))
                             else: # case: if idx == (len(interactables)-1)
                                 # interactable after vole
                                 if v.prev_component != None and vole_prev_i == interactables[idx-1]: 
-                                    voles_before_i.append('Vole'+str(v.tag))
+                                    voles_before_i.append(str(v))
                                 else: 
-                                    voles_after_i.append('Vole'+str(v.tag))
+                                    voles_after_i.append(str(v))
                         
                         elif vole_prev_i == interactables[idx-1]: 
                             # draw v before i 
-                            voles_before_i.append('Vole'+str(v.tag)) # append string representation for the vole 
+                            voles_before_i.append(str(v)) # append string representation for the vole 
                         else: 
                             # draw i before v 
-                            voles_after_i.append('Vole'+str(v.tag)) # append string representation for the vole 
+                            voles_after_i.append(str(v)) # append string representation for the vole 
 
             if type(i) is list: 
                 # Interactable Set! 

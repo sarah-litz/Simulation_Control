@@ -320,15 +320,23 @@ class modeABC:
                 # In order to do this, before allowing an indivual rfid to pull from its rfidQ, we want to empty out the shared_rfidQ # 
                 
                 # parse the ping information 
-
                 id = ping[1] # the rfid antenna that was pinged 
                 rfid_interactable = rfid_objects[id] # retrieve the corresponding rfid object 
 
-                rfid_interactable.rfidQ.put( (ping) ) 
+                rfid_id = ping[0] # the voles rfid chip number; if using a real rfid chip, this will be a hex value 
+                try: 
+                    vole_tag = self.map.get_vole_by_rfid_id(rfid_id).tag # convert the rfid chip number to the vole's assigned tag value  
+                except AttributeError as e: 
+                    vole_tag = None  
+
+                print('PLACING ON RFIDS RFIDQ: ', (vole_tag, id, ping[2]))
+                rfid_interactable.rfidQ.put( ping ) # (vole_tag, id, ping[2]) ) 
 
                 # # # the Map's Vole Location Tracking relies on the RFIDs for making any location updates # # # 
                 # # Make Updates to Voles Location in the Map Class # # 
-                self.map.update_vole_location( tag = ping[0], loc = self.map.get_location_object(rfid_interactable) )
+                try: self.map.update_vole_location( tag = ping[0], loc = self.map.get_location_object(rfid_interactable) )
+                except AttributeError as e: pass # when tag='', throws an attribute error. tag is '' everytime an rfid tag is removed from the antenna.
+
 
 
         # Mode Inactivated 
