@@ -12,8 +12,10 @@ from .Scripts.Box_Dynamic import WaitFiveSecondsBeforeRetractOrClose, IteratorBo
 from .Scripts.Box_AirLock import Chamber1Access
 from .Scripts.Testing_Software import EventManagerTests
 
-# OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv' # filepath to where the experiment output should get written 
-OUTPUT_CSV_FILE = '/home/pi/Simulation_Control/Control/Logging/output.csv'
+    # (TODO) Specify OUTPUT_CSV_FILE: filepath to where the experiment output should get written 
+# OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv' # Sarah's Personal Computer 
+# OUTPUT_CSV_FILE = '/home/pi/Simulation_Control/Control/Logging/output.csv' # Raspberry Pi 
+OUTPUT_CSV_FILE = '/Users/sali7864/Desktop/Temp--DonaldsonRepo/Simulation_Control/Control/Logging/output.csv' # Library Computer --> delete this one. 
 
 
 def main(): 

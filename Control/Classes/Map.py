@@ -549,14 +549,11 @@ class Map:
         Returns:
             None
         """
-        
-        
         control_log('\n\n')
         for (n,i) in self.instantiated_interactables.items(): 
             if not i.active: 
                 i.activate()
         control_log('\n')
-        
     def deactivate_interactables(self, clear_threshold_queue = True): 
         """        
         [summary] loops thru all instantiated interactables and sets each of them to be inactive. Called in between modes 
@@ -583,49 +580,43 @@ class Map:
     def validate_chmbr_interactable_references(self, new_edge, all_edge_components): 
 
         """        
-        [summary] 
+        [summary] Before adding components to an edge, this check is called to ensure that if the edge component references any chamber interactables provided in the configuration file are valid. 
+            Loops through the edge's chmbr_interactable_lst and returns if the ordering of the references reflects the ordering provided in the chamber config, meaning the edge configuration is valid. 
+            For Each Edge Interactable: 
+                -> if chmbr_interactable is at the first or last index of its own chamber, this is a valid reference. 
+                -> if chmbr_interactable is NOT at the first or last index of its own chamber, then we must ensure that all 
+                interactables between itself and the interactable that "bridges" with the edge (will be either the fist or 
+                last indexed interactable) are present in the chmbr interactable's referenced by the edge. 
         Args: 
-            new_edge
-            all_edge_component
+            new_edge (Edge) : edge object that is getting created 
+            all_edge_components ([Component]) : list of the components that are assigned to the new edge  
         Returns:
-            None
+            None : if this function successfully returns, then the edge components are valid. If there are invalid components, an exception will be raised and the Map class will not finish getting created. 
         """
-        
-        '''argument should be list of the actual interactable objects that are w/in a chamber'''
-        '''loop thru the edges chmbr_interactable_lst and return True if the ordering of the references reflects the ordering provided in the chamber config''' 
 
         control_log(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
-        print(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
+        # print(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
 
-        ## Before Adding Edge Components, Perform a One Time Check to Validate the Chamber Interactables That Are Optionally Specified on the Edge:      
-            # argument is entire dictionary of edge components provided in the configuration file 
-            # returns list of only the references to chamber_interactables that are provided w/in the dictionary 
-        chmbr_interactable_names = [] 
+        chmbr_interactable_names = [] # Type Conversion: convert all_edge_components from [Component Type] => [Interactable's String Name] 
         for i in all_edge_components: 
             if 'chamber_interactable' in i.keys(): 
                     chmbr_interactable_names.append(i['chamber_interactable'])
         
-        if len(chmbr_interactable_names) < 1: return # no chamber_interactables referenced along this edge 
-
-        # edge case: references an interactable that based on the component ordering provided in the initial chamber, skips over an interactable. 
-        # In order to fix this: the chamber interactable ordering should be changed, or the components that stand inbetween the interactable 
-        # trying to get added should also be added as chamber_interactables to preserve ordering.  
+        if len(chmbr_interactable_names) < 1: return # Case: number of chamber_interactables referenced along this edge is 0. this is a valid edge configuration.
        
-        
-        # for each interactable: if chmbr_interactable is at the first or last index of its own chamber, this is a valid entry 
-        # if chmbr_interactable is NOT at the first or last index of its own chamber, then we must ensure that all 
-        # interactables between itself and the interactable that "bridges" with the edge (will be either the first or last indexed interactable)
-        # are present in the chmbr_interactable_lst 
-        i_obj_lst = [] # convert chmbr_interactable_lst from string interactable names => actual interactable objects
+        i_obj_lst = [] # Type Conversion: convert chmbr_interactable_lst from string interactable names => actual interactable objects
         for i_name in chmbr_interactable_names: 
             i = self.instantiated_interactables[i_name]
             i_obj_lst.append(i)
-        
-        # separate the list by chamber id 
+    
+        # Create Chamber Specific Lists: separate the list by chamber id; splits references to chamber interactables into two lists, based on which chamber the ineractable is actually assigned to
         chmbr1references = []
         chmbr2references = [] 
         chmbr1id = i_obj_lst[0].edge_or_chamber_id # retrieve one of the two chamber ids that could possibly be referenced w/in the list
         chmbr2id = -1
+
+
+        # (Validity Check # 1) Chamber1 References from the edge must all be grouped and come BEFORE any references to chamber2. Any configuration that breaks this is Invalid. 
         for i in i_obj_lst: 
             # separate chmbr_interactable_lst into their different chambers. We will perform two diff checks for two diff chambers referenced by the chmbr interactables 
             if i.edge_or_chamber_id == chmbr1id: 
@@ -639,17 +630,15 @@ class Map:
 
 
 
-        # figure out which chamber interactable is the "bridge" interactable for the current edge 
-        # if chmbr1obj.id == new_edge.v1: 
-        #    chmbr1references = [ele for ele in reversed(chmbr1references)]
+        # Bridge Interactable: figure out which chamber interactable is the "bridge" interactable for the current edge 
         chmbr1obj = self.get_chamber(chmbr1id)
         chamber1_interactable_lst = [interactable for interactable in chmbr1obj.allChamberInteractables]
         chamber1_bridge_interactable = chmbr1references[0]
         self.event_manager.print_to_terminal(f'edge {new_edge.id} references the following interactables assigned to chamber {chmbr1id}: {[ele.name for ele in chmbr1references]}' )
-        # Ensure that the Bridges are on an End of the Chamber Interactables
+        
+        # (Validity Check # 2) Ensure that the Bridges are on an End of the Chamber Interactables
         if chamber1_bridge_interactable != chamber1_interactable_lst[0] and chamber1_bridge_interactable != chamber1_interactable_lst[len(chamber1_interactable_lst) -1 ]: 
                 raise Exception(f'(Map,py, validate_chmbr_interactable_references) {chamber1_bridge_interactable.name} must be on the edge of the chamber, or edge{new_edge.id} must include the chamber_interactables inbetween {chamber1_bridge_interactable.name} and the edge of the chamber (in the direction of where edge{new_edge.id} exists)')
-
         if chmbr2id > 0: 
             chmbr2obj = self.get_chamber(chmbr2id)
             chamber2_interactable_lst = [interactable for interactable in chmbr2obj.allChamberInteractables]
@@ -659,10 +648,11 @@ class Map:
             if chamber2_bridge_interactable != chamber2_interactable_lst[0] and chamber2_bridge_interactable != chamber2_interactable_lst[len(chamber2_interactable_lst)-1]: 
                 raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) {chamber2_bridge_interactable.name} must be on the edge of the chamber, or edge{new_edge.id} must include the chamber_interactables inbetween {chamber2_bridge_interactable.name} and the edge of the chamber (in the direction of where edge{new_edge.id} exists)')
         
-
-        # ensure that the chmbr1references and chmbr2references match the ordering and items of the componentlst 
+        # (Validity Check # 3) Ensure that within the set of Bridge Interactables bridging an edge to a chamber, the ordering of the interactables matches the ordering specified by the chamber. 
         # index into the lst to get the matching lst, and then compare 
         for counter in range(2):
+            # On the first loop performs this check for chamber1 references, and on the second loop performs this check for chamber 2 references. 
+            # Gather bridge interactables for either chamber1 or chamber2... 
             counter += 1
             if counter == 1: 
                 chmbrRefs = chmbr1references
@@ -676,31 +666,33 @@ class Map:
                     chmbrbridge = chamber2_bridge_interactable
                     # print(f'-------edge{new_edge.id} references to chamber{chmbr2id}--------')
                 else: 
-                    break 
-
-
+                    break # Skips over the logic below since there are no interactables referenced 
+            # Now that bridge interactables for either chamber1 or chamber2 have been gathered, make the 3rd validity check: 
             startidx = chmbrinteractables.index(chmbrRefs[0]) # get indexes of the first and last element in our chmber interactable lst 
             endidx = chmbrinteractables.index(chmbrRefs[len(chmbrRefs)-1])
             if (endidx < startidx): 
-                # raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) chamber_interactables on edge{new_edge.id} must match the order given in chamber{chmbrRefs[0].edge_or_chamber_id}. Please reverse/change the order of {[*(c.name for c in chmbrRefs)]} in map.json to align according to the chambers ordering: {[*(ele.name for ele in chmbrinteractables )]} **Note that this ordering should match the physical ordering of the chamber as we move from the chamber into the edge that we are providing chamber_interactables for!**')
                 e = endidx 
                 endidx = startidx 
                 startidx = e
             interactable_lst = chmbrinteractables[startidx:endidx+1] 
-            
-            # print(f'checking for references to: {[*(c.name for c in chmbrRefs)]}' ) 
-            # print(f'comparing with: {[*(ele.name for ele in interactable_lst )]}')
-
-            # check that lists are the same 
-            
-            if interactable_lst != chmbrRefs and interactable_lst != [ele for ele in reversed(chmbrRefs)]: 
+            if interactable_lst != chmbrRefs and interactable_lst != [ele for ele in reversed(chmbrRefs)]: # check that lists are the same 
                 raise Exception(f'(Map,py, configure_setup, validate_chmbr_interactable_references) configuration for Edge{new_edge.id} Components are invalid because chamber interactables {[*(c.name for c in chmbrRefs)]} are not an ordered subset to what is specified in chamber{chmbrRefs[0].edge_or_chamber_id} interactables: {[*(ele.name for ele in chmbrinteractables )]}')
 
+        # if successfully breaks out of for loop for validity check #3, then has passed all 3 validity checks 
+        return 
+
     def configure_setup(self, config_filepath): 
-        ''' 
-        function to read/parse configuration file map.py and set up map accordingly 
-        sets up 
-        '''
+        """        
+        [summary] function to read/parse the maps configuration file and set up the map accordingly. 
+        creates and adds chambers, edges, and interactables to the map. Assigns interactables to an ordered component(calls set_as_ordered) or to an unordered component set (calls _set_unordered_component)
+        calls set_parent_interactable to set the specified parent/child relationship between interactables ( where the state of a child interactable can control the state of a parent interatable )
+        calls _setup_voles to create Vole objects 
+        Args: 
+            config_filepath (String): filepath to the map's configuration file. Must be a json file. 
+        Returns:
+            None : returns nothing, but does create an attribute for each of the new interactables for easy interactable access through the map class. 
+        
+        """
 
         # opening JSON file 
         f = open(config_filepath)
@@ -815,38 +807,51 @@ class Map:
 
     
     def set_parent_interactables(self): 
-        
-        # if an interactable specified a "parent" in its configuration file, then it gets an attribute "parent_names" which serves as a string representation of the interactable
-        # after all objects have been instantiated, we now want to assign the actual interactable objects rather than just their string representation
-        
+        """        
+        [summary] called from configure_setup() after all objects have been instantiated. 
+        if an interactable specified a "parent" in its configuration file, then it gets an attribute "parent_names" which serves as a string representation of the interactable. 
+        This function converts from the string representation of the parent interactable to the actual interactable.
+        Finally, deletes the parent_names attribute since we can now access the parent interactable directly through the parents attribute.  
+        Args: 
+            None
+        Returns:
+            None
+        """          
         for i_name in self.instantiated_interactables:
             i = self.instantiated_interactables[i_name]
             if hasattr(i, 'parent_names'): 
-                # has dependents we need to add 
+                # has parents we need to add 
                 for pname in i.parent_names:
                     try: 
                         i.parents.append(self.instantiated_interactables[pname]) # assign parent its new dependent 
-                        # self.instantiated_interactables[dname].parents.append(i) # assign dependent its new parent
-
                     except KeyError as e: 
                         print(e)
                         print(f' specified an unknown interactable {e} as a parent for {i.name}. Double check the config files for {e} and for {i.name} to ensure they are correct, and ensure that {e} was added in the map config file as well.')
                         ans = input(f' would you like to carry on the experiment without adding {e} as a parent for {i.name}? (y/n)')
                         if ans == 'n': exit()
-        
                 delattr(i, 'parent_names')  # delete the dependent_names attribute since we don't need it anymore 
           
-
-
     def get_chamber(self, id): 
-        ''' returns chamber object with specified id '''
+        """        
+        [summary] finds and returns a chamber object based on the specified id number 
+        Args: 
+            id (int) : the id of the chamber that we want to return 
+        Returns:
+            Chamber : the chamber object that has the specified id. If no chamber with id is found, returns None. 
+        """   
         for cid in self.graph.keys(): 
             if cid == id: 
                 return self.graph[cid]
         return None
 
     def new_chamber(self, id): 
-        ''' new Chamber instantiated and added to graph'''
+        """        
+        [summary] creates a new chamber and adds it to the map's graph 
+        Args: 
+            id (int) : the id for assigning to the new chaber object 
+        Returns:
+            Chamber : the newly created chamber object
+        """   
         if id < 0: 
             # NOTE --> TESTME! ensure that this does not cause any problems. 
             # skip adding this chamber to graph, as it is just for storing override button components 
@@ -860,9 +865,16 @@ class Map:
         self.graph[id] = newChamber
         return newChamber
 
-
-    def new_shared_edge(self, id, v1, v2, components=None):
-        ''' single Edge object that is shared by both vertices. Ordering of linked list will require checking the vertex indices ''' 
+    def new_shared_edge(self, id, v1, v2):
+        """        
+        [summary] creates a new edge object and adds it to the map's graph. In doing so, both chambers now have an edge object in common, connecting the two chambers. 
+        Args: 
+            id (int) : the id for the new edge object
+            v1 (int) : the id of the first chamber that the edge touches 
+            v2 (int) : the id of the second chamber that the edge touches 
+        Returns:
+            Edge : the newly created edge object
+        """    
         if not all(v in self.graph.keys() for v in [v1, v2]): raise Exception(f'Could Not Create Edge: one or both of the chambers has not been created yet, so could not add edge between them.')
         if self.get_edge(id): raise Exception(f'An edge with the id {id} already exists, could not create edge.')
         
@@ -872,9 +884,17 @@ class Map:
         self.edges.append(newEdge)
         return newEdge
         
-
-    def new_unidirectional_edges(self, id, v1, v2, components=None): 
-        ''' creates 2 new Edges for connecting 2 chambers -- each has a different Edge instance tho, so components may differ '''
+    def new_unidirectional_edges(self, id, v1, v2):
+        """        
+        [summary] This Method Not In Use!!! 
+        Creates two separate edge objects, where each edge would only allow for unidirectional movement by a simulated vole. 
+        Args: 
+            id (int) : the id for the new edge object
+            v1 (int) : the id of the first chamber that the edge touches 
+            v2 (int) : the id of the second chamber that the edge touches 
+        Returns:
+            (Edge, Edge) : the two newly created edge objects
+        """    
         if not all(v in self.graph.keys() for v in [v1, v2]): raise Exception(f'Could Not Create Edge: one or both of the chambers has not been created yet, so could not add edge between them.')
         if self.get_edge(id): raise Exception(f'An edge with the id {id} already exists, could not create edge.')
         
@@ -888,8 +908,14 @@ class Map:
         self.edges.extend([edge1, edge2]) # add new edges list of map edges
         return (edge1, edge2)
 
-    
     def get_edge(self, edgeid): 
+        """        
+        [summary] searches the map's graph to find an edge with the specified edgeid. 
+        Args: 
+            edgeid (int) : the id for the edge object we want to return
+        Returns:
+            Edge : the edge object with an id == edgeid 
+        """   
         # sort thru chamber edges and locate edge with <id> 
         for cid in self.graph.keys(): # for all chambers stored in graph
             chamber = self.graph[cid] # get Chamber object
@@ -900,7 +926,13 @@ class Map:
         return None
 
     def get_location_object(self, interactable): 
-        ''' returns chamber or edge object that the component exists in '''
+        """        
+        [summary] returns the chamber or edge object that an interactable is assigned to
+        Args: 
+            interactable (Interactable) : the interactable we want to return the location object for 
+        Returns:
+            (Chamber | Edge) : the chamber or edge object that the interactable exists in 
+        """   
                 
         if interactable.edge_or_chamber == 'chamber': 
 
@@ -915,10 +947,14 @@ class Map:
     # Path Finding Methods
     #
     def get_chamber_path(self, start, goal): 
-        '''pass in only the integer ids to specify the start/goal'''
-        '''Returns list of sequential chambers to move from start->goal chamber'''
-
-        # print(f'(Map, get_chamber_path) {start}->{goal}')
+        """        
+        [summary] finds and returns a list of Chambers that create a path from the start chamber to the goal chamber. Utilizes a BFS algorithm in order to find a path. 
+        Args: 
+            start (int) : the chamber id to start at 
+            goal (int) : the chamber id to finish at 
+        Returns:
+            ([chamber_ids]) : returns an ordered list of chamber id that specifies the sequential chamber to move from start->goal chamber 
+        """   
 
         if (start < 0 or goal < 0): 
             if start == goal: 
@@ -926,7 +962,6 @@ class Map:
             else: 
                 self.event_manager.print_to_terminal(f'(Map, get_chamber_path) paths do not exist for isolated chambers. No path connecting chamber{start}->chamber{goal}')
             
-
         def trace_path(previous, s): #helper function for get_path 
             # recursive trace back thru previous dictionary to get path 
             if s is None: return [] 
@@ -950,45 +985,43 @@ class Map:
                     if adj == goal: 
                         return trace_path(previous, adj)
     
-
     def get_path(self, start, goal): 
-        '''Must pass in the actual edge/chamber objects to specify the start and goal'''
-        '''Returns list of sequential CHAMBERS to move to in order to reach a chamber that is adjacent to edge '''
-        '''basically just a little parent function to get_chamber_path '''
-
-        # print(f'(Map, get_path) args: start={start}, goal={goal}')
+        """        
+        [summary] based on the type of the start/goal object ( chamber or edge ), calls a helper function that specializes in path finding for the certain interactable types. 
+            utilizes the get_chamber_path in order to compile a final list. 
+        Args: 
+            start (Chamber|Edge) : the chamber or edge object to begin at
+            goal (Chamber|Edge) : the chamber or edge object to finish at  
+        Returns:
+            ([Chambers]) : returns list of sequential CHAMBERS to move to in order to reach either the actual goal chamber, or, if the goal was an edge, a chamber that is adjacent to the goal edge. 
+        """ 
 
         if(start.id < 0 or goal.id < 0) and start != goal: # check for if either start or goal is an island chamber (and also not the same island chamber)
             # chambers or edges with an id that is a negative number represents an "island" chamber, where the chamber has no edges that connects it to other chambers, so it is impossible for a vole to reach 
             raise Exception(f'(Map, get_path) no paths exist from {start}->{goal}') 
-            
-
+        
+        ### Series of Helper Functions that are called based on the type of the start and goal object. One of these functions will get called from the logic below. ### 
         def edge_to_chamber_path(start, goal): 
             p1 = self.get_chamber_path(start.v1, goal.id)
             p2 = self.get_chamber_path(start.v2, goal.id)
             if len(p1) < len(p2): return p1 
             else: return p2
-
         def chamber_to_edge_path(start, goal): 
             # check the edges vertices that it connects. we want to get the chamber path that it takes to reach each of these chambers and then return the shortest path
             p1 = self.get_chamber_path(start.id, goal.v1) # path to vertex/chamber1 that edge touches
             p2 = self.get_chamber_path(start.id, goal.v2) # path to vertex/chamber2 that edge touches
             if len(p1) < len(p2): return p1 
             else: return p2 
-        
         def edge_to_edge_path(start, goal): 
             # get path starting from both chambers 
             p1 = chamber_to_edge_path(self.graph[start.v1], goal) 
             p2 = chamber_to_edge_path(self.graph[start.v2], goal)
             if len(p1) < len(p2): return p1 
             else: return p2      
-
         def chamber_to_chamber_path(start,goal): 
             return self.get_chamber_path(start.id, goal.id)   
 
-
         ### Figure Out Which function from above we should call! ###
-
         if type(start) == self.Edge:
             if type(goal) == self.Edge:
                 # edge->edge 
@@ -996,7 +1029,6 @@ class Map:
             else: 
                 # edge->chamber
                 return edge_to_chamber_path(start,goal)
-        
         else: 
             if type(goal) == self.Chamber: 
                 # chamber->chamber
@@ -1005,12 +1037,18 @@ class Map:
                 # chamber->edge
                 return chamber_to_edge_path(start,goal)
 
-
     def get_edge_chamber_path(self, start, goal): 
-        # (f'(Map, get_edge_chamber_path) args: start={start}, goal={goal}')
-        '''Returns list of sequential EDGE AND CHAMBER objects that fall between the start Location and the goal location (inclusive list, so start and goal will also be apart of list)'''
+        """        
+        [summary] finds and returns a sequential list of Chambers and Edges that create a path from the start chamber to the goal chamber. Uses get_path/get_chamber_path to get an initial chamber path, then adds in the edges where necessary.
+        This creates an inclusive path, so the start and goal will also be apart of the returned list.  
+        Args: 
+            start (Chamber|Edge) : the chamber or edge object to start at 
+            goal (Chamber|Edge) : the chamber or edge object to finish at 
+        Returns:
+            ([Chambers/Edges]) : returns an ordered list of chamber and edge objects that create a path from start->goal (list is inclusive, so start and goal are apart of the list)
+        """  
 
-        if start == goal: 
+        if start == goal: # Edge Case: start and goal are the same 
            return goal 
         
         chamberIDpath = self.get_path(start, goal) # returns list of chamber ids that we can follow along to get from start->goal
@@ -1025,29 +1063,33 @@ class Map:
             
             cid = chamberIDpath[i] # for each chamber id 
 
-            # retrieve chamber object corresponding with the chamber id 
-            c = self.graph[cid]
+            c = self.graph[cid] # retrieve chamber object corresponding with the chamber id 
 
-            # append chamber object to path 
-            path.append(c)
+            path.append(c) # append chamber object to path 
 
-            # if there is another chamber specified in the path, then we know that there is an edge to add 
-            # look one chamber forward if it exists
-            if (i+1) < len(chamberIDpath): 
-                e = c.connections[chamberIDpath[i+1]] # grab nxt edge and append 
-                path.append(e)
+            # Forward Looking Check: if there is another chamber specified in the path, then we know that there is an edge to add 
+            if (i+1) < len(chamberIDpath): # look one chamber forward if it exists
+                e = c.connections[chamberIDpath[i+1]] # if it exists, grab nxt edge and append 
+                path.append(e) # Edge added to the final path 
             
-            i += 1 
+            # i += 1 # Iterate to next Chamber 
         
-        # if goal specified was an edge, append the edge object now 
+        # Final Check: if the goal argument was an edge, append the final edge object to the path 
         if type(goal) == self.Edge: 
             path.append(goal)
         
-
         return path 
 
-
     def get_component_path_within_edge(self, edge, start_component, goal_component): 
+        """        
+        [summary] ... leaving off here ! (Nov22)
+        Args: 
+            edge (Edge) : description
+            start_component (Component) : description 
+            goal_component (Component) : description
+        Returns:
+            (type) : description
+        """  
         '''
         basically just figures out if we need to reverse components on an edge or not. 
         Using the start_component, it finds the quickest path to reach goal_compoennt
