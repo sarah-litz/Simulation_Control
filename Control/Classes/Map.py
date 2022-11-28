@@ -303,7 +303,6 @@ class Map:
             print(f'({e.v1}) <---{vole_interactable_lst}----> ({e.v2})')
         PRINTING_MUTEX.release() # RELEASE PRINTING LOCK
 
-
     def draw_location(self, location, voles=[]): 
         """        
         [summary] Draws a specific location and the components/voles within the location.
@@ -380,7 +379,6 @@ class Map:
             for adj in chamber.connections.keys(): 
                 edge = chamber.connections[adj]  
                 print(edge)                      # edge id and vertices it connects
-
     
     def print_interactable_table(self): 
         """        
@@ -417,8 +415,8 @@ class Map:
 
 
     #
-    # Getters and Setters 
-    #        
+    # Handling Instantiated Interacables: Activate, Deactivate, and Reset all Interactables
+    #    
     def instantiate_interactable_hardware( self, name, type ): 
         """        
         [summary] called from configure_setup() 
@@ -525,11 +523,7 @@ class Map:
 
         # new_obj.activate()
         return new_obj
-
     
-    #
-    # Handling Instantiated Interacables: Activate, Deactivate, and Reset all Interactables
-    #
     def reset_interactables(self): 
         """        
         [summary] loops thru all instantiated interactables and resets them (emptys their threshold event queue) 
@@ -541,6 +535,7 @@ class Map:
         
         for (n,i) in self.instantiated_interactables.items() :
             i.reset() 
+    
     def activate_interactables(self): 
         """        
         [summary] loops thru all instantiated interactables and ensures that all are actively running 
@@ -554,6 +549,7 @@ class Map:
             if not i.active: 
                 i.activate()
         control_log('\n')
+    
     def deactivate_interactables(self, clear_threshold_queue = True): 
         """        
         [summary] loops thru all instantiated interactables and sets each of them to be inactive. Called in between modes 
@@ -804,7 +800,6 @@ class Map:
         # Lastly, set attributes for convenient access to all of the hardware components 
         for (name, interactable) in self.instantiated_interactables.items(): 
             setattr( self, name, interactable )
-
     
     def set_parent_interactables(self): 
         """        
@@ -1816,14 +1811,18 @@ class Map:
             return reversed_lst
 
         #
-        # Component Object: subclass of OrderedComponents. Used for implementing Linked List 
+        # Component Object: inner of EdgeComponents. Used for implementing Linked List 
         #
         class Component: 
-       
+            '''[Description] 
+            inner class of EdgeComponents. Represents a singular Component within a linked list of multiple components. 
+            Contains an interactable object, and a pointer to the Component that precedes and succeeds it. 
+            '''
+            
             def __init__(self, interactable): 
                 self.interactable = interactable # access to the actual object that represents a hardware component
-                self.nextval = None
-                self.prevval = None
+                self.nextval = None # Successor Component 
+                self.prevval = None # Predeccesor Component
             
             def __str__(self): 
                 return str(self.interactable.name)
@@ -1832,6 +1831,10 @@ class Map:
     # Edge -- linked list for storing Components
     # 
     class Edge(EdgeComponents):    
+        '''[Description] 
+        derives from EdgeComponents so it has linked list capabilities, and provides additional attributes that mostly contain the "meta-data" for describing an edge. (e.g. which chambers it connects and an identifier value).  
+        '''
+
         def __init__(self, id, chamber1, chamber2, type=None): 
             # Identifying Edge w/ id val and the chambers it connects 
             self.id = id 
@@ -1903,7 +1906,7 @@ class Map:
         ''' [Description] 
         allows map to perform some basic vole tracking 
         '''
-
+        
         def __init__(self, tag, start_chamber, rfid_id, map): 
             
             self.rfid_id = rfid_id # rfid hex value 
