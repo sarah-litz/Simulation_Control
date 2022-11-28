@@ -1082,19 +1082,16 @@ class Map:
 
     def get_component_path_within_edge(self, edge, start_component, goal_component): 
         """        
-        [summary] ... leaving off here ! (Nov22)
+        [summary] Returns an ordered list of components that represents a path from start_component->goal_component. This method requires that both start and goal components are on the same <edge>. 
+                    The purpose of this method is basically just to figure out if we need to reverse components on the edge or not. ( where the initial order is what was provided in the map config file )
+                    Helper function to get_component_path, which does not require that the start and goal components lie on the same edge. 
         Args: 
-            edge (Edge) : description
-            start_component (Component) : description 
-            goal_component (Component) : description
+            edge (Edge) : the edge that the start_component and goal_component are assigned to.
+            start_component (Component) : the component that the path will start at  
+            goal_component (Component) : the component that the path will finish at 
         Returns:
-            (type) : description
+            ([Component]) : ordered list of edge components
         """  
-        '''
-        basically just figures out if we need to reverse components on an edge or not. 
-        Using the start_component, it finds the quickest path to reach goal_compoennt
-        both components must exist on the same edge. 
-        '''
         if start_component not in edge or goal_component not in edge: 
             raise Exception(f'(Map.py, get_component_path_within_edge) Invalid Arguments: {start_component} and {goal_component} must be on {edge} to get a path within a single edge')
         edge_component_list = edge.get_component_list()
@@ -1106,10 +1103,14 @@ class Map:
 
     def get_component_path(self, start_component, goal_component ): 
         ''' 
-        arguments should be of component type 
-        function first gets list of sequential edge and chamber components that fall between the start Location and the goal location
-        then, it removes any components that fall outside of the start_compoennt and goal_component and returns this list. 
-        returns list of INTERACTABLE TYPE! 
+        [summary] gets an ordered list of interactables that a vole will pass when traveliing from start_component -> goal_component. arguments must be of component type. 
+                  function first gets list of sequential edge and chamber components that fall between the start location and the goal location. Then, removes any components that fall outside of start_component and goal_component and returns this list. 
+                  works out adding the correct components based on map configurations. ( Has to break ties between a chamber_interactable referenced by the edge and the same interactable referenced within a chamber. )
+        Args: 
+            start_component (Component) : the component that the path will start at  
+            goal_component (Component) : the component that the path will finish at 
+        Returns: 
+            ([Interactable]) : ordered list of INTERACTABLES that represent a path of all components a vole will pass when traveling from start_component -> goal_component.
         '''
         
         control_log(f'(Map, get_component_path) {start_component}->{goal_component}')
@@ -1348,88 +1349,6 @@ class Map:
         
         return component_path[start_idx:goal_idx+1] 
 
-            
-        ##########
-
-        '''
-                        # Figure out if a bridge component exists between the chamber and the next edge. 
-                        # RECURSIVE CALL 
-                    something = False
-                    if something: # added this in for spacing reason! 
-                        print([str(c) for c in curr_loc_components]) 
-                        print('RECURSIVE CALL SECTION')
-                        nxt_edge = loc_path[i+1]
-                        within_chmbr_list = None
-                        for comp in nxt_edge: 
-                            if comp.interactable.edge_or_chamber == 'chamber' and comp.interactable.edge_or_chamber_id == loc.id: 
-                                within_chmbr_list = self.get_component_path(start_component, goal_component = comp)
-                                break 
-                        if within_chmbr_list is None: 
-                            # no bridge component for this edge. Only add the unordered set. 
-                            curr_loc_components = loc.unorderedComponent
-                        else: 
-                            print('\n\n(Map.py, get_component_path) RECURSIVE CALL RETURNED: ', ([str(c) for c in within_chmbr_list]))
-
-                    '''
-
-        '''print('Current Location Components: ', curr_loc_components)
-                # get the interactable version of the component path we are iterating/appending to
-                interactable_path = []
-                for c in component_path: 
-                    if type(c) is self.Chamber.ComponentSet: 
-                        interactable_path.extend([i for i in c.interactableSet])
-                    else: 
-                        interactable_path.append(c.interactable)
-
-                # get the interactable version of the current location's components
-                curr_loc_interactables = []
-                for c in curr_loc_components: 
-                    if type(c) is self.Chamber.ComponentSet: 
-                        curr_loc_interactables.extend([i for i in c.interactableSet])
-                    else: 
-                        curr_loc_interactables.append(c.interactable)
-                # print('(Map.py, get_component_path) CURR LOCATION COMPONENTS:', [*(str(ele) for ele in curr_loc_components)])
-                if loc.edge_or_chamber == 'chamber': 
-
-                    for c in curr_loc_components: # loop thru the chamber's components
-                        if c in component_path: 
-                            # LEAVING OFF HERE!
-                        # if c.interactable in interactable_path: 
-                            pass # skip component if that interactable is already in path (meaning it got added by an edge reference)
-                        else: 
-                            component_path.append(c) 
-                else: # location is an edge! 
-                    for c in curr_loc_components: # loop thru edge's components 
-                        if c.interactable in interactable_path: # interactable already in path (meaning it got added by a chamber, and now we are encountering an edge reference to that same interactable)
-                            # REPLACE this interactable added by a chamber component with the edge's version of the interactable!! 
-                            interactable_to_replace =  self.get_chamber(c.interactable.edge_or_chamber_id).get_component_from_interactable(c.interactable) # retrieve the chamber component paired with this interactable
-                            idx = component_path.index(interactable_to_replace)
-                            print(f'\n\n(Map.py, get_component_path) REPLACING {interactable_to_replace} with the edge component version. Before path: {[*(str(c) for c in component_path)]}')
-                            component_path = component_path[:idx] + [c] + component_path[idx+1:]
-                            print(f'(Map.py, get_component_path) After Path: {[*(str(c) for c in component_path)]}')
-                        else: 
-                            component_path.append(c)
-            
-            
-        ''' 
-        # full component path has been compiled. Final step is to remove elements that fall outside of the range of the start_component and goal_component 
-        # since start or goal components may have been chamber component where we added the edge version of the component, we should check for the index by interactable rather than by component 
-                        # get the interactable version of the component path we are iterating/appending to
-        # print('(Map.py, get_component_path) FULL COMPONENT PATH: ', str(*(component_path)))
-
-                    
-
-
-
-    class ChamberComponents: 
-        ''' 
-        class for traversing and locating the UNORDERED components in a chamber 
-        contains list of InteractableABC objects. 
-        '''
-        
-        
-
-
     # 
     # Chamber -- vertices in the graph
     #  
@@ -1463,14 +1382,15 @@ class Map:
             self.unorderedComponent = self.ComponentSet() # Contains the Unordered Components of a chamber! attribute set after map finishes setting up all chambers/edges and their interactables. 
             
             self.edgeReferences =  {} # Interactables referenced by an Edge! key: Edge that references the interactable, value: list of interactable objects that have a component object on that edge to specify ordering
-            # # doesn't make sense for a chamberSet to have nextval and prevval, cuz they may have more than one connection to surrounding edges
-
-
-
+            
         class ComponentSet: 
             ''' 
-            creates a singular ComponentSet instance to contain all of the unordered interactables 
+            [ description ] Subclass of the Chamber Class. This class is a container for Unordered Interactables in a Chamber. 
+            A single instance of Component Set cannot exist in more than one Chamber. However, one chamber can contain multiple ComponentSet instances. 
+            creates a singular ComponentSet instance to contain all of the unordered interactables in a chamber. 
+            A ComponentSet (implying the containment of unordered interactables) cannot exist in an edge.
             '''
+            # (note) doesn't make sense for a chamber's ComponentSet to have nextval and prevval, cuz they may have more than one connection to surrounding edges # 
             def __init__(self, interactableSet=[]): 
                 self.interactableSet = interactableSet # access to the actual object that represents a hardware component
             def __str__(self): 
@@ -1478,39 +1398,62 @@ class Map:
             def __iter__(self): 
                 for i in self.interactableSet: 
                     yield i
+
             def set_interactables(self, interactableSet): 
+                ''' 
+                [summary] called from Chamber class's _set_unordered_component in order to update the interactables that belong to this Component Set instance
+                Args: interactableSet ([Interactable]) : list of interactables that belong to this (unordered) Component Set 
+                '''
                 self.interactableSet = interactableSet
             def remove(self, interactable): 
                 self.interactableSet.remove(interactable)
         
-
-
         def _set_unordered_component(self): 
             ''' 
-            called after all edges/chambers have been set with their interactables 
-            updates the attribute self.unorderedComponent to contain the unorderedSet of interactables
+            [summary] called after all edges/chambers have been set with their interactables. At this point, the ComponentSet objects will recieve their unordered set of interactables.
+            Calls set_interactables in order to set the Chamber's ComponentSet.unorderedComponent so it actually contains interactables. 
+            Args: 
+                None
+            Returns: 
+                None
             '''
             self.unorderedComponent.set_interactables(self.unorderedSet)
             self.unorderedComponent_isSet = True 
 
-
         def get_component_for_ordered_interactable(self, interactable): 
-            ''' returns the Component object that was created by the edge when the edge referenced a chamber interactable '''
+            ''' 
+            [summary] searches the chamber's set of interactables that were referenced by an edge and then returns the Component object that contains the specified <interactable> 
+            This method searches specifically for an ordered component, meaning we know that the interactable must have been referenced by an edge. 
+            Therefore, method searches all edges adjacent to the chamber in order to locate the interactable. 
+            Args: 
+                interactable (Interactable) : interactable must be an Ordered Interactable (i.e. does not belong to a ComponentSet, which contains unordered interactables)
+            Returns: 
+                (Component) : returns the Component object that was created by the edge when the edge referenced a chamber interactable. 
+            '''
             for (edge, interactablelst) in self.edgeReferences.items(): 
                 if interactable in interactablelst: 
                     return edge.get_component_from_interactable(interactable)
         
         def get_edge_for_ordered_interactable(self, interactable): 
-            '''returns the Edge object that contains a Component that references a chamber interactable'''
+            '''
+            [summary] searches the chamber's set of interactables that were referenced by an edge and then returns the edge that references the specified <interactable>. 
+            Args: 
+                interactable (Interactable) : interactable must be an Ordered Interactable. 
+            Returns: 
+                (Edge) : returns the Edge object that contains a Component that references the specified chamber <interactable>'''
             for (edge, interactablelst) in self.edgeReferences.items(): 
                 if interactable in interactablelst: 
                     return edge 
 
-
         def get_component_list(self, reverse = False ): 
             ''' 
-            returns all components w/in chamber in a list format 
-            this will be in the format [ ordered components + [inner list of unordered components] + ordered components ]
+            [summary] Returns all components within a chamber in a list format: 
+                        [ ordered components + [inner list of unordered components] + ordered components ]
+            Args: 
+                reverse (Boolean, Optional) : provides the option to reverse the order that the list of chamber components is compiled. Defaults to False, meaning it will not be reversed. 
+            Returns: 
+                ([Component | ComponentSet] returns all components w/in chamber in a list format. 
+                This list will be in the format [ ordered components + [inner list of unordered components] + ordered components ]
             '''
             component_list = []
             for idx in range(0, len(self.allChamberInteractables)): 
@@ -1528,7 +1471,6 @@ class Map:
             else: 
                 return [ele for ele in reversed(component_list)]
 
-
         def __str__(self): 
             return 'Chamber: ' + str(self.id) + ', adjacent: ' + str([x for x in self.connections]) + ', interactables: ' + str([i.name for i in self.allChamberInteractables])
         
@@ -1543,7 +1485,14 @@ class Map:
                     unordered_done = True  
         
         def get_component_from_interactable(self, interactable): 
-            '''simply return the Chamber object'''
+            ''' 
+            [summary] locates and returns the component or component set object that contains the specified <interactable>
+            Args: 
+                interactable (Interactable) : the interactable object that we want to recieve the Component or ComponentSet container for. 
+            Returns: 
+                (ComponentSet | Component) : An unordered interactable will belong to some ComponentSet in a Chamber, otherwise the interactable is contained in a Component object.
+            '''
+
             # figure out what Set the interactable belongs in, and return the Component accordingly 
             
             if interactable in self.unorderedSet: 
@@ -1558,10 +1507,16 @@ class Map:
 
         def set_as_ordered(self, interactable, edge): 
             ''' 
-            Called during setup whenever we encounter a "chamber_interactable" referenced on an Edge! 
-            Interactable will no longer be an "unordered" interactable, but is now treated as an ordered edge interactable
-            removes interactable from the Chamber's unordered interactable set, and moves it to the ordered interactable set
-            assigns it to the specified edge in the edgeReferences dictionary
+            [summary] called during setup whenever we encoutner a "chamber_interactable" referenced by an Edge. 
+            Interactable will no longer be an unordered interactable, but is now treated as an ordered edge interactable. ( This is done by changing its Component container from a ComponentSet -> Component)
+            Removes the interactable from the chamber's unordered interactable set and moves it to the ordered interactable set. 
+            Assigns the interactable to the specified edge in the edgeReferences dictionary. 
+            Args: 
+                interactable (Interactable) : the chamber interactable object that an edge is referencing. 
+                edge (Edge) : the edge containing a reference to a chamber interactable. 
+            Returns: 
+                None
+                
             '''
             control_log(f'(Map.py, set_as_ordered) Edge referencing a chamber object! Setting {interactable.name} as an ordered component in {edge.id}')
             
@@ -1577,19 +1532,20 @@ class Map:
             else: 
                 self.edgeReferences[edge] = [interactable]
 
-            # print('Unordered Set: ', [i.name for i in self.unorderedSet])
-            # print('Ordered Set', [i.name for i in self.orderedSet])    
-            #for (k,v) in self.edgeReferences.items():
-            #    print(f'Edge{k.id}->Chamber{self.id} References: {k} ---> {[i.name for i in v]}')
-
-
         def remove_interactable(self, interactable): 
-            '''removes interactable from the Chamber's ComponentSet'''
-            # TESTME
+            '''
+            [summary] NOT IN USE, NEEDS TESTING! 
+            Allows for an interactable to be removed AFTER it was already added by the map configurations. 
+            Removes the specified interactable from a Chamber's UnorderedSet or the OrderedSet (dependent on the interactable's component type.) 
+            If the interactable's component is an ordered component, also removes the component from the Edge that it was referenced from. 
+            Args: 
+                interactable(Interactable) : the interactable object that will be removed from the map 
+            Returns: 
+                None 
+            '''
+            
             if interactable not in (self.allChamberInteractables): # nothing to remove
                 return  
-
-
             # remove the interactable from all relevant sets and Components
             if interactable in self.unorderedSet: 
                 self.unorderedSet.remove(interactable)
@@ -1603,15 +1559,20 @@ class Map:
                         new_i_list = interactable_list.remove(interactable)
                         self.edgeReferences[edge] = new_i_list # remove interactable from the edge references list
                         e.remove_component(interactable) # remove component from the edge 
-                
                 self.orderedSet.remove(interactable)
-                
-                
             self.allChamberInteractables.remove(interactable)
-            
-        ''' Adding Interactable to Chamber's Interactable Set! Defaults to an Unordered Chamber Interactable ( to make an ordered one, we must reference the interactable from an edge ) '''
+
         def new_interactable(self, newinteractable): 
-            
+            '''
+            [summary] adds an interactable to a chamber's component set. Defaults to an Unordered Chamber Interactable (i.e. adds to the chamber's ComponentSet )
+                        This interactable may later be changed to an Ordered Interactable if it referenced from an edge. 
+                        Updates the interactable object's edge_or_chamber information, and then adds to the chamber's ongoing lists for tracking interactables. 
+                        (Adds to chamber's self.allChamberInteractables, self.unorderedSet, and the self.unorderedComponent.interactableSet (which is the chamber's ComponentSet for containing unordered interactables))
+            Args: 
+                newinteractable (Interactable) : the interactable object to be added to the the Chamber's ComponentSet 
+            Returns: 
+                None 
+            '''
             # check that this interactable doesn't already exist in the chamber 
             if newinteractable in self.allChamberInteractables: 
                 raise Exception(f'(Map.py, Chamber.new_component) {newinteractable.name} not added because this component has already been added to the chamber')
@@ -1625,14 +1586,18 @@ class Map:
             if self.unorderedComponent_isSet: 
                 # unordered component was already assigned the unordered set. manually add this new unordered component 
                 self.unorderedComponent.interactableSet.append(newinteractable)
-
         
-        #
-        # (for Simulation Use Only) Probability Tracking: tracking probabilities of some Action-Object getting chosen by a Vole when a simulated vole is told to make random decisions
-        #
         def add_action_probabilities( self, actionobj_probability_dict ): 
-            
-            ''' function for extensive error checking before assigning the probabilities to the possible actions from the current chamber '''
+            ''' 
+            [summary] (NOTE) THIS METHOD IS NOT IN USE, NEEDS TESTING BEFORE USE! 
+            FOR SIMULATION USE ONLY. Probability Tracking: tracking probabilties of some Action-Object getting chosen by a vole when a simulated vole is told to make random decisions. 
+            adds probabilites to certain actions, to decrease or increase the likelihood that a vole makes a certain move in a simulation. 
+            provides extensvie error checking before assigning the probabilities to the possible actions from the current chamber. 
+            Args: 
+                actionobj_probability_dict (Dictionary) : provides an action and a probability to assign to that action 
+            Returns: 
+                None 
+            '''
 
             # Check that probabilities have been set for every value (the +1 is for the time.sleep() option)
             if len(actionobj_probability_dict) != len(self.interactables) + len(self.connections) + 1: 
@@ -1660,25 +1625,26 @@ class Map:
             
 
             self.action_probability_dist = actionobj_probability_dict
-
     
-
-
     #
-    #
-    #                    e d g e s 
-    #
-    #
-    # Linked List for Interactable Ordering w/in Edge 
+    # EdgeComponents -- nodes within the linked list. Each node represents a Component, which contains an interactable object. 
     #
     class EdgeComponents: 
-        ''' Class for Traversing and Locating the ORDERED Components on an Edge. 
+        ''' [Description]
+        Parent Class for Edge Class (i.e. the Edge Class derives from this class). This structure of parent/child class is required for implementing a linked list data structure. 
+        Provides methods for easily traversing and locating the ORDERED Components on an Edge. 
         Manages Linked Lists that preserves order of interactable components.
         Possible to add info on the "edges" that link two components. i.e. can assign values so we can identify where a vole sits relative to interactables w/in the linked list. 
         '''
 
         def component_exists(self, interactable): 
-            # beginning at headval, traverses linked list to find component. Returns True if exists, False otherwise 
+            '''
+            [summary] beginning at the edge's headval, traverses the linked list to find the specified interactable. Returns True as soon as it locates the specified interactable.
+            Args: 
+                interactable (Interactable) : the object that the edge will be searched for
+            Returns: 
+                (Boolean) : True if <interactable> exists in the edge, False otherwise. 
+            '''
             if (self.headval.interactable == interactable): 
                 return True
             c = self.headval
@@ -1689,7 +1655,13 @@ class Map:
             return False
 
         def get_interactable_from_component(self, name): 
-            '''traverses linked list and returns object with specified name'''
+            '''
+            [summary] traverses the linked list to find an interactable with the specified name. As soon as interactable with <name> is encountered the method returns, as there should only be unique interactales along the edge. 
+            Args: 
+                name (string) : the name of the interactable object we want to retrieve
+            Returns: 
+                (Interactable) : the interactable object labeled with the specified <name> 
+            '''
             if not (self.headval): 
                 # Edge does not contain any components (i.e. no interactables) 
                 return None 
@@ -1705,22 +1677,38 @@ class Map:
             return None # a component with an interactable with name does not exist in linked list
 
         def get_component_list(self, reverse = False ): 
-            ''' returns all components w/in edge or chamber in a list format '''
+            '''
+            [summary] returns an ordered list of components that belong to the edge. 
+            Args: 
+                reverse (Boolean, optional) : if set to true, will reverse the order of the returned list.
+            Returns: 
+                [Components] : list of components on the edge 
+            '''
             if not reverse: 
                 return [c for c in self] 
             else: 
                 return self.reverse_components() 
 
         def get_interactable_list(self, reverse = False): 
-            ''' returns all interactables w/in edge or chamber in a list format '''
+            '''
+            [summary] returns an ordered list of interactables assigned to the edge
+            Args: 
+                reverse (Boolean, optional) : if set to True, will reverse the order of the interactables for the list that is returned.
+            Returns: 
+                [Interactable] : list of interactables on the edge
+            '''
             components = self.get_component_list(self, reverse)
             return [c.interactable for c in components]
 
-
         def get_component_from_interactable(self, interactable): 
-            ## helper function for adding components into the linked list ## 
-            '''beginning at headval, traverses linked list to find component. Returns None if it does not exist'''
-            
+            '''
+            [summary] traverses the linked list in search of <interactable>. Returns the component container for this interactable. Returns None if it does not exist. 
+            ( this is a helper function for adding components into the linked list ) 
+            Args: 
+                interactable (Interactable) : the interactable object that we will search the linked list for. 
+            Returns: 
+                (Component) : the component object that contains <interactable> 
+            '''            
             if not (self.headval): 
                 # Edge does not contain any components 
                 return None 
@@ -1735,10 +1723,15 @@ class Map:
                     return c 
             return None # c does not exist in linked list 
 
-
         def new_component_after(self, newinteractable, previnteractable): 
-            '''instantiates and adds new component directly after the specified interactable (so can be in middle of linked list if desired)''' 
-
+            '''
+            [summary] Instantiates a new Component object and adds the component to the linked list at a position designated by <previnteractable> (so a component can be added in the middle of a linked list if desired.)
+            Args: 
+                newinteractable (Interactable) : the interactable that will be added into the Edge's linked list 
+                previnteractable (Interactable) : an interactable that already exists in the Edge's linked list. This is provided for specifying what interactable <newinteractable> will be placed AFTER. 
+            Returns: 
+                (Component) : the newly created Component object that contains <newinteractable> 
+            '''
             if (self.component_exists(newinteractable)) is True: raise Exception(f'{newinteractable} already exists on this edge')
             if previnteractable is not None: 
                 if (self.component_exists(previnteractable)) is False: raise Exception(f'{previnteractable} must already exist on this edge to add a component that follows it, so could not add {newinteractable}')
@@ -1772,8 +1765,13 @@ class Map:
                 return newComp
         
         def remove_component(self, interactable): 
-            ''' updates linked list to remove specified interactable '''
-
+            '''
+            [summary] updates linked list to remove the specified <interactable> 
+            Args: 
+                interactable (Interactable) : the interactable object to be removed from the edge's linked list 
+            Returns: 
+                None 
+            '''
             remComp = self.get_component_from_interactable(interactable)
             if remComp==None: raise Exception(f'{interactable} does not exist, so cannot remove it from linked list') 
 
@@ -1794,12 +1792,14 @@ class Map:
             del remComp 
             return 
         
-
         def reverse_components(self): 
-
-            ''' returns list of components in the reverse order that they were added in '''
+            '''
+            [summary] method for reversing the original ordering of components (where the original ordering is the order defined by the map config file)
+            Args: None 
+            Returns: 
+                [Components] : list of components in the reverse order that they were originally added in 
+            '''
             # instantiates new Component and adds to end of linked list
-
             if self.headval is None: 
                 return self.headval 
             
@@ -1829,21 +1829,17 @@ class Map:
                 return str(self.interactable.name)
 
     #
-    # Edges -- linked list for storing Components
+    # Edge -- linked list for storing Components
     # 
     class Edge(EdgeComponents):    
         def __init__(self, id, chamber1, chamber2, type=None): 
-            
             # Identifying Edge w/ id val and the chambers it connects 
             self.id = id 
             self.v1 = chamber1 
             self.v2 = chamber2
             self.type = type 
             self.edge_or_chamber = 'edge'
-
             self.headval = None # points to first component in linked list
-
-
 
         def __str__(self): 
             interactables = [c.interactable.name for c in self] # list of the interactable object's Names -- (concatenation of type+ID)
@@ -1852,8 +1848,6 @@ class Map:
 
             return 'Edge ' + str(self.id) + f', connects: {self.v1} --{interactables}---> {self.v2}'
 
-
-        ''' Methods for Traversing and Locating Components on an Edge '''
         def __iter__(self): 
             component = self.headval
             while component is not None: 
@@ -1861,30 +1855,32 @@ class Map:
                 print 
                 component = component.nextval
 
-
-        ''' Adding Component to an Edge'''
         def new_component(self, newobj, chamber_interactable_reference = False): 
-            # instantiates new Component and adds to end of linked list
-            # newobj is of interactable type 
+            '''
+            [summary] method for adding a component to the edge. Instantiates a new Component and adds to end of linked list.  
+            Args: 
+                newobj (Interactable) : the interactable object that will be contained in a new Component and added to the edge's linked list.
+                chamber_interactable_reference (Boolean, Optional) : set to True if the interactable provided was initially created as a Chamber Interactable, and this edge is referencing that interactable 
+                                                                    (thus, giving it a new container of an (ordered) Component and removing it from its original container of the chamber's UnorderedComponent)
+            Returns: 
+                (Component) : returns the newly created Component object that contains the interactable <newobj> 
+            '''
+
             if chamber_interactable_reference is False: 
                 newobj.edge_or_chamber = 'edge'
                 newobj.edge_or_chamber_id = self.id
             else: 
-                # Chamber Interaactable Reference! 
-                    # referencing an existing chamber interactable, which is stored in the chamber's interactableSet
-                    # Leaving the interactable the same (so it is still assigned to the same chamber), we need remove the interactable from the Chamber's unorderedSet and add it to the Chamber's edgeReferences 
-                    # and then create a new Edge Component that will store this interactable
-
-                # (FISH) we have already removed the interactable from the ComnponentSet, so just need to create the new, regular Component version of the interactable
-                #### if we wanna connect the Component to the ComponentSet, and the ComponentSet with its surrounding Components, add logic here!
-
-                # newComp = newobj 
+                # Chamber Interaactable Reference! ( referencing an existing chamber interactable, which is stored in the chamber's interactableSet ) 
+                    # We have already removed the interactable from the chamber's ComponentSet at this point, so only need to create the new edge Component container for the interactable. 
+                    # Leaving the interactable the same (so it is still assigned to the same chamber). ( we removed the interactable from the Chamber's unorderedSet and added it to the Chamber's edgeReferences ) 
+                    #### if we wanna connect the Component to the ComponentSet, and the ComponentSet with its surrounding Components, add logic here!
                 pass 
 
             newComp = self.Component(newobj) # Component to store the interactable called newobj
 
-            if self.headval is None: 
+            ## Traverse and Add new component to the edge's linked list
 
+            if self.headval is None: 
                 self.headval = newComp
                 return newComp
             
@@ -1900,11 +1896,13 @@ class Map:
             newComp.prevval = component # set new Component's previous component to allow for backwards traversal     
             return newComp
 
-
-
+    #
+    # Vole 
+    #
     class Vole: 
-
-        ''' allows map to perform some basic vole tracking '''
+        ''' [Description] 
+        allows map to perform some basic vole tracking 
+        '''
 
         def __init__(self, tag, start_chamber, rfid_id, map): 
             
@@ -1920,31 +1918,69 @@ class Map:
         def __str__(self): 
             return f'Vole{self.tag}'
 
-        
+    #
+    # Map Class's Methods for Creating and Managing Vole Objects 
+    # 
     def _setup_voles(self, data): 
-        # uses data in the map config file to create voles and set their start location
+        '''
+        [summary] uses data in the map config file to instantiate Vole objects, add to the map's Vole attribute, and sets their start location
+        Args: 
+            data (string) : string values pulled from the map configuration file ( initially provided in json format )
+        Returns: 
+            None 
+        '''
         for v in data['voles']: 
             self.new_vole(v['tag'], v['start_chamber'], v['rfid_id'])
 
     def update_vole_location(self, tag, loc): 
-        ''' retrieves the vole object specified by <tag> and updates its location to <loc> '''
+        '''
+        [summary] retrieves the vole object that was assigned <tag> and updates its location to <loc> 
+        Args: 
+            tag (int) : the vole's identifier value 
+            loc (Chamber | Edge) : the Chamber or Edge object representing the vole's current location 
+        Returns: 
+            None 
+        '''
         v = self.get_vole_by_rfid_id(tag)
         v.prev_loc = v.curr_loc 
         v.curr_loc = loc 
 
     def get_vole(self, tag): 
+        '''
+        [summary] retrieves vole using its <tag> value 
+        Args: 
+            tag (int) : the vole's identifier value 
+        Returns: 
+            (Vole) : the vole object 
+        '''
         # searches list of voles and returns vole object w/ the specified tag 
         for v in self.voles: 
             if v.tag == tag: return v  
         return None
+    
     def get_vole_by_rfid_id(self, rfid_id): 
+        '''
+        [summary] retrieves vole using its <rfid_id> value 
+        Args: 
+            rfid_id (int) : the rfid hex value that is assigned to the vole. (This is relevant when the CANBus system is in use. Otherwise, this value defaults to the same value as the tag value.)
+        Returns: 
+            (Vole) : the vole object 
+        '''
         # searches list of voles and returns vole object w/ the specified rfid id 
         for v in self.voles: 
             if v.rfid_id == rfid_id: return v
         return None 
+    
     def new_vole(self, tag, start_chamber, rfid_id): 
-        
-        ''' creates a new Vole object and adds it to the list of voles. Returns Vole object on success '''
+        '''
+        [summary] instantiates a new Vole object and adds it to the list of Voles. On success, the new vole object will be returned. 
+        Args: 
+            tag (int) : for simplicity, this is a more user-friendly value that is assigned to the vole so we can abstract away from using the rfid_id which is a long and annoying value. 
+            start_chamber (int) : the id of the chamber that the vole will begin in. 
+            rfid_id (hex | int) : if CAN Bus in use, this value is the hex value that is unique to the rfid chip inside of the Vole. If CAN not in use, then this value will default to the <tag> value. 
+        Returns: 
+            (Vole) : the newly created vole object. 
+        '''
 
         # ensure vole does not already exist 
         if self.get_vole(tag) is not None: 
@@ -1975,8 +2011,6 @@ class Map:
                     start_chamber = int(ans)
                     chmbr = self.get_chamber(int(start_chamber)) 
                 except ValueError as e: print(f'invalid input. Must be a number or the letter q. ({e})')            
-
-                
 
         # Create new Vole 
         newVole = self.Vole(tag, start_chamber, rfid_id, self)
