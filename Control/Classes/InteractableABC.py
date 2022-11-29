@@ -1,25 +1,23 @@
 """
 Authors: Sarah Litz, Ryan Cameron
 Date Created: 1/24/2022
-Date Modified: 4/6/2022
+Date Modified: 11/28/2022
 Description: Class definition for interacting with hardware components. This module contains the abstract class definition, as well as the subclasses that are specific to a piece of hardware.
+            Includes the following class definitions: 
+                Inner classes of InteractableABC: button, servo 
+                Child Classes that inherit from InteractableABC: lever, door, rfid, dispenser, buttonInteractable, beam, laser 
 
 Property of Donaldson Lab at the University of Colorado at Boulder
 """
 
 # Standard Lib Imports 
-import importlib
+import time, random, sys, queue, threading
+
+# Third Party Imports 
 from cgitb import reset
-import time
-import random
-import threading
-import queue
-import signal
-import sys
 
 # Local Imports 
-from Logging.logging_specs import control_log, sim_log
-from .Timer import Visuals
+from Logging.logging_specs import control_log
 
 try: 
     import RPi.GPIO as GPIO 
@@ -37,9 +35,6 @@ try:
 except Exception as e: 
     print(e)
     SERVO_KIT = None
-
-
-
 
 class interactableABC:
 
@@ -75,22 +70,20 @@ class interactableABC:
         self.buttonObj = None 
         self.servoObj = None 
 
-    
     def __str__(self): 
-
         return self.name
 
-    # ------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------
-    
-    #
-    # InteractableABC Subclasses: Servo, PosServo(Servo), ContServo(Servo), and Button ( utilizes Rpi.GPIO and adafruit_servokit.ServoKit )
-    #
+    # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+    #         InteractableABC Inner Classes Servo, PosServo(Servo), ContServo(Servo), and Button ( uses Rpi.GPIO and adafruit_servokit.ServoKit )
+    # ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
     class Button:
-        # Class for tracking Switch States # 
-        '''subclass of interactableABC, as buttons will never be a standalone object, they are always created to control a piece of hardware
-        attempts importing GPIO library. If simulation, this will fail, in which case we return and don't have a real button. 
+        '''[Description] 
+        Subclass of interactableABC, as buttons will never be a standalone object, they are always created to control a piece of hardware
+        Will attempt importing GPIO library. If simulation, this will fail, and we will simulate the button. 
+        Class is used for tracking Switch States of doors, if a lever is in a pressed state, etc. 
         '''
+        
         def __init__(self, button_specs, parentObj):
 
             self.parent = parentObj 
@@ -101,13 +94,11 @@ class interactableABC:
 
             self.buttonQ = queue.Queue() # queue where we append each time a button press is detected
             
-
             # Setup the isSimulation attribute: isSimulation is True if we were unable to connect to gpio pin 
             self.isSimulation = False 
 
             # self.pressed_val denotes what value we should look for (0 or 1) that denotes a lever press 
             self.pressed_val = self._setup_gpio()  # defaults to -1 in scenario that gpio setup fails (including if isSimulation)
-
 
             # 
             # Setup isPressed Variable --> setup depends on if Button is a simulation or not
@@ -116,12 +107,18 @@ class interactableABC:
             else: 
                 self.isPressed = self.isPressedProperty # actual buttons get access to method version which checks GPIO value in order to know if isPressed is True or False
 
-
         def __str__(self): 
             return self.isPressed
 
         def _setup_gpio(self): 
-
+            """
+            [summary] method for connecting with the GPIO library. 
+            If the Interactable object that is using this Button obj is being simulated, then we default to simulating the Button as well. 
+            If there is not a successful connection to the GPIO, then will automatically simulate the Button object and notify the parent. 
+            Args: None 
+            Returns: 
+                (-1 | 0 | 1) : (0 or 1) value returned represents the "pressed" value of the button. If button is getting simulated, a -1 is returned.
+            """
             if self.parent.isSimulation: 
                 control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection.')
                 self.parent.messagesReturnedFromSetup += f'simulating gpio connection. '
@@ -152,21 +149,23 @@ class interactableABC:
                 return t
             return run 
 
-
         @run_in_thread
         def listen_for_event(self, timeout=None, edge=None): # detects the current pin for the occurence of some event
             ''' 
-            event detection for button. On event, incrememts the buttons num_pressed value 
+            [summary] event detection for button. On event (aka a button press), incrememts the button's num_pressed value 
             ( note this does not update/check isPressed, as this is handled by the property function isPressed )
+            Args: 
+                timeout (int, optional): amount of time we should wait for event. If timeout is None, waits indefinetely for an event to occur. 
+                edge (string, optional): arg to designate if we should look for event on the FALLING or RISING edge. 
+            Returns: 
+                None 
             '''
-
             def increment_presses(pin): 
                 self.num_pressed += 1 
                 self.buttonQ.put(f'press#{self.num_pressed}') # add press to parents buttonQ
                 # print(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}, buttonQ = {list(self.buttonQ.queue)}')
                 control_log(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}')
                 
-
             #
             # Sim Check; this function accesses gpio library. If button is being simulated, call the simulation version of this function and return. 
             #
@@ -206,43 +205,52 @@ class interactableABC:
                 
                 GPIO.remove_event_detect(self.number)
                 return # return from func whne parent object is deactivated or timeout interval is up
-
-        
+    
         @property
         def isPressedProperty(self): 
             ''' 
-            returns the current boolean value of the button. If the button is being simulated 
-            (denoted by the pressed_val < 0, raise an exception because this function should not be getting accessed by a simulated button. ) 
+            [summary] directly checks the gpio pin value to see if button is currently in a pressed state. If button is being simulated, this function should not have been called so throws an error. 
+            Args: None 
+            Returns: 
+                (Boolean) : the current value of the button. (True if in a pressed state, False otherwise)
             '''
-            # print(f'(InteratableABC, isPressed start value: {self.isPressed}')
             if self.pressed_val < 0: 
                 raise Exception('(InteractableABC.py, Button.isPressed) cannot access gpio input value for a Button that is being simulated.')  
 
-            ''' if not a simulation, each time isPressed gets accessed, we want to recheck the GPIO input value. set isPressed as a method that gets called each time ''' 
+            ''' if not a simulation, each time isPressed gets accessed, we want to recheck the GPIO input value. set isPressed as a method that gets called each time '''             
             
-            # print(f'(InteractableABC, Button.isPressed property call)')
             if GPIO.input(self.pin_num) == self.pressed_val: 
                 return True 
             else: 
                 return False   
     
     class Servo: 
-        # class for managing servos 
-        '''subclass of interactableABC, as servos will never be a standalone object, they are always created in order to control a piece of hardware. 
-        attempts importing of adafruit library. If simulation, this will fail, in which case we return and don't have a real servo. 
+        '''[Description]
+        Class for Managing Servos
+        Inner class of interactableABC, as servos will never be a standalone object, they are always created in order to control a piece of hardware. 
+        attempts importing of adafruit library. If simulation, this will fail, in which case we simulate the servo.
         '''
-
+        
         def __init__(self, servo_specs, parentObj): 
-            '''takes a positional ID on the adafruit board and the servo type, and returns a servo_kit object'''
-            
+            '''
+            [summary] takes a positional ID on the adafruit board and the servo type, and returns a servo_kit object
+            Args: 
+                servo_specs (string) : Values necessary for connecting with the physical servo. Data is grabbed from the parent object's configuration file ( initially written in json format ). 
+                parentObj (InteractableABC) : all classes that derive from InteractableABC have access to this class. The object that creates the servo gets passed in as parentObj.
+            '''
             self.parent = parentObj
-
             self.pin_num = servo_specs['servo_pin']
             self.servo_type = servo_specs['servo_type']  
             self.servo = self.__set_servo()   
             self.isSimulation = False 
             
         def __set_servo(self): 
+            """
+            [summary] Sets up the initial connection with adafruit library for servo controls. 
+            Args: None 
+            Returns: 
+                (SERVO_KIT.servo) : on a successful adafruit connection, returns a servo object provided by the adafruit_servokit.ServoKit library. On unsuccessful connection, returns False. 
+            """
             if SERVO_KIT is None: 
                 # simulating servo kit
                 return None 
@@ -262,44 +270,53 @@ class interactableABC:
                 self.isSimulation = True 
                 return None
             
-
-
     class PosServo(Servo): 
-        ''' positional servo '''
+        ''' [Description] positional servo 
+        can control the angle that servo rotates to, but cannot control the speed that servo does so. 
+        Provides a more accurate movement for smaller movements. Used in lever extension/retraction.
+        '''
         def __init__(self, servo_specs, parentObj): 
             super().__init__(servo_specs, parentObj)
             self.angle = 0 # positional servo tracks current angle of the servo 
     
     class ContServo(Servo): 
-        ''' continuous servo '''
+        ''' [Description] continuous servo 
+        can control the speed the servo rotates at, but has less control on final positioning that we rotate to. 
+        Provides ability for bigger movements, but with less accuracy than PosServo. Used in door opening/closing. 
+        '''
         def __init__(self, servo_specs, parentObj): 
             super().__init__(servo_specs, parentObj)
             self.throttle = 0 # continuous servo tracks speed that wheel turns at 
 
         
     # ------------------------------------------------------------------------------------------------------------
+    #           InteractableABC Methods 
     # ------------------------------------------------------------------------------------------------------------
-    
-    #
-    # InteractableABC methods
-    #
+
     def validate_hardware_setup(self): 
-        ''' if the interactable is not being simulated, then we must check that its hardware components have been properly connected so we can find any errors early '''
+        """ 
+        [summary] METHOD OVERRIDE REQUIRED
+        Any classes that inherit from InteractableABC must override this method. 
+        If the interactable utilizes any of the Inner Classes in InteractableABC (Button or Servo), then it must validate that these objects were set up successfully. 
+        Specifically, we must do this error check for every interactable that is NOT being simulated. 
+            If the Button/Servos were not set up correctly, then we would run into errors once the experiment starts running. This attempts to catch those errors early. 
+        However, if we are simulating the Interactable, it does not matter if button and servo were set up, in which case we can return from this validation check. 
+        Args: None 
+        Returns: None 
+        """
         if not self.isSimulation: 
             # Interactable is not being simulated, but it does not have a function to validate its hardware components. Throw error 
             raise Exception(f'(InteractableABC, validate_hardware_setup) Must override this function with checks that ensure the hardware components are properly connected. Please add this to the class definition for {self.name}')
 
-    def activate_inner_objects(self): 
-        ''' 
-        if interactable contains any inner objects (buttons and servos)
-        this function is called to ensure that they are activated for each mode
-        also to check that we are simulated both the buttons and the servos in the scenario that the user is running a simulation and their parent object is being simulated
-        '''
-        pass 
-
     def activate(self, initial_activation = True ):
         ''' 
-        called at the start of each mode. begins tracking for thresholds for both itself as well as its dependents. 
+        [summary] called at the start of each mode. Begins tracking for threshold events. 
+                  On the very first mode, calls validate_hardware_setup. 
+        Args: 
+            initial_activation (Boolean, optional) : an interactable is repeatedly deactivated/reactivated throughout an experiment. 
+                                                        On the very first activation at the start of an experiment, intial_activation is True. 
+                                                        On all activations that follow, the mode class calls activation with initial_activation set to False. 
+        Returns: None 
         '''
 
         if initial_activation: 
@@ -312,9 +329,12 @@ class interactableABC:
         self.active = True 
         self.watch_for_threshold_event() # begins continuous thread for monitoring for a threshold event
         
-
     def deactivate(self): 
-        
+        """ 
+        [summary] shuts off an interactable. called when a mode finishes running, or if an early interrupt occurs.
+        Args: None 
+        Returns: None 
+        """
         self.threshold = False # "resets" the threshold value so it'll only check for a new threshold occurence in anything following its deactivation
         self.active = False 
 
@@ -325,9 +345,9 @@ class interactableABC:
         control_log(f"(InteractableABC.py, deactivate) {self.name} has been deactivated. Final contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
     
     def reset(self): 
+        '''[summary] empties the interactable's threshold event queue '''
         self.threshold_event_queue.queue.clear() # empty the threshold_event_queue
     
-
     def run_in_thread(func): 
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
@@ -337,15 +357,26 @@ class interactableABC:
         return run 
 
     def add_new_threshold_event(self): 
+        """ 
+        [summary] METHOD OVERRIDE REQUIRED 
+        append relevant data to the threshold event queue. 
+        This method needs to be overriden as different interactables require a slightly different process to accurately format the data that gets placed on the event queue. 
+        """
         # appends to the threshold event queue 
-
         raise Exception(f'must override add_new_threshold_event in class definition for {self.name}')
         self.threshold_event_queue.put()
 
-
     @run_in_thread
     def watch_for_threshold_event(self): 
-        
+        """
+        [summary] 
+            called upon activation, this method runs in its own thread while the interactable is active. 
+            Using the threshold condition defined in the interactable's configurations, method repeatedly checks for if the threshold condition has been reached. 
+            If any of the optional arguments were provided in the configuration file, will call the method designated by the optional args: check_threshold_with_fn and onThreshold_callback_fn
+            Everytime threshold is reached, calls the interactable's add_new_threshold_event function. 
+        Args: None 
+        Returns: None 
+        """
 
         while self.active: 
 
@@ -400,7 +431,6 @@ class interactableABC:
             else: 
                 # no threshold event, ensure that threshold is False 
                 self.threshold = False 
-
  
 class lever(interactableABC):
     def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager):
@@ -408,7 +438,7 @@ class lever(interactableABC):
         super().__init__(threshold_condition, name, event_manager)
 
         # Initialize the given properties
-        self.ID        = ID 
+        self.ID  = ID 
 
         # Current Position Tracking # 
         self.isExtended = False 
@@ -419,25 +449,9 @@ class lever(interactableABC):
         self.servoObj = self.PosServo(servo_specs = hardware_specs['servo_specs'], parentObj = self) # positional servo to control extending/retracting lever; we can control by setting angles rather than speeds
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
 
-        ## Threshold Condition Tracking ## 
-        # self.pressed is a property method to ensure that num_pressed updates
-
-        # we want Button to be updating the num_pressed value
-
-        '''if self.buttonObj.pressed_val < 0: # simulating gpio connection
-            self.isPressed = None 
-            # self.num_pressed = 0 
-        else: 
-            self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise 
-            # self.num_pressed = self.pressed'''
-            
-        #self.required_presses = self.threshold_condition["goal_value"] # Threshold Goal Value specifies the threshold goal, i.e. required_presses to meet the threshold
-        #self.threshold_attribute = self.threshold_condition["attribute"] # points to the attribute we should check to see if we have reached goal. For lever, this is simply a pointer to the self.pressed attribute. 
-
         ## Dependency Chain values can stay as the default ones set by InteractableABC ## 
         # self.barrier = False 
         # self.autonomous = False
-
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
     
     def __str__(self): 
@@ -445,38 +459,36 @@ class lever(interactableABC):
 
     @property 
     def isPressed(self): 
-        '''True if the button object is in a pressed state, false otherwise'''
+        '''[summary] True if the button object is in a pressed state, false otherwise'''
         return self.buttonObj.isPressed 
 
     @property
     def num_pressed(self): 
-        '''returns the current number of presses that button object has detected'''
+        '''[summary] returns the current number of presses that button object has detected'''
         return self.buttonObj.num_pressed
 
     def reset_press_count(self): 
-        ''' sets self.buttonObj.num_pressed to start from the initial value '''
+        ''' [summary] sets self.buttonObj.num_pressed to start from the initial value '''
         print('RESETTING BUTTON OBJECT NUM PRESSED')
         self.buttonObj.num_pressed = self.threshold_condition['initial_value'] 
 
     def set_press_count(self, count): 
-        ''' sets self.buttonObj.num_pressed to specified value '''
+        ''' [summary] sets self.buttonObj.num_pressed to specified value '''
         self.buttonObj.num_pressed = count 
         
     def activate(self, initial_activation = True ): 
-        ''' activate lever as usual, and once it is active we can begin the button object listening for presses'''
+        ''' [summary] activate lever as usual, and once it is active we can begin the button object listening for presses'''
         if self.active: 
             return # was already active. This is to avoid calling buttonObj.listen_for_event multiple times, as it is a threaded funciton.
         if self.isExtended: 
             interactableABC.activate(self, initial_activation)
             self.buttonObj.listen_for_event() # Threaded fn call 
 
-
     def validate_hardware_setup(self):
-        
+        ''' [summary] if lever is not being simulated, ensures the lever's Button and Servo objects were set up '''
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable
             return 
-        
         else: 
             # not simulating door, check that the doors Movement Controllers (button and servo) have been properly setup 
             if self.buttonObj.pressed_val < 0 or self.servoObj.servo is None: 
@@ -490,12 +502,11 @@ class lever(interactableABC):
                     errorMsg.append('servoObj')
                 
                 raise Exception(f'(Lever, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
-
             return 
 
-
     def add_new_threshold_event(self): 
-
+        """ [summary] grabs data that we care about for a lever threshold event, and adds it to the lever's threshold event queue """
+        
         # appends to the lever's threshold event queue 
         event = f'{self}_{self.num_pressed}_Presses'
 
@@ -505,17 +516,9 @@ class lever(interactableABC):
         # add timestamp 
         self.event_manager.new_timestamp(event, time=time.time())
 
-        # wait for lever to reach unpressed state
-        # while self.num_pressed == self.threshold_condition['goal_value'] and self.active: 
-        #    ''' ''' 
-        #     print('..')
-        #    time.sleep(0.3)
-        
-
     #@threader
     def extend(self):
-        """Extends the lever to the correct value
-        """
+        """ [summary] extends the lever and activates (activation triggers the tracking for lever presses reaching its threshold value) """
         control_log(f'(InteractableABC, Lever.extend) extending {self.name} ')
         self.activate(initial_activation=False)
 
@@ -550,13 +553,10 @@ class lever(interactableABC):
             self.isExtended = True 
 
         return self.event_manager.new_timestamp(f'{self}_Extend', time.time())
-        
-
-            
+                
     #@threader
     def retract(self):
-        """Retracts lever to the property value
-        """
+        """[summary] retracts lever and deactivates (deactivation stops the thread that is waiting for threshold events)"""
         control_log(f'(InteractableABC, Lever.retract) retracting {self.name} ')
 
         if not self.isExtended: 
@@ -565,7 +565,6 @@ class lever(interactableABC):
             self.deactivate()
             return 
 
-        
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation: 
             self.isExtended = False 
@@ -573,9 +572,7 @@ class lever(interactableABC):
             self.deactivate()
             return 
         
-        #
-        # HARDWARE THINGS
-        #
+        # # HARDWARE THINGS
         else: 
             # set to the fully retracted angle 
             self.servoObj.servo.angle = self.retracted_angle
@@ -583,31 +580,16 @@ class lever(interactableABC):
             self.deactivate()
             return 
 
-
     def stop(self): 
+        """[summary] hardware stop: retracts the lever and returns"""
         if self.isSimulation: return 
         else: 
             '''Logic here for shutting down hardware'''
             self.retract() 
             return 
 
-
-
-
-
-
-
-
-
-# # # # # # # # # # # # 
-#      doors          # 
-# # # # # # # # # # # #
 class door(interactableABC):
-    """This class is the unique door type class for interactable objects to be added to the Map configuration.
-
-    Args:
-        interactableABC ([type]): [description]
-    """
+    """[Description] This class is the unique door type class for interactable objects to be added to the Map configuration."""
 
     def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager):
         
@@ -639,20 +621,28 @@ class door(interactableABC):
 
     @property
     def isOpen(self): 
+        '''[summary] accesses Button object to check if the state switch is in a pressed state 
+            Returns: (Boolean) : True if door is open, False otherwise. '''
         return self.buttonObj.isPressed 
+    
     def sim_open(self): 
+        '''[summary] simulates a door opening by changing attributes and starting countdown to designate when door starts and ends the opening process'''
         if self.isSimulation: 
             self.buttonObj.isPressed = True 
             self.event_manager.new_countdown(f'sim_{self.name}_open', self.open_timeout)
+    
     def sim_close(self): 
+        '''[summary] simulates a door closing by changing attributes and starting countdown to designate when door starts and ends the closing process '''
         if self.isSimulation: 
             self.event_manager.new_countdown(f'sim_{self.name}_close', self.close_timeout)
             self.buttonObj.isPressed = False 
 
-
-
     def override(self, open_or_close): 
-        ''' if override button gets pressed we call this function on the door '''
+        ''' 
+        [summary] if override button gets pressed we call this function on the door 
+        Args: 
+            open_or_close (String) : string that designates which override button was pressed (i.e. the button to open the door or close the door)
+        '''
         # immediately stop door movement 
         self.stop() 
         # reset door to stop execution of current door actions
@@ -664,7 +654,7 @@ class door(interactableABC):
             self.close() 
         
     def validate_hardware_setup(self):
-        
+        '''[summary] Checks that the door's Button and Servo objects were successfully setup when the door is not being simulated '''
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable. 
             return 
@@ -681,7 +671,6 @@ class door(interactableABC):
                 raise Exception(f'(Door, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
             return 
 
-
     def run_in_thread(func): 
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
@@ -690,8 +679,10 @@ class door(interactableABC):
             return t
         return run 
 
-
     def add_new_threshold_event(self): 
+        """[summary] adds to the threshold_event_queue, then sleeps until the door's state changes to prevent an overload of threshold events while the door sits in this state. 
+                will also break out of sleep if the event_queue is emptied (meaning a mode script 'used' the the threshold event in its logic, so we should check again to see what the door state is) """
+
         # appends to the threshold event queue 
         state = self.isOpen
         if self.isOpen: event = f'{self.name}_Open'
@@ -711,11 +702,10 @@ class door(interactableABC):
                 return  
             time.sleep(.5)
         return 
-        
-           
+               
     #@threader
     def close(self):
-        """This function closes the doors fully"""
+        """[summary] this function closes the doors fully"""
 
         # check if the door is already closed 
         if self.isOpen is False: 
@@ -757,13 +747,10 @@ class door(interactableABC):
         return 
         # raise Exception(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
 
-
     #@threader
     def open(self):
-        """This function opens the doors fully
-        """
+        """[summary] this function opens the doors fully"""
         
-
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation: 
             # If door is being simulated, then rather than actually opening a door we can just set the state to True (representing an Open state)
@@ -777,7 +764,6 @@ class door(interactableABC):
             self.event_manager.print_to_terminal(f'(Door(InteractableABC)) {self.name} is Open')
             return 
   
-
         # 
         # Direct RPI to Open Door 
         #
@@ -794,25 +780,21 @@ class door(interactableABC):
         if self.isOpen: 
             # successful 
             return 
-        else: 
+        else:
             control_log(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
             self.event_manager.print_to_terminal(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
-            # raise Exception(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
-
+            
     def stop(self): 
-        ''' sets servo speed to stop speed '''
+        ''' [summary] HARDWARE STOP: sets servo speed to stop speed '''
         # Function Accesses Hardware! Perform Simulation Check 
         if self.isSimulation: return 
         self.servoObj.servo.throttle = self.stop_speed 
         return 
 
-
-
 class rfid(interactableABC):
-    """This class is the unique class for rfid readers that is an interactable object. Note that this does not control the rfid readers like the other unique classes, it only deals with the handling of rfid data and its postion in the decision flow.
-
-    Args:
-        interactableABC ([type]): [description]
+    """[Description] This class is the unique class for rfid readers/antennas that is an interactable object. 
+    Note that this does not control the rfid readers like the other unique classes, it only deals with the handling of rfid data and its postion in the decision flow.
+    Dynamically recieves a shaed_rfidQ attribute from ModeABC. shared_rfidQ is a queue shared among all of the rfid readers and the CAN Bus. 
     """
 
     def __init__(self, ID, threshold_condition, name, event_manager):
@@ -821,9 +803,6 @@ class rfid(interactableABC):
         self.ID = ID 
         self.rfidQ = queue.Queue()
 
-        
-        # self.shared_rfidQ: after initialization, assinged a shared_rfidQ attribute in ModeABC. This is a shared queue among all of the rfids. 
-
         self.ping_history = [] # exhaustive list of all the pings that have occurred, independent of phase/mode 
 
         self.barrier = False # if rfid doesnt reach threshold, it wont prevent a voles movement
@@ -831,28 +810,26 @@ class rfid(interactableABC):
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
     def validate_hardware_setup(self):
-        ''' ensures that hardware was setup correctly '''
+        ''' [summary] ensures that hardware was setup correctly '''
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable
             return
         
         else: 
-            # not simulating rfid. Check that connections occurred correctly 
-            # 
+            # not simulating rfid. Check that CANBUS was connected correctly!! 
+            #   
+            #   COME BACK TO THIS!
             #  (TODO) setup RFID hardware things here! 
             #
             # print('rfid hardware doesnt exist yet!')
             return 
 
-
     def sim_ping(self, vole): 
-        # simulates an RFID ping by adding to the shared rfidQ 
-        # self.shared_rfidQ.put((vole, self.ID, (time.time() + (random.randint(1,3) - random.random())) ))
+        ''' [summary] simulates an RFID ping by adding to the shared rfidQ. Only called for a simulated rfid!!'''
         [self.shared_rfidQ.put((vole, self.ID, (time.time() + ( i - random.random() )))) for i in range (1,3)]
 
-
     class Ping: 
-        ''' class for packaging rfid pings into pairs in order to represent the time that a vole first scanned an the rfid reader, 
+        ''' [Description] class for packaging rfid pings into pairs in order to represent the time that a vole first scanned an the rfid reader, 
         to the time that the vole left that rfid reader '''
         def __init__(self, ping1, ping2 = None, latency = None): 
             self.vole_tag = ping1[0] # the rfid chip id 
@@ -877,10 +854,14 @@ class rfid(interactableABC):
         
         def __iter__(self): 
             return [{self.vole_tag}, {self.rfid_id}, {self.latency}]
-    
-        
+            
     def add_new_threshold_event(self): 
-        '''New Ping was added to rfidQ. Retrieve its value and append to the threshold event queue '''
+        '''
+        [summary] called if a ping was added to rfidQ. 
+        figures out if the ping is the first or second ping in the pair belonging to a Ping object 
+        if it is the first ping, then creates a new Ping object. Otherwise, sets the new ping as the second ping for the existing Ping object. 
+        Adds the Ping object to the threshold event queue
+        '''
         try: 
             ping = self.rfidQ.get() 
             self.event_manager.print_to_terminal('PING: ', ping)
@@ -936,23 +917,15 @@ class rfid(interactableABC):
                 # Record Timestamp for Ping 1 
                 ping1_timestamp = self.event_manager.new_timestamp(f'rfid{newPing.rfid_id}_ping1_vole{newPing.vole_tag}', time=newPing.ping1[2])
 
-
-            
-        
         except queue.Empty as e: 
             raise Exception(f'(InteractableABC.py, add_new_threshold_event) Nothing in the rfidQ for {self.name}')
-
         # do not deactivate the rfids. always monitoring for pings. 
     
-
     def stop(self): 
-        ''' '''
+        ''' [summary] HARDWARE STOP: rfid antenna cannot shut itself down, as this is controlled by the CAN Bus '''
+        return 
         if self.isSimulation: return 
-        else: 
-            '''Logic here for shutting down hardware'''
-            return 
-
-
+        else: '''Logic here for shutting down hardware'''
 
 class dispenser(interactableABC): 
 
@@ -972,13 +945,6 @@ class dispenser(interactableABC):
         self.dispense_speed = hardware_specs['servo_specs']['dispense_speed']
         self.dispense_time = hardware_specs['dispense_time']
             
-        # Threshold Tracking with isPressed attribute #
-        '''  This should now be handled by the Button Class!! Just access buttonObj.isPressed no matter what. 
-        if self.buttonObj.pressed_val < 0:  # simulating gpio connection, simulate the isPressed Value
-            self.isPressed = self.threshold_condition['initial_value'] 
-        else: # not simulating, use the actual buttonObj i/o value to get current state  
-            self.isPressed = self.buttonObj.isPressed # True if button is in a pressed state, false otherwise '''
-
         ## Use the Threshold Attribute to set if we should immediately monitor_for_retrieval ## 
         if self.buttonObj.isPressed: # pellet is already present
             initial = True 
@@ -989,7 +955,6 @@ class dispenser(interactableABC):
         self.barrier = False # does not block a voles movement 
         self.autonomous = False # is dependent on a lever press in order to trigger a dispense
 
-
     def run_in_thread(func): 
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
@@ -999,12 +964,8 @@ class dispenser(interactableABC):
         return run    
 
     def validate_hardware_setup(self): 
-        
+        '''[summary] ensures that dispener's Button and Servo object were successfully setup if the dispenser is not being simulated '''
         if self.isSimulation: 
-            # we should make sure that the button and servo will also be simulated! 
-            # Basically checks to make sure that they were not properly set up! 
-            # self.isPressed = self.threshold_condition['initial_value'] # ensures that we wont access the button object value version of the button gpio!
-
             return 
         
         else: 
@@ -1021,42 +982,46 @@ class dispenser(interactableABC):
 
     @property 
     def isPressed(self): 
+        ''' [summary] accesses the gpio pin stored in the button object to check the pressed or unpressed state 
+        Returns: (Boolean) : True represents a pressed state, meaning there is at least one Pellet present in the dispenser's trough '''
         return self.buttonObj.isPressed 
+    
     @property
     def isPelletRetrieved(self): 
-        # returns True if no pellet in trough, returns False if pellet in trough
+        '''[summary] checks if a pellet was retrieved from the trough 
+        Returns (Boolean) : True if no pellet in trough, False if pellet in trough '''
         return not self.isPressed
 
-
     def sim_press(self): 
+        '''[summary] Simulation Use Only: simulates a press by changing the simulated pin value to True '''
         if self.isSimulation: 
             self.buttonObj.isPressed = True
+    
     def sim_unpress(self): 
+        '''[summary] Simulation Use Only: simulates an unpress by changing the simulated pin value to False '''
         if self.isSimulation: 
             self.buttonObj.isPressed = False 
+    
     def sim_dispense(self): 
-        ''' '''
+        ''' [summary] Simulation Use Only: simulates a pellet dispense by calling sim_press '''
         self.event_manager.print_to_terminal('(InteractableABC, dispenser.sim_dispense()) (simulated) Pellet Dispensed! ')
         control_log(f'(InteractableABC, dispenser.sim_dispense()) (simualted) Pellet Dispensed! setting the isPressed value to True to simulate that a pellet was dispensed.  Monitoring for a pellet retrieval from {self}!')
         self.sim_press() # simulates a dispense by setting button object to a pressed state 
         return 
+    
     def sim_vole_retrieval(self): 
-        ''' '''
+        ''' [summary] Simulation Use Only: simulates a pellet being retrieved from the trough by calling sim_unpress '''
         self.event_manager.print_to_terminal('(InteractableABC, dispenser.sim_vole_retrieval) Pellet Retrieved!')
         control_log(f'(InteractableABC, dispenser.sim_vole_retrieval) Pellet Retrieved! Stopped monitoring for a pellet retrieval.')
         self.sim_unpress() # simulates a retrieval by setting button object to an unpressed state 
         return 
 
-
-
-
-    def activate_inner_objects(self): 
-        ''' overriding the function from InteractableABC! 
-            this method gets called upon interactable activation 
-            we are able to handle 
-        '''
     def add_new_threshold_event(self):
-
+        """
+        [summary] checks that the monitor_for_retrieval has been set to True ( this occurs after a pellet is dispensed ) before proceding with adding a threshold event. 
+        this precaution is taken because we only care about marking a threshold event when the trough goes from a pressed->unpressed state. If it simply begins in an unpressed state, 
+        that is because the trough is initially empty in an experiment, but this should not be recorded as a vole retrieving a pellet. 
+        """
         if self.monitor_for_retrieval: 
             self.threshold_event_queue.put(f'Pellet Retrieval')
             self.event_manager.new_timestamp(f'{self.name}_pellet_retrieved', time = time.time())
@@ -1070,18 +1035,19 @@ class dispenser(interactableABC):
             ''' wait for monitor for retrieval to get set to True! '''
             time.sleep(.5)
         
-
     def start(self): 
+        '''[summary] turns the dispener's servo on in order to dispense a pellet '''
         self.servoObj.servo.throttle = self.dispense_speed 
-        # print('(InteractableABC.py, dispense.start()) Started Servo')
+
     def stop(self): 
+        ''' [summary] Hardware Stop: stops the dispener's servo movement '''
         if self.isSimulation: 
             return 
         self.servoObj.servo.throttle = self.stop_speed
     
     @run_in_thread
     def dispense(self): 
-
+        ''' [summary] goes thru series of error checks and then procedes with dispensing a pellet. Runs on its own thread. '''
         # Edge Case: if there is already a pellet in the trough, we don't want to dispense again ( this likely means vole did not take pellet on a previous dispense )
         if self.isPressed is True:    
 
@@ -1121,11 +1087,11 @@ class dispenser(interactableABC):
         control_log(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
         return 
 
-
-
 class buttonInteractable(interactableABC):
-    ''' **this class should not be confused with the Button class which connects with/operates the GPIO boolean pins** 
-        buttonInteractable is used for the buttons that control the open/closing of doors; if a door is in movement, these buttons override that movement immediately 
+    ''' [Description]
+        **this class should not be confused with the Button class which connects with/operates the GPIO boolean pins** 
+        buttonInteractable is used for the override buttons that control the open/closing of doors; if a door is in movement, these buttons override that movement immediately 
+        this is pretty much just a Button object itself, except it must derive from interactableABC in order to have threshold checks that will trigger a threshold callback event ( to override a door movement )
     '''
 
     def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager ): 
@@ -1137,15 +1103,14 @@ class buttonInteractable(interactableABC):
 
         # Button # 
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
-
-    
+ 
     def activate(self): 
-        ''' activate button as usual, and once it is active we can begin the button object listening '''
+        ''' [summary] activate button as usual, and once it is active we can begin the button object listening '''
         interactableABC.activate(self)
         self.buttonObj.listen_for_event()
 
     def validate_hardware_setup(self):
-        
+        """[summary] ensure's that the buttonInteractable's Button object was set up properly if the buttonInteractable is not being simulated """
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable
             return 
@@ -1164,7 +1129,7 @@ class buttonInteractable(interactableABC):
             return 
     
     def add_new_threshold_event(self):
-        '''New [Press] was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
+        '''[summary] New <button press> was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
         try: 
             press = self.buttonObj.buttonQ.get() 
         except queue.Empty as e: 
@@ -1173,7 +1138,6 @@ class buttonInteractable(interactableABC):
         # append to event queue 
         self.threshold_event_queue.put(press)
         self.event_manager.new_timestamp(f'{self.name}_pressed', time = time.time())
-
 
 class beam(interactableABC): 
 
@@ -1199,16 +1163,16 @@ class beam(interactableABC):
     # # Button Object # # 
     @property 
     def num_breaks(self): 
-        ''' return the current number of breaks that have been recorded'''
+        ''' [summary] return the current number of breaks that have been recorded'''
         # Button Object updates the num_pressed object 
         return self.buttonObj.num_pressed
 
     def reset_break_count(self): 
-        ''' used as a callback function set by the beam config file '''
+        ''' [summary] used as a callback function set by the beam config file '''
         self.buttonObj.num_pressed = self.threshold_condition['initial_value']
 
-
     def validate_hardware_setup(self):
+        ''' [summary] ensures that the beam's Button object has been set up properly if the beam is not being simulated '''
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable
             return 
@@ -1222,13 +1186,13 @@ class beam(interactableABC):
             return 
     
     def activate(self): 
-        ''' activate as usual, and once it is active we can begin the button object listening '''
+        ''' [summary] activates as usual, and once it is active we can begin the button object listening '''
         interactableABC.activate(self)
         self.buttonObj.listen_for_event()
     
     def add_new_threshold_event(self):
 
-        '''New [Press] was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
+        '''[summary] New <button press> was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
 
         # append to event queue 
         self.threshold_event_queue.put(f'{self.name} beam broken {self.num_breaks} times')
@@ -1250,15 +1214,22 @@ class beam(interactableABC):
                 return  
             time.sleep(.5) '''
         return 
-
     
     # # Simulation Use Only # # 
     def simulate_break(self): 
+        '''[summary] Simulation Use Only: simulates a beam break by setting beam state to broken'''
         self.isBroken = True # describes the current state of the button object 
         self.buttonObj.num_pressed += 1
+    
     def simulate_unbroken(self): 
+        '''[summary] Simulation Use Only: sets beam state to unbroken'''
         self.isBroken = False 
+    
     def simulate_break_for_n_seconds(self, n): 
+        '''[summary] Simulation Use Only: simulates a beam break for <n> number of seconds. (breaks beam, sleeps for <n> seconds, and unbreaks beam)
+        Args:
+            n (int) : number of seconds that the simulated beam will be in a broken state 
+        '''
         if not self.isSimulation: 
             self.event_manager.print_to_terminal(f'(beam, simulate_break_for_n_seconds) {self.name} is not being simulated. Cannot complete function call')
         else:   
@@ -1268,102 +1239,12 @@ class beam(interactableABC):
             time.sleep(n)
             self.isBroken = False 
         return 
+    
     def set_num_breaks(self, n): 
-        ''' manually sets how many beam breaks the button object has recorded ( used in simulation ) '''
+        ''' [summary] Simulation Use Only: manually sets how many beam breaks the button object has recorded '''
         self.buttonObj.num_pressed = n
     
 
-
-class laser(interactableABC): 
-
-    def __init__(self, ID, threshold_condition, hardware_specs, name, dutycycle_definitions, event_manager): 
-
-         # Initialize the parent class
-        super().__init__(threshold_condition, name, event_manager)
-
-        self.ID = ID    
-
-        self.pin_num = hardware_specs['pin_num']
-
-        self.pi = self._setup_pigpio()
-
-        # Dutycycle # 
-        # Attributes for managing how the laser should distribute its time being On vs Off 
-        self.dutycycle_pattern_definitions = dutycycle_definitions # breakdown of what each pattern is in its HIGH/LOW voltage format
-        self.dutycycle_patterns = hardware_specs['dutycycle_patterns'] # patterns chained together
-        
-
-    
-    #
-    # Initializing Laser Object Methods
-    #
-    def _setup_pigpio(self): 
-        ''' method for setting up access to the local pi's GPIO '''
-        try: 
-            return pigpio.pi()         
-        except AttributeError as e: 
-            # attribute error raised 
-            control_log(f'(InteractableABC,py, Laser) {self}: simulating pigpio connection. ErrMssg: {e}')
-            self.messagesReturnedFromSetup += f'simulating pigpio connection. '
-            return None
-        
-    def validate_hardware_setup(self):  
-        # if laser is being simulated, doesn't matter if the hardware has been setup or not if we are simulating the interactable     
-        if not self.isSimulation: # laser is NOT simulated; ensure that we were able to access the pigpio library and access the laser's gpio pin 
-            if self.pi is None: 
-                raise Exception(f'(Laser, validate_hardware_setup) {self} failed to setup correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
-        return 
-    
-    def validate_dutycycle_patterns(self): 
-
-        ''' ensures that the configuration file contains valid entries for the dutycycle fields '''
-
-        # confirm that any pattern that is referenced in dutycycle_patterns can be found in the dutycycle_pattern_defintions 
-
-        for (patternName, patternList) in self.dutycycle_patterns: 
-
-            for dutycycle in patternList: 
-
-                if dutycycle not in self.dutycycle_pattern_definitions: 
-
-                    raise Exception(f'(Laser, validate_dutycycle_patterns) {self} contains an unknown reference within {patternName}, to the dutycycle: {dutycycle}')
-
-
-        # confirm that a single mode isn't assigned a pattern chain more than once 
-
-        # confirm that the referenced modes exist
-
-        # 
-
-
-
-    #
-    # Simple Methods to turn laser On/Off 
-    #
-    def turn_on_and_wait(self, wait_time): 
-        ''' turns the laser on and waits for specified number of seconds and then returns '''
-        self.turn_on()
-        time.sleep(wait_time)
-        return 
-    def turn_off_and_wait(self, wait_time): 
-        ''' turns the laser off and waits for specified number of seconds and then returns '''
-        self.turn_off() 
-        time.sleep(wait_time)
-        return 
-
-    def turn_on(self): 
-        ''' sets laser to high voltage '''
-        if not self.isSimulation: self.pi.set_PWM_dutycycle(self.pin_num, 3.3)
-    def turn_off(self): 
-        ''' sets laser to low voltage '''
-        if not self.isSimulation: self.pi.set_PWM_dutycycle(self.pin_num, 0)
-    
-
-    #
-    # Dutycycle Pattern Execution 
-    #
-    def play_pattern(pattern): 
-        ''' executes the passed in pattern. Pattern in a dictionary of strings. We can reference the pattern definitions '''
     
 
 

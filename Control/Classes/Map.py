@@ -2,10 +2,10 @@
 """
 Authors: Sarah Litz, Ryan Cameron
 Date Created: 1/24/2022
-Date Modified: 4/6/2022
+Date Modified: 11/28/2022
 Description: Class definition for Map, a network of Vertices and Edges, where vertices are chambers, and edges are the connections existing between chambers. 
             Objects that represent the hardware (subclasses of InteractableABC) in a box are assigned to either an edge or a chamber within the map. 
-            All outside software recieves a Map object, and will go through the Map class in order to interact with any physical hardware.
+            All Scripts ( both Control Modes and Simulation Scripts ) rely on an instance of Map to interact with the physical hardware, as well as gain information about Vole location. 
 
 Property of Donaldson Lab at the University of Colorado at Boulder
 """
