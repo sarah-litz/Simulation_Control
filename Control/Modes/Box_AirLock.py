@@ -49,8 +49,6 @@ class Chamber1Access(modeABC):
     def run(self): 
         ''' allow only one vole at a time to travel into chamber 2'''
 
-        self.countdown_to_exit() 
-
         def num_pings_by_vole(rfid, vole_tag): 
             ''' sorts the rfid pings by which vole caused that ping '''
             count = 0
@@ -162,8 +160,6 @@ class Edge12Access(modeABC):
     
     def run(self):
 
-        self.countdown_to_exit()
-
         # Open The Door to allow vole access into chamber2
         self.map.door2.open() 
 
@@ -209,7 +205,6 @@ class Chamber2Access(modeABC):
         only allow vole movement from chamber 2 into chamber 1 to prevent both voles from being in chamber 2
         an rfid ping ( that is not followed by a beam2 break ) 
         '''
-        self.countdown_to_exit()
 
         def num_pings_by_vole(rfid, vole_tag): 
             ''' sorts the rfid pings by which vole caused that ping '''

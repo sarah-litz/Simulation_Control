@@ -24,7 +24,7 @@ from .Timer import Visuals, PRINTING_MUTEX
 from Logging.logging_specs import control_log, sim_log
 from .ModeABC import modeABC 
 from . import InteractableABC
-from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser, laser, beam
+from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser, beam
 from .Timer import EventManager 
 from .CANBus import CANBus 
 
@@ -488,7 +488,7 @@ class Map:
             try: new_obj = dispenser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager)
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
         
-        elif type == 'laser': 
+            '''elif type == 'laser': 
             print(data.keys())
             print('\n')
             print(objspec)
@@ -496,7 +496,7 @@ class Map:
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
             
             try: new_obj = laser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, dutycycle_definitions = dutycycle_definitions, event_manager = self.event_manager)
-            except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
+            except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')'''
 
         elif type == 'beam': 
             

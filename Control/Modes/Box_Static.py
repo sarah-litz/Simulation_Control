@@ -52,10 +52,9 @@ class OpenBox(modeABC):
    
     def run(self):
 
-        self.countdown_to_exit() # automatically exits when timeout period runs out 
         while self.active: 
             time.sleep(1)
-        return None 
+        return SimpleBox(timeout=10, rounds=1, ITI = 5, map = self.map, output_fp = self.output_fp) 
 
 
 

@@ -1,8 +1,9 @@
 """
-Authors: Ryan Cameron
+Authors: Ryan Cameron, Sarah Litz
 Date Created: 1/24/2022
-Date Modified: 1/24/2022
-Description: This is the class file for the mode classes which contain all the information for the control software of the Homecage project to move between different logic flows. Each mode of operation has a different flow of logic, and this file contains the base class and any extra classes that are necessary to manage that.
+Date Modified: 11/30/2022
+Description: This is the class file for the mode classes which contain all the information for the control software of the Homecage project to move between different logic flows. 
+Each mode for running an experiment will inherit from this class. Each mode will have a different flow of logic, yet maintains similar needs and processes to start/stop logic, which is provided by this base class. 
 
 Property of Donaldson Lab at the University of Colorado at Boulder
 """
@@ -26,47 +27,47 @@ import sys
 
 # Classes
 class modeABC:
-    """This is the base class, each mode will be an obstantiation of this class.
-    """
+    """[Description] This is the base class, each mode will be an obstantiation of this class. (Mode Implementation can be found in the Modes Directory)"""
 
-    def __init__(self, timeout = None, rounds = None, ITI = None, map = None, output_fp = None, startTime = time.time(), enterFuncs = None, exitFuncs = None, bypass = False, **kwargs):
-        
+    def __init__(self, timeout = None, rounds = None, ITI = None, map = None, output_fp = None, startTime = time.time()): 
+        """
+        [summary] initializes attributes necessary for running a mode and tracking important data on that mode 
+        Args: 
+            timeout (int, optional) : time that mode will remain active for. If no timeout provided, the mode is active until the mode's run() method exits on its own.
+            rounds (int, optional) : number of rounds that the mode should execute its run() function 
+            ITI (int, optional) : Inter-Trial Interval is the amount of idle time between rounds 
+            map (Map, optional) : Map object with the hardware objects. Allows the modes to set logic for how the hardware will run. 
+            output_fp (string, optional) : filepath to where the output data should get written.
+            startTime (time, optional) : timestamp for when the mode began running. used for calculating times recorded in the output file (i.e. records how many seconds after the startTime an event happened) 
+        """
 
-        # Set the givens
+        # set the args 
         self.map     = map
         self.threads = None
         self.active  = False
         self.timeout = timeout
         self.rounds = rounds
         self.current_round = 0 
-        self.ITI = ITI # inter-trial interval
-        self.optional = kwargs
+        self.ITI = ITI 
         self.inTimeout = False 
         self.output_fp = output_fp
-        self.startTime = startTime
-        self.event_manager = self.map.event_manager
-        self.canbus = self.map.canbus
-
-
-        # Shared rfidQ ( if no rfids present, this will just sit idle )
+        self.startTime = startTime 
+        
+        # grab from map 
+        self.event_manager = self.map.event_manager # object that is tasked with event timestamping, terminal printing, and writing to output file 
+        self.canbus = self.map.canbus # communication with rfids 
         self.shared_rfidQ = self.canbus.shared_rfidQ # if any of the rfids are pinged, a message will be added to this queue 
-                                        # listener is activated in the modes activate function
+                                                        # listener is activated in the modes activate function
 
-        # Set variables as the enter and exit strings
-        self.enterStrings = enterFuncs
-        self.exitStrings  = exitFuncs
-
-        # Simulation only 
-        self.simulation_lock = threading.Lock() # locked while a simulation is actively running
+        
+        self.simulation_lock = threading.Lock() # (simulation use only) locked while a simulation is actively running
 
         # Set Interrupt Handler for Clean Exit
         signal.signal(signal.SIGINT, self._interrupt_handler) # Ctrl-C
         signal.signal(signal.SIGTSTP, self._interrupt_handler) # Ctrl-Z
 
-
     def __str__(self): 
         return __name__
-
 
     def threader(func):
         ''' decorator function to run function on its own daemon thread '''
@@ -76,21 +77,27 @@ class modeABC:
             return t
         return run 
     
-
     #
-    # Called prior to running a Mode to ensure everything gets setup properly before a script starts running
+    # Enter Method: hanldes mode setup and startup - This method ensures that any inner modes get run also.
     #
-
     def enter(self, initial_enter = True):
+        """
+        [summary] Enter Method: handles mode setup and startup. Modes can be entered from another mode (called inner modes) or directly from __main__ (called initial mode)
+                    Ensures the mode will run for only its timeout interval, and that it exits cleanly. 
+                    Handles running any inner modes that a mode returns. (runs inner mode for exactly 1 round)
+                    Activates/Deactivates Interactables. Activates/Deactivates the Event Manager.                    
+                    Starts up the rfidListener. ( this listener starts and stops between mode transfers )
+        Args: 
+            initial_enter (Boolean) : If mode enters directly from __main__, sets to True. If mode enters from another mode, sets to False. 
+                                    If initial enter is True, executes extra logic to set attributes and activate the interactables and event manager. 
+                                    On exiting, the mode with initial_enter set to True will execute extra logic to deactivate the interactables and event manager. 
+        Returns:
+            None 
+        """
         try: 
-            """This method runs when the mode is entered from another mode. Essentially it is the startup method. This differs from the __init__ method because it should not run when the object is created, rather it should run every time this mode of operation is started. 
-            """
-
             if initial_enter: 
 
-                #
-                # Parent Mode: Set attributes and activate interactables before runnning mode. 
-                # 
+                ### Parent Mode (the mode that is created in __main__ rather than by another mode): Set attributes and activate interactables before runnning mode. 
 
                 # Set Start Time now that Mode has been entered and interactables activated 
                 self.startTime = time.time()
@@ -106,10 +113,8 @@ class modeABC:
                 self.event_manager.activate(new_mode = self, initial_enter=True) # Start Tracking for Mode Events 
             
             else:
-        
-                #                         
-                # This Mode was Created at Runtime  
-                #    
+                              
+                ### This Mode was Created at Runtime  
                                      
                 print(f'\nInner mode entered: {self}') # print to console 
                 control_log(f'Inner Mode Entered: {self}')
@@ -119,13 +124,11 @@ class modeABC:
                 self.event_manager.activate(new_mode = self, initial_enter=False) # Start Tracking for Mode Events 
             
 
-            #
-            # Start Running Mode ( begins with Mode Setup )
-            #
+            ## Mode Startup: Setup & Run 
+
             self.event_manager.new_timestamp(event_description='Mode_Setup', time=time.time())
             
-            # Mode Prep ( Run in Separate Thread so we can still catch any Interrupts )
-            try: self.setup()
+            try: self.setup() # Mode Prep ( Runs in Separate Thread so we can still catch any Interrupts )
             except Exception as e: 
                 print('(ModeABC.py, enter()) Exception Thrown in call to mode setup()): ', e)
             
@@ -144,18 +147,23 @@ class modeABC:
                 # Starting Mode Timeout and Running the Start() Method of the Mode Script!
                 self.inTimeout = True 
                 try: 
+                    if self.timeout is not None: 
+                        self.countdown_to_exit() # if a timeout was provided, calls method that will exit after timeout finishes
                     next_mode = self.run() # Run the Mode 
-                    # self.event_manager.new_countdown(event_description = f"Mode_Timeout_Round_{self.current_round}", duration = self.timeout, primary_countdown = True)
-                    self.exit() 
+
+                    if self.timeout is not None: 
+                        # sleep until countdown_to_exit calls the exit function
+                        while self.inTimeout: 
+                            time.sleep(1)
+                    else: self.exit() 
+
                 except Exception as e: 
                     print(e)
                     print(f'{str(self)} encountered an error during its run() or exit() function. Returning now.')
                     return 
 
-                if next_mode is not None: 
+                if next_mode is not None: # A mode object was returned. Start the inner mode. 
                     
-                    # Create the next mode! 
-                    # next_mode(map = self.map, output_fp = self.output_fp, startTime = self.startTime)
                     next_mode.startTime = self.startTime
 
                     print(f'MODE W/IN A MODE: Transferring Control to {str(next_mode)} for round {idx}')
@@ -165,9 +173,6 @@ class modeABC:
                 if initial_enter is False: 
                     # if Inner mode, only run once so break out of loop immediately. 
                     return  # Acts as a Base Case to Recursive Call! the top level call ( the initial mode entered ) will call final_exit. 
-
-                # countdown for the specified timeout interval 
-                # self.event_manager.new_countdown(event_description = f"Mode_Timeout_Round_{self.current_round}", duration = self.timeout, primary_countdown = True)
                 
                 self.event_manager.activate(new_mode = self, initial_enter=False)
 
@@ -186,18 +191,27 @@ class modeABC:
             traceback.print_exc() # printing stack trace 
             self._except_handler()
 
-
     #
     # Exiting/Cleanup Functions
     #
-    def pause_mode(self): 
-        ''' called in between rounds of the same mode to pause mode execution '''
-        self.inTimeout = False # should cause simulation to exit 
-        self.simulation_lock.acquire() # Ensure Simulation Thread ( if it exists ) Cleanly Exits Before we continue 
-        self.simulation_lock.release()
+    def pause_for_inner_modes(self): 
+        """[summary] METHOD NOT IN USE -- mode remains set as active but timeout is stopped
+        Not in use, but potentially use if I decide to change the 
+        canbus and rfid listener so they stay active 100% of the time"""
+        self.inTimeout = False 
+        self.simulation_lock.acquire() 
+        self.simulation_lock.release() 
 
-        # ensure that mode finishes 
     def new_round(self, mode_thread=None): 
+        """
+        [summary] called from self.enter() method in between rounds. 
+        If a simulation was running for this mode, ensures that the simulation exits before next round starts. 
+        Runs the inter-trial interval and then returns so the enter() function can continue execution ( and start the next round )  
+        Args: 
+            mode_thread (Thread, optional) : if mode thread is passed it, method ensures that the previous round finishes before continuing
+        Returns: 
+            None 
+        """
         ''' called inbetween rounds of the same mode to pause for a inter trial interval '''
         self.inTimeout = False # should cause simulation to exit 
         self.active = False # should cause mode to exit 
@@ -216,7 +230,9 @@ class modeABC:
         self.active = True 
 
     def exit(self): 
-        """This function is run when the mode exits and another mode begins. It closes down all the necessary threads and makes sure the next mode is setup and ready to go. 
+        """
+        [summary] This function is run when the mode exits and another mode begins. 
+        Closes down all the necessary threads and makes sure the next mode is setup and ready to go. 
         """
         print(f"{self} finished its Timeout Period and is now Exiting")
         self.inTimeout = False # Should cause simulation to exit 
@@ -229,7 +245,11 @@ class modeABC:
         return 
     
     def final_exit(self): 
-        
+        """
+        [summary] This function is run when the Parent Mode ( mode called from __main__ ) exits. 
+        If a simulation is running, ensures the simulation script exits. 
+        Deactivates interactables and the event manager. 
+        """
         print(f"{self} finished its Timeout Period and is now Exiting")
         self.inTimeout = False # Should cause simulation to exit 
         self.active = False 
@@ -243,7 +263,6 @@ class modeABC:
 
     def _interrupt_handler(self, signal, frame): 
         ''' catches interrupt, notifies threads, attempts a clean exit ''' 
-
         # In a different thread, handle shutting down the event manager. In the calling thread, continue execution to deactivate interactables. 
         event_interrupt_thread = threading.Thread(target=self.event_manager.interrupt, daemon=True)
         event_interrupt_thread.start()
@@ -259,7 +278,7 @@ class modeABC:
         sys.exit(0)
 
     #
-    # rfid listener --> manages the queue that is shared amongst all RFID readers in a box  
+    # Rfid Listener - Retrieves items added to the shared_rfidQ 
     #
     @threader
     def rfidListener(self):
@@ -350,7 +369,6 @@ class modeABC:
         ''' any tasks for setting up box before run() gets called '''
         raise NameError(f'{__name__} this function should be overriden')
 
-
     def threader(func):
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
@@ -361,6 +379,7 @@ class modeABC:
 
     @threader
     def countdown_to_exit(self): 
+        """[summary] if a mode timeout is specified, this method is called to ensure that as soon as timeout finishes the mode will begin its exit process """
         self.event_manager.new_countdown(event_description = f"Mode_Timeout_Round_{self.current_round}", duration = self.timeout, primary_countdown = True)
         self.exit() # exit the mode upon timeout ending
 
