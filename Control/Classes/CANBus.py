@@ -1,11 +1,10 @@
 """ 
 Date Created : 9/2/2021
-Date Modified: 11/18/2021
-Author: Ryan Cameron
-Description: is the file that contains all of the necessary classes and functions to read data coming in through a CAN-bus line on the raspberry pi and send/store it for reference.
+Date Modified: 12/1/2021
+Author: Sarah Litz, Ryan Cameron
+Description: This file contains the class definition for CANBus, the object containing the methods to read data coming in through a CAN-bus line on the raspberry pi and send/store it for reference.
 Property of Donaldson Lab, University of Colorado Boulder, PI Zoe Donaldson
 http://www.zdonaldsonlab.com/
-Code located at - 
 """
 
 try: 
@@ -25,10 +24,8 @@ import threading
 import asyncio 
 import time
 
-''' class for recieving data from RFIDs
-'''
-
 class CANBus: 
+    """ class for recieving data from RFIDs"""
 
     def __init__(self, isserial=False): 
         
@@ -44,10 +41,13 @@ class CANBus:
 
         self.active = True 
 
-        
-
-
     def config_canbus(self, isserial):
+        """
+        [summary] Attempts connecting to the CAN bus and creating a Bus wrapper (provided by python-can) that provides utilities for simple recieving and sending of data on the CAN Bus. 
+                    If connection to the hardware fails, the CANBus will automatically be simulated.
+        Args: 
+            isserial (Boolean) : if True, sets up a serial method of communication, otherwise sets up a parallel method of communication (allowing for serveral bits at a time to be transmitted)
+        """
 
         if can is None or serial is None: 
             print('cannot setup CAN Bus without the can and serial module')
@@ -79,19 +79,21 @@ class CANBus:
         return False
 
     def listen(self):
-        """This function creates a listener on its own thread and listens for messages sent over the serial connection, it uses the can Notifier base class to listen. 
+        """ Called from the rfidListener method in ModeABC
+        This function runs __listen() on its own thread which will handle incoming data recieved on the CAN Bus. 
         """
-
-        # Create notifier
+        # Creates notifier on its own thread and returns immediately so rfidListener can continue running
         self.active = True 
         notiThread = threading.Thread(target=self.__listen)
         notiThread.start()
     
     def stop_listen(self): 
+        """ Causes the __listen thread to break out of its loop. Stops the Bus Notifier object so data will not be recieved. """
         self.active = False 
 
     def __listen(self):
-        """Internal method for the listen method to call that actually has all the functionality and can be threaded.
+        """Called by the listen() method. Runs on its own thread. Activated and Deactivated at the same time a Mode is activated/deactivated. 
+        Creates a Listener object that waits for data sent on the CAN Bus and places incoming data on the shared_rfidQ. 
         """
 
         # activated when a mode is activated 
@@ -100,10 +102,12 @@ class CANBus:
         if self.isSimulation: 
             if len(self.watch_RFIDs)>0: 
                     raise Exception(f'(CANBus.py, SimulatedMessageListener) Must simulate all RFIDs because can bus connection was not successful.')
+            time.sleep(20)
             return 
 
 
         class MessageListener(can.Listener): 
+            """ Inherits from python-can Listener Class. Overrides on_message_recieved method to define how incoming data is handled."""
             def __init__(self, shared_rfidQ, watch_RFIDs): 
                 super().__init__(self)
                 self.shared_rfidQ = shared_rfidQ
