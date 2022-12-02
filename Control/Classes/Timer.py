@@ -1,21 +1,30 @@
+
 """
-Description: Generic Timer Functions that provide the user with information on the current stage of an executing simulation and/or experiment.
+Authors: Sarah Litz, Ryan Cameron
+Date Created: 1/24/2022
+Date Modified: 12/1/2022
+Description: Timer contains the class definitions for EventManager and Visuals 
+            EventManager class recieves printing and output file write requests from different threads and executes these in a thread-safe way. 
+            Visuals provides a method for printing tables in the terminal. 
+
+Property of Donaldson Lab at the University of Colorado at Boulder
 """
+
+# Standard Library Imports 
 import time 
 import sys
 import threading
 import queue 
 import csv
-import concurrent.futures
 
+# Global
 PRINTING_MUTEX = threading.Lock()
 COUNTDOWN_MUTEX = threading.Lock() # Lower Priority for Printing
 TIMESTAMP_EVENT_MUTEX = threading.Lock() # Highest Priority for Printing
 
 class EventManager: 
 
-    ''' EventManager records events and the times that they happened at. 
-        Provides the option to log messages, print to terminal, and/or record data in an output csv file '''
+    ''' EventManager manages printing to the terminal and writing to the output csv file in a thread-safe fashion. Contains the inner classes Timestamp and Countdown '''
     
     def __init__(self, mode=None): 
         print('(Timer.py, EventManager.__init__) New Event Manager created for Control Mode:', type(mode))
