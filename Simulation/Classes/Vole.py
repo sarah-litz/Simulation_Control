@@ -1,7 +1,7 @@
 """
 Authors: Sarah Litz, Ryan Cameron
 Date Created: 1/24/2022
-Date Modified: 4/6/2022
+Date Modified: 12/2/2022
 Description: Class definition for a simulated vole. Contains methods that allow for a vole to move throughout a box and simulate interactions with interactables along the way.
 
 Property of Donaldson Lab at the University of Colorado at Boulder
@@ -10,7 +10,6 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 
 # Standard Lib Imports 
 from itertools import count
-from re import I
 import time, random
 
 # Local Imports 
@@ -18,20 +17,18 @@ from ..Logging.logging_specs import sim_log, vole_log
 from Control.Classes.Timer import Visuals
 
 
-
-'''
-SIMULATED VOLE
-'''
-
-##
-## Simulating a vole interaction with some Interactable thru setting attribute value or thru function call
-##
-
-
 class SimVole: 
 
     def __init__(self, tag, start_chamber, rfid_id, map): 
-        
+        """ initializer for a Simulated Vole 
+
+        Args: 
+            tag (int) : number value assigned to the vole. This value will be used to id voles when recording data in the output csv file. Assigned in config file. 
+            rfid_id (hex | int) : the rfid chip value. This value is used to id voles when CAN Bus signals are recieved. If vole has no chip, then this value can be left blank in config file, in which case it will be set to be the value of the tag. 
+            start_chamber (int) : the starting location for the sim vole 
+            map (Map) : the map instance getting used by the Simulation and Control package. 
+        """
+
         self.rfid_id = rfid_id # rfid hex value 
         self.tag  = tag # human assigned value for simplicity 
         self.map = map 
@@ -53,39 +50,41 @@ class SimVole:
         print(f'{self} starting in {self.curr_loc.edge_or_chamber}{self.curr_loc.id}, positioned between interactables: {self.prev_component}, {self.curr_component}')
         vole_log(f'{self} starting in {self.curr_loc.edge_or_chamber}{self.curr_loc.id}, positioned between interactables: {self.prev_component}, {self.curr_component}')
 
-
-
     def __str__(self): 
         return f'SimVole{self.tag}'
+    
     def at_location_of(self, interactable): 
-        ''' 
-
-            Physical Proximity Check: returns True if vole's location is at the current interactable, false otherwise.
-            Depends on both the chamber/edge vole is in, as well as where the vole is positioned w/in the chamber. 
-
-            If an interactable is apart of a Chamber's Unordered Interactable Set, then as long as the vole's current_component is at the Unordered Set, return True
-
+        ''' Physical Proximity Check to see if the SimVole is at the location of <interactable>. Depends on both the chamber/edge vole is in, as well as where the vole is positioned w/in that location. 
+            If <interactable> is apart of a Chamber's Unordered Interactable Set, then as long as the vole's current_component is at the Unordered Set, return True
+        Args: 
+            interactable (InteractableABC) : the interactable that method checks to see if the vole is sitting by. 
+        Returns: 
+            (boolean) : True if vole's location is at the current interactable, false otherwise. 
         '''
-        # Edge Case: Vole can be sitting at component==None. Check for this. 
-        if self.curr_component is None: 
+
+         
+        if self.curr_component is None: # Edge Case: Vole can be sitting at component==None. Check for this.
             return False 
         
-        if type(self.curr_component) is self.map.Chamber.ComponentSet: 
-            # sitting at unordered interatables. 
-            if interactable in self.curr_component.interactableSet: 
+        if type(self.curr_component) is self.map.Chamber.ComponentSet: # Check the type of Interactable 
+            if interactable in self.curr_component.interactableSet: # check if sitting at unordered interatables. 
                 return True 
             else: 
                 return False 
 
-        if self.curr_component.interactable.name == interactable.name:
+        if self.curr_component.interactable.name == interactable.name: # check if sitting at ordered interactable 
             return True 
-        else: 
+        else:  
             return False 
 
-
     def simulate_move_and_interactable(self, interactable): 
-
-        ''' first moves to the interactable, and if movement is successful then procedes by calling simulate_vole_interactable_interaction on the interactable '''
+        ''' calls helper functions to simulate a movement to <interactable> and then simulate an interaction with <interactable>.
+        first moves to the interactable, and if movement is successful then procedes by calling simulate_vole_interactable_interaction on the interactable 
+        Args: 
+            interactable (InteractableABC) : the interactable that vole will attempt moving to and interacting with 
+        Returns: 
+            None 
+        '''
         try: 
             self.move_to_interactable(interactable)
         except Exception as e: 
@@ -95,11 +94,11 @@ class SimVole:
         self.simulate_vole_interactable_interaction(interactable)
         return 
 
-
     def simulate_vole_interactable_interaction(self, interactable): 
-
-        ''' called from vole.attempt_move() in order to simulate a vole's interaction with an interactable '''
-        ''' prior to simulation, checks if the requested simulation is valid. returns if not '''
+        ''' simulates a voles interaction with a simulated or non-simulated hardware interactable. 
+        runs through a series of error checks to ensure that the requested simulation is valid. 
+        if valid, procedes with simulating the interaction in accordance with the values set in the simulation config file. 
+        '''
         
         if not self.active: 
             sim_log(f'(Vole{self.tag}, simulate_vole_interactable_interaction) Vole Inactive. Cannot perform the requested action.')
@@ -180,19 +179,18 @@ class SimVole:
             time.sleep(5)
             
     
-    
     ##
     ## Vole Movements
     ##
-    def is_move_valid(self, destination): 
-        # TESTME
-        # attempt_move helper function
-        '''Check validity of making a move from voles current location to some destination 
-        Does not actually make move/update the voles location, just checks if the move is possible in a single move according to map layout 
-        Return True if move is possible, False otherwise 
-        '''
-        # destination must be a chamber id
-        # vole can be currently sitting on an edge or in a chamber 
+    def attempt_move_validity_check(self, destination): 
+        """helper function for attempt_move(). attempt_move() method is for making a move in a singular step. This checks that destination 
+        can be reached in a single step, based on the vole's current location. Destination must be a Chamber. 
+        Does not actually make move/update the voles location, just checks if the move is possible in a single move according to map layout. 
+        Args: 
+            destination (id) : the id of a Chamber (i.e. destination must be a chamber)
+        Returns: 
+            (boolean) : True if move is possible, False otherwise 
+        """
 
         if self.curr_loc.edge_or_chamber == 'chamber': 
             if destination in self.curr_loc.connections.keys(): 
@@ -202,12 +200,15 @@ class SimVole:
                 return True # edge is connected to destination chamber
         return False  
     
-
     def update_location(self, newcomponent=None, nxt_edge_or_chmbr_id = None): 
-        ''' 
-        updates vole's current component position 
+        ''' Updates vole's current component position (what component is the vole positioned at) and current location (edge/chamber vole is in). 
         if current component position is None, then check to see if we need to update the vole's chamber/edge/id location 
-        if next component position is None, then see if we can deduce which direction the vole is traveling, so which chamber the vole should now be in
+        if next component position is None, then see if we can deduce which direction the vole is traveling, so which chamber the vole should now be in. 
+        Args: 
+            newComponent (None | ComponentSet | Component) : the component that the vole moved to be postioned in front of 
+            nxt_edge_or_chamber_id (None | int) : The id of the edge or chamber that the vole moved into. If newcomponent is None, requires that the edge/chamber id that the vole moved into is specified. 
+        Returns: 
+            None
         '''
         
         # make sure that the current chamber/edge/id reflects the newcomponent 
@@ -247,23 +248,13 @@ class SimVole:
         location_visual = self.map.draw_location(location = self.curr_loc)
         self.event_manager.print_to_terminal('\n')
         vole_log(location_visual)
-
-
-        # (NOTE) BIG CHANGE HERE! 
-        # This is the Vole PASSING prev_component, meaning that we should reset its threshold to False so watch_for_threshold_event begins looping again to look for more threshold events. 
-        '''if self.prev_component is not None: 
-            if type(self.prev_component) is self.map.Chamber.ComponentSet: 
-                # reset all interactables in the Unordered Set to have a False threshold 
-                for i in self.prev_component.interactableSet: 
-                    #i.threshold = False 
-                    pass
-            else: 
-                #self.prev_component.interactable.threshold = False # threshold back to False now that we used the threshold for a vole to pass! 
-                pass'''
     
     def move_to_interactable(self, goal_interactable): 
-        '''
-        converts interactable to component, and calls the move_to_component function. 
+        ''' converts interactable to component, and calls the move_to_component function. 
+        Args: 
+            goal_interactable (InteractableABC) : the interactable the vole will move to 
+        Returns: 
+            None : calls move_to_component in its return statement. 
         '''
 
         if not self.active: 
@@ -305,7 +296,19 @@ class SimVole:
             return self.move_to_component(goal_component)
 
     def move_to_component(self, goal_component, interactable_within_component = None): 
-
+        """ executes steps to simulate a vole moving from throughout map to reach the goal_component. 
+        if a vole is sitting in a location with no components, then takes extra steps to get the vole to a loctaion where we can begin compiling a component path. 
+        compiles list of components that fall in between voles current component and the goal_component, then takes single steps by calling move_next_component() until the goal component is reached.
+        If at any point move_next_component cannot successfully be completed, meaning vole wasn't able to reach threshold, then we return from this function. 
+        Voles location gets updated within the move_next_component function as we take each step. 
+        
+        Args: 
+            goal_component (ComponentSet | Component) : component that vole will move to. Specifies a singular interactable (Component) or a set of unordered interactables (ComponentSet)
+            interactable_within_component (InteractableABC, optional) : because ordered Component objects are each paired with one interactable, if the goal component is a ComponentSet with multiple interactables, then this extra argument recieves the interactable within the ComponentSet that the vole is moving to. 
+        
+        Returns: 
+            None 
+        """
         if not self.active: 
             sim_log(f'(Vole{self.tag}, move_to_component) Vole Inactive. Cannot perform the requested action.')
             return 
@@ -314,55 +317,36 @@ class SimVole:
         if type(goal_component) is self.map.Chamber.ComponentSet and interactable_within_component is None: 
             raise Exception(f'(Vole{self.tag}, move_to_component) Must specify the goal interactable within {goal_component} since the goal component is a set of interactables.')
         
-        ''' 
-        compiles list of components that stand between current component and the goal component. 
-        Then takes single steps by calling move_next_component until the goal component is reached.
-        If at any point move_next_component cannot successfully be completed, meaning vole wasn't able to reach threshold, then we return from this function. 
-        Voles location gets updated within the move_next_component function as we take each step. 
-        '''
-
         sim_log(f'(Vole{self.tag}, move_to_component) {str(self.curr_component)} -> {str(goal_component)}')
         self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_to_component) {str(self.curr_component)} -> {str(goal_component)}')
 
-        # The goal_component will either specify a singular interactable ( if it is an ordered component ) or can specify 
-        # a ComponentSet, which represents the unordered interactables within a chamber and may contain a list of interactables. 
-
         # check that goal_component exists and set Goal Location
         if type(goal_component) is self.map.Chamber.ComponentSet: 
-            # Goal Component is an Unordered Component Set! 
-            # Then we also have a value for interactable_within_component!!! Check that this interactable exists!! 
+            # Goal Component is an Unordered Component Set --> Requires checking that interactable_within_component exists. 
             if interactable_within_component.name not in self.map.instantiated_interactables: 
                 raise Exception(f'(Vole{self.tag}, move_to_component) Unordered Interactable {interactable_within_component} does not exist.')
-
             goal_loc = self.map.get_location_object(interactable_within_component)
         else: 
             goal_loc = self.map.get_location_object(goal_component.interactable)
             if goal_component.interactable.name not in self.map.instantiated_interactables: 
                 raise Exception(f'(Vole{self.tag}, move_to_component) goal component {goal_component} does not exist.')
             
-
-        # 
-        # Voles Current Component is None: Must first reposition at nearest component before getting the component path!
-        #
-        while self.curr_component is None: # Loop Until We Find the first Component along our path that we can position the vole at! 
+        
+        ### If Voles Current Component is None, the we Must first reposition at nearest component before getting the component path 
+        while self.curr_component is None: # loops Until We Find the first Component along our path that we can position the vole at
             
             if not self.active: 
                 return 
-
-            #
-            # This entire while loop is just to get the vole positioned at some component, since its current component is None and that is unhelpful to start out on!  
-            # 
-            sim_log(f'(Vole{self.tag}, move_to_component) Vole{self.tag} current component is None; Searching for the nearest component to update the voles location to.')
-            # manually put together the component path by using the start_loc and goal_loc 
-            # goal_loc = self.map.get_location_object(goal_component.interactable)
-            path = self.map.get_edge_chamber_path(self.curr_loc, goal_loc)
-            # sim_log((f'(Vole, move_to_component) Value Returned by get_edge_chamber_path({self.curr_loc}->{goal_loc}): {path}'))
             
-            # position vole in place that provides more information for us ( we know that vole is in an empty edge/chamber, so there is some flexibility for the vole movements here! )
-            # move to closest new location. If sitting on edge, move to closest chamber. If sitting in chamber, move to closest edge. 
-            if self.curr_loc == 'edge': 
-                
-                # STARTING IN EMPTY CHAMBER/EDGE, THIS IS A PART OF THE WHILE LOOP THAT IS SEARCHING FOR NEAREST COMPONENT
+            ### This entire while loop is just to get the vole positioned at some component, since its current component is None and that is unhelpful to start out on!  
+            
+            sim_log(f'(Vole{self.tag}, move_to_component) Vole{self.tag} current component is None; Searching for the nearest component to update the voles location to.')
+            
+            path = self.map.get_edge_chamber_path(self.curr_loc, goal_loc) # get orderd path of edges/chambers so Vole can attempt moving to any of these locations to start out with.
+            
+            ## position vole in place that provides more information for us ( we know that vole is in an EMPTY edge/chamber, so there is some flexibility for the vole movements here! )
+            
+            if self.curr_loc == 'edge': # sitting in empty edge. Move to the closest chamber. 
                 # get first chamber in path, and add the chamber's interactables to our component list
                 if self.map.get_chamber(self.curr_loc.v1) in path: # figure out if we need to reverse the component list or not
                     newloc = self.curr_loc.v1
@@ -370,20 +354,13 @@ class SimVole:
                 else: 
                     newloc = self.map.get_chamber(self.curr_loc.v2)
                     clst = newloc.get_component_list()
-
                 if clst is not None: 
                     # move to first component 
                     self.update_location(clst[0])
                 else: 
-                    self.update_location(None, nxt_edge_or_chmbr_id=newloc)
-                    # self.curr_loc = newloc # new chamber is empty. manually move vole there anyways and we will loop again. 
-                
-            # STILL IN WHILE LOOP FOR WHEN VOLE START COMPONENT IS NONE! 
-            # we just wanna get the vole positioned at some component, since its current component is None and that is unhelpful to start out on!  
-            else: # current location is a chamber. move to closest edge 
-
+                    self.update_location(None, nxt_edge_or_chmbr_id=newloc)                
+            else: # current location is an empty chamber. move to closest edge.
                 for (c,e) in self.curr_loc.connections.items(): 
-                    
                     if e in path: 
                         # move to new edge 
                         # check if interactables exist on this edge. If they do, make move to that interactable. 
@@ -397,18 +374,14 @@ class SimVole:
                         self.update_location(clst[0])
                     else: 
                         # new edge is empty, manually move the vole there anyways. 
-                        self.update_location(None, nxt_edge_or_chmbr_id = e.id)
-                        # self.curr_loc = e
-        
+                        self.update_location(None, nxt_edge_or_chmbr_id = e.id)        
         # END of While loop that ensures voles current location is not "None" 
 
-        #
-        # Get list of components in between current location and goal location 
-        #
+        
+        ### COMPILE COMPONENT PATH: Get list of components in between current location and goal location 
         component_lst = self.map.get_component_path(self.curr_component, goal_component) 
         self.event_manager.print_to_terminal( f'\n(Vole{self.tag}, move_to_component) components between curr_loc and goal_loc:, {[*(str(c) for c in component_lst)]}\n')
         vole_log(f'(Vole{self.tag}, move_to_component) components between curr_loc and goal_loc:, {[*(str(c) for c in component_lst)]}')
-
 
         # for each component in component_lst, call move_next_component
         for c in component_lst: 
@@ -421,19 +394,10 @@ class SimVole:
             if not res: 
                 return 
             
-
-    
         return component_lst
 
-    #def move_multiple_components(self, component): 
-        # component is the goal component 
-        # does not necessarily have to be a component right next to the voles current location 
-        # makes calls to move_next_component to see if we are able to reach the goal component 
-        # similar to move_next_component, does not simulate anything along the way. Just positions vole so it can interact with component.
-
-
     def move_next_component(self, goal_component, nxt_edge_or_chmbr_id = None): 
-     
+        ### LEAVING OFF HERE! 
         ''' vole positions itself in front of goal_component. component specified must be a component that only requires a singular position change. 
             this will check the threshold of the voles current component to make sure it is okay for us to move passed it.
             This function Simulates any Autonomous Component! 
@@ -631,7 +595,7 @@ class SimVole:
         
         if validity_check: 
 
-            if not self.is_move_valid(destination): 
+            if not self.attempt_move_validity_check(destination): 
                 # print reason that move is invalid, and then return.
                 if self.curr_loc == destination: 
                     sim_log(f'(Vole{self.tag}, attempt_move) Vole{self.tag} is already in chamber{destination}!')

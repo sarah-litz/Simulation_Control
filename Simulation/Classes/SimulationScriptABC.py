@@ -3,7 +3,8 @@
 Authors: Sarah Litz, Ryan Cameron
 Date Created: 1/24/2022
 Date Modified: 4/6/2022
-Description: Class definition for running a simulation version of an experiment. Tracks what mode the control software is running, and then simulates a vole's behavior with a simulated (or actual) hardware interactable.
+Description: Abstract Class for creating a script that contains the logic for running a simulation. 
+This very simple class ensures that each simulation script created has a run() function and recieves the control mode object that it will run alongside of. 
 
 Property of Donaldson Lab at the University of Colorado at Boulder
 """
@@ -24,7 +25,10 @@ cwd = os.getcwd()
 class SimulationScriptABC: 
 
     def __init__(self, mode):
-
+        """
+        Args: 
+            mode (ModeABC) : the mode class that inherits from ModeABC that the SimulationScriptABC child class will run alongside of.
+        """
         self.mode = mode # the mode that this simulation script is paired with  
         self.map = self.mode.map 
         self.event_manager = self.map.event_manager

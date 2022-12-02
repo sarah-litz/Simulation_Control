@@ -19,7 +19,7 @@
     **ii.** Simulation (if interactable.isSimulation is True) Peforms a simulated interaction between a vole and a designated interactable
     - simulates by calling function specified by 'simulate_with_fn', *or* simulates by setting the threshold attribute to its goal value 
 
-3. is_move_valid (destination) : boolean 
+3. attempt_move_validity_check (destination) : boolean 
     - does not actually make a move/update voles location, just checks if the vole can move from its current edge or chamber into the destination chamber in a single move 
     - returns True if the current chamber and destination chamber share an edge 
     - returns True if the current edge is connected to the destination chamber 
