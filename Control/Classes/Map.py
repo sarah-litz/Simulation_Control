@@ -1916,7 +1916,7 @@ class Map:
             self.curr_loc = map.get_chamber(start_chamber)
             self.prev_loc = None # object representing the voles previous location.
 
-            print(f'VOLE {self.tag} STARTING IN {self.curr_loc.edge_or_chamber}{self.curr_loc.id}')
+            print(f'{self} starting in {self.curr_loc.edge_or_chamber}{self.curr_loc.id}')
 
         def __str__(self): 
             return f'Vole{self.tag}'

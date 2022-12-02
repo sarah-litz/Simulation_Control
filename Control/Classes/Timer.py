@@ -27,7 +27,6 @@ class EventManager:
     ''' EventManager manages printing to the terminal and writing to the output csv file in a thread-safe fashion. Contains the inner classes Timestamp and Countdown '''
     
     def __init__(self, mode=None): 
-        print('(Timer.py, EventManager.__init__) New Event Manager created for Control Mode:', type(mode))
         self.mode = mode 
         self.active = False 
         self.write_queue = queue.Queue() # items get added here to be written to output csv file 

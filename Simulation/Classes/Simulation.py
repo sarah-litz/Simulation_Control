@@ -1,59 +1,54 @@
 """
 Authors: Sarah Litz, Ryan Cameron
 Date Created: 1/24/2022
-Date Modified: 4/6/2022
+Date Modified: 12/1/2022
 Description: Class definition for running a simulation version of an experiment. Tracks what mode the control software is running, and then simulates a vole's behavior with a simulated (or actual) hardware interactable.
 
 Property of Donaldson Lab at the University of Colorado at Boulder
 """
 
-    
+# Standard Lib Imports 
+import threading, time, json, sys
+import random # Do Not Delete. Necessary for lambda function in rfid config file.
+import os
+cwd = os.getcwd() 
+
 # Local Imports 
-from code import interact
 from Logging.logging_specs import sim_log
 from Simulation.Logging.logging_specs import vole_log, clear_log
 from .Vole import SimVole
-
-# Standard Lib Imports 
-import threading, time, json, inspect, random, sys
-import os
-cwd = os.getcwd() 
 
 
 class Simulation: 
 
     def __init__(self, modes): 
+
+        """ Class that manages/runs the Simulation package. 
+        Args: 
+            modes ([ModeABC]) : an ordered list of control modes that will run 
+        """
         
         print(f'\nSimulation Created: {self}')
-        
-        # Start Vole Log From Scratch 
-        # clear_log('volepaths.log')
-        
+                
         self.map = modes[0].map # default to the map of the first mode in the list. We will update map to the active modes map throughout experiemnt. 
 
-        self.voles = self.map.voles 
+        self.voles = self.map.voles # get any non-simulated voles that were setup by data from the map config file ( appends Simulated Voles to this list in the configure_simulation method )
 
-        self.event_manager = self.map.event_manager 
+        self.event_manager = self.map.event_manager # get event manager object from map 
 
-        # configure sim: updates interactables w/ simulation attributes & instantiates voles 
-        self.configure_simulation(cwd + '/Simulation/Configurations/simulation.json') 
+        self.configure_simulation(cwd + '/Simulation/Configurations/simulation.json') # configure sim: updates interactables w/ simulation attributes & instantiates voles 
 
         self.simulation_func = {} # dict for pairing a mode with a simulation function ( or list of simulation functions )
 
         self.control_sim_pairs = {} # dict (assigned in __main__) that pairs a Mode Name with a Simulation Class
 
-        self.modes = modes
+        self.modes = modes # Control modes that will run
 
         self.current_mode = None # contains the Mode object that the control software is currently running. 
 
-        ##       self.map.voles = self.voles # Replace the Control Voles w/ the Simulation Voles so we can provide more information in the visualilzations
-
-
     def __str__(self): 
         return __name__
-    #
-    # Threaded Simulation Runner 
-    #
+
     def run_in_thread(func): 
         ''' decorator function to run function on its own thread '''
         def run(*k, **kw): 
@@ -62,14 +57,15 @@ class Simulation:
             return t
         return run 
 
-
     @run_in_thread
     def run_active_mode_sim(self, current_mode): 
 
-        ''' 
-        called from run_sim() 
-        starts thread to run the simulation function 
-        waits for current mode's timeout to end and immediately returns, killing the simulation function as a result 
+        ''' called from run_sim() 
+        Grabs the SimulationScript that is paired with the actively running Control Mode. 
+        Starts the thread to run the simulation function, waits for current mode's timeout to end, and awaits the simulation function to return. 
+
+        Args: 
+            current_mode (ModeABC) : the control mode that is currently running 
         '''
 
         #
@@ -164,9 +160,12 @@ class Simulation:
     def run_sim(self): 
 
         ''' This Function Runs Continuously Until the Experiment Ends 
-                    Runs on a separate thread 
-                    Get/waits for an active mode
-                    Calls the function that is paired with the currently active mode '''
+                Waits for a control mode to become active. When a control mode becomes active, calls run_sim() to execute a SimulationScript that is paired with the active mode. 
+                Waits for the control mode to finish, and then repeats this process until all control modes have ran.
+        
+        Args : None 
+        Returns : None
+        '''
 
         self.map.print_interactable_table()
         print('\n')
@@ -175,16 +174,7 @@ class Simulation:
         
         sim_log('(Simulation.py, run_sim) Daemon Thread for getting the active mode, and running the specified simulation while active mode is in its timeout period.')
 
-        # Validity Check that will only execute once # 
-        ''' check validitity of the simulation functions that were set to notify user of potential errors as early as possible '''
-        '''for (mode, simList) in self.simulation_func.items(): 
-             # WARN SOMEONE IF THEY PASS IN FUNCITON FROM A DIFFERENT CLASS BECAUSE THEN THE BOX BASICALLY RESETS AKA IT WONT RECALL WHERE THE VOLES LEFT OFF!
-            for sim in simList:
-                if hasattr(self, sim.__name__): 
-                    sim_log(f'{mode} is paired with {sim.__name__}')
-                else: 
-                    raise Exception(f'(Simulation.py, run_sim()) Error: specified {sim} as a simulation function for {self}. Because this simulation function does not Belong To {self}, 2 diff simulations will get created, and Voles will reset to initial positions.')
-        '''
+
                        
         # NOTE: the function that we call should potentially also run on its own thread, so then all this function does is 
         # loop until the active mode is not in Timeout or the current mode is inactive. Basically will just allow for a more immediate 
@@ -198,7 +188,6 @@ class Simulation:
             # Set the Currently Active Mode 
             self.current_mode = self.get_active_mode() # update the current mode 
 
-            
             while self.current_mode is None: # if no mode is currently active 
                 # wait for a mode to become active 
                 time.sleep(0.5)
@@ -226,85 +215,28 @@ class Simulation:
                 time.sleep(0.5)
 
     def get_active_mode(self): 
-        '''returns the mode object that is currently running ( assumes there is never more than one active mode at a given point in time ) '''
-        '''for mode in self.modes: 
-            if mode.active: 
-                return mode  '''
+        ''' Retrieves the active mode from the event manager. (If a mode is running, it gets registered with the event_manager.)
+        Args: None 
+        Returns: 
+            (ModeABC | None) : if there is an active mode, then returns that mode object. Otherwise, returns None to denote that there is not a currently active mode. 
         
-        # If mode is running, then it gets registered with the event_manager 
+        '''
 
         if self.event_manager.mode is not None and self.event_manager.mode.active: 
             print('Active Mode: ', self.event_manager.mode)
             return self.event_manager.mode 
         return None
-        
-    #
-    # Vole Getters and Setters 
-    #
-    def get_vole(self, tag): 
-        # searches list of voles and returns vole object w/ the specified tag 
-        for v in self.voles: 
-            if v.tag == tag: return v  
-        return None
-    def get_vole_by_rfid_id(self, rfid_id): 
-        # searches list of voles and returns vole object w/ the specified rfid id 
-        for v in self.voles: 
-            if v.rfid_id == rfid_id: return v
-        return None 
-    def new_vole(self, tag, start_chamber, rfid_id): 
-        ''' creates a new Vole object and adds it to the list of voles. Returns Vole object on success '''
 
-        if rfid_id is None: 
-            # for simulated voles, if no rfid_id was specified then match this value to the tag value. This way, when we simulate an rfid ping, the Map class's rfidListener will still be able to search for the vole using the rfid_id
-            rfid_id = tag 
-
-        # ensure vole does not already exist 
-        if self.get_vole(tag) is not None: 
-            sim_log(f'vole with tag {tag} already exists')
-            print(f'you are trying to create a vole with the tag {tag} twice')
-            inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
-            if inp == 'y': return 
-            if inp == 'n': sys.exit(0)
-            else: sys.exit(0)
-        
-        # ensure vole with same rfid_id does not already exist 
-        if rfid_id is not None and self.get_vole_by_rfid_id(rfid_id) is not None: 
-            sim_log(f'vole with rfid_id {rfid_id} already exists')
-            print(f'you are trying to create a vole with the rfid_id {rfid_id} twice')
-            inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
-            if inp == 'y': return 
-            if inp == 'n': sys.exit(0)
-            else: sys.exit(0)        
-        
-        # ensure that start_chamber exists in map
-        chmbr = self.map.get_chamber(start_chamber) 
-        if chmbr is None: 
-            sim_log(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
-            print(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
-            print(f'existing chambers: ', self.map.graph.keys())
-            while chmbr is None: 
-                ans = input(f'enter "q" if you would like to exit the experiment, or enter the id of a different chamber to place this vole in.\n')
-                if ans == 'q': exit() 
-                try: 
-                    start_chamber = int(ans)
-                    chmbr = self.map.get_chamber(int(start_chamber)) 
-                except ValueError as e: print(f'invalid input. Must be a number or the letter q. ({e})')            
-
-        # Create new Vole 
-        newVole = SimVole(tag, start_chamber, rfid_id, self.map)
-        self.voles.append(newVole)
-        return newVole
-    def remove_vole(self, tag): 
-        ''' removes vole object specified by the vole's tag '''
-        vole = self.get_vole(tag)
-        if not vole: sim_log(f'attempting to remove vole {tag} which does not exist, so cannot be removed')
-        self.voles.remove(vole)    
-    #
-    # Add Simulation Features to Map 
-    #
     def configure_simulation(self, config_filepath): 
-        '''function to read/parse the simulation configuration file'''
-        ''' Adds a simulation attribute to all of the interactables '''
+        '''function to read/parse the simulation configuration file. Sets interactable's isSimulation attribute accordingly. 
+            Creates simulated vole objects (SimVole) and updates the list of voles to contain them. 
+        
+        Args: 
+            config_filepath (string) : filepath to the simulation.json file containing the configurations for creating the Simulation
+        
+        Returns: 
+            None 
+        '''
 
         sim_log(f"(Simulation.py, configure_simulation) reading/parsing the file {config_filepath}")
 
@@ -362,9 +294,95 @@ class Simulation:
         return 
 
     #
-    # Simulate Vole-Interactable Interactations
+    # Vole Getters and Setters 
     #
+    def get_vole(self, tag): 
+        '''searches list of voles and returns vole object w/ the specified tag
+        Args: 
+            tag (int) : tag id number assigned to the vole that will be searched for 
+        Returns: 
+            (Vole | SimVole) : vole object with <tag>. If it does not exist, returns None.
+        '''
+        for v in self.voles: 
+            if v.tag == tag: return v  
+        return None
+    
+    def get_vole_by_rfid_id(self, rfid_id): 
+        ''' searches list of voles and returns vole object w/ the specified rfid id 
+        Args: 
+            rfid_id ( hex | int ) : the rfid chip (hex) value that was inserted in that vole. if vole does not have an rfid chip, then the rfid_id value is set to the same (int) value as the vole's tag. 
+        Returns: 
+            (Vole | SimVole) : vole object with <rfid_id>. If it does not exist, returns None.
+        '''
+        for v in self.voles: 
+            if v.rfid_id == rfid_id: return v
+        return None 
 
+    def new_vole(self, tag, start_chamber, rfid_id): 
+        ''' creates a new Vole object and adds it to the list of voles. 
+        Args: 
+            tag (int) : id assigned to a vole for simplicity. 
+            start_chamber (int) : the id of the chamber that the vole is starting in. 
+            rfid_id (hex|int) : the rfid chip's (hexidecimal) identifier. if value was not provided for rfid_id, then this value defaults to the same number as the vole's tag (int).  
+        Returns: 
+            (Vole|SimVole) : vole object on success '''
+
+        if rfid_id is None: 
+            # for simulated voles, if no rfid_id was specified then match this value to the tag value. This way, when we simulate an rfid ping, the Map class's rfidListener will still be able to search for the vole using the rfid_id
+            rfid_id = tag 
+
+        # ensure vole does not already exist 
+        if self.get_vole(tag) is not None: 
+            sim_log(f'vole with tag {tag} already exists')
+            print(f'you are trying to create a vole with the tag {tag} twice')
+            inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
+            if inp == 'y': return 
+            if inp == 'n': sys.exit(0)
+            else: sys.exit(0)
+        
+        # ensure vole with same rfid_id does not already exist 
+        if rfid_id is not None and self.get_vole_by_rfid_id(rfid_id) is not None: 
+            sim_log(f'vole with rfid_id {rfid_id} already exists')
+            print(f'you are trying to create a vole with the rfid_id {rfid_id} twice')
+            inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
+            if inp == 'y': return 
+            if inp == 'n': sys.exit(0)
+            else: sys.exit(0)        
+        
+        # ensure that start_chamber exists in map
+        chmbr = self.map.get_chamber(start_chamber) 
+        if chmbr is None: 
+            sim_log(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
+            print(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
+            print(f'existing chambers: ', self.map.graph.keys())
+            while chmbr is None: 
+                ans = input(f'enter "q" if you would like to exit the experiment, or enter the id of a different chamber to place this vole in.\n')
+                if ans == 'q': exit() 
+                try: 
+                    start_chamber = int(ans)
+                    chmbr = self.map.get_chamber(int(start_chamber)) 
+                except ValueError as e: print(f'invalid input. Must be a number or the letter q. ({e})')            
+
+        # Create new Vole 
+        newVole = SimVole(tag, start_chamber, rfid_id, self.map)
+        self.voles.append(newVole)
+        return newVole
+    
+    def remove_vole(self, tag): 
+        ''' removes vole object specified by the vole's tag 
+        Args: 
+            tag (int) : vole's id assigned to the Vole that will be removed.
+        Returns: 
+            None 
+        '''
+        vole = self.get_vole(tag)
+        if not vole: 
+            sim_log(f'attempting to remove vole {tag} which does not exist, so cannot be removed')
+            return 
+        else: 
+            self.voles.remove(vole)    
+    
+    
 if __name__ == '__main__': 
     
     print('Simulation is an Abstract Base Class, meaning you cannot run it directly. In order to run a Simulation, create a subclass of Simulation')

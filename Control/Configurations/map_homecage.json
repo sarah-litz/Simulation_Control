@@ -48,9 +48,5 @@
 
     "voles": [
 
-        { "tag":4, "start_chamber":2, "rfid_id": "906467d63b840080"}, 
-        { "tag":5, "start_chamber":1, "rfid_id": "52cd47dd3ef30080"}, 
-        { "tag":6, "start_chamber":1, "rfid_id": null }
-
     ]
 }
