@@ -397,15 +397,28 @@ class SimVole:
         return component_lst
 
     def move_next_component(self, goal_component, nxt_edge_or_chmbr_id = None): 
-        ### LEAVING OFF HERE! 
-        ''' vole positions itself in front of goal_component. component specified must be a component that only requires a singular position change. 
-            this will check the threshold of the voles current component to make sure it is okay for us to move passed it.
-            This function Simulates any Autonomous Component! 
-                -> (autonomous components: RFIDs, IR Beams)
-            Vole is able to freely pass by non-barrier objects. 
-            we check if the voles current component is able to be freely passed. If so, we move and position ourselves at this new interactable. 
-            Once returned from this function, we would be able to attempt an interaction with the new component without getting a physical proximity error. 
-        '''
+        """ 
+        [summary] Moves passed the voles current component in order to reach goal_component. 
+        To move passed a vole's current component, must ensure that it is physically possible for that vole to pass that component, or if any signals (e.g. rfid) should be sent when the vole does so. 
+        Using the interactable's autonomous and barrier attributes to decide what actions to take, this method takes steps to accurately simulate vole's movement when passing a single interactable. 
+        
+        The following rules explain how interactable's are treated differently based on their autonomous(boolean) and barrier(boolean) values: 
+            For Each Interactable: 
+                    if is autonomous: simulate 
+                    if not barrier: pass 
+                    if barrier with true threshold: pass 
+                    if barrier with false threshold: cannot pass 
+        
+        On success, the vole's current component will be updated to the goal_component. Note that this means the vole is positioned at goal_component, and has not simulated/interacted with that component yet, as this happens when the vole moves passed a component. (i.e. any component that has been set to a vole's prev_component means that a vole successfully moved passed that component.)
+        
+        Args: 
+            goal_component (Component | ComponentSet) : component that vole will move to position itself infront of by passing the current interactable it is located at. 
+            nxt_edge_or_chmbr_id (int, optional) : if goal_component is None, must supply a next_edge_or_chmbr_id value. (goal_component could be None if at end of an edge's linked list.)
+        Returns: 
+            (boolean) : True if vole is now positioned at goal_componnet, False otherwise. 
+        """
+
+
         #
         # Edge Cases 
         #
@@ -416,7 +429,7 @@ class SimVole:
 
         # inner helper function, getInteractable
         def getInteractable(component): 
-            ## try except statement for retrieving components interactable. If component is None, this prevents errors from gettting thrown. ## 
+            """ inner method to retrieve a component's interactable. If component is None, this prevents errors from getting thrown. """
             if type(component) is self.map.Chamber.ComponentSet: 
                 return component.interactableSet[0] # just return the first interactable from the unordered set!! 
             try: return component.interactable # convert to a list so we can iterate thru interactables even if there is only a single interactable
@@ -447,13 +460,10 @@ class SimVole:
         vole_log(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         
         if curr_interactable == goal_interactable: 
-            # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
             vole_log(f'(Vole{self.tag}, move_next_component) Goal interactable and voles current interactable are the same.')
             return True 
         
         self.event_manager.new_timestamp(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}', time.time(), print_to_screen = True)
-        # print(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
-        # self.event_manager.print_to_terminal(f'(Vole{self.tag}, move_next_component) New Move: {str(curr_interactable)}->{str(goal_interactable)}')
         
         if self.prev_component == goal_component: 
             # Case: Vole is Turning Around!
@@ -463,28 +473,16 @@ class SimVole:
             vole_log(f'(vole{self.tag}, move_next_component) Vole is Turning Around but still positioned between the same interactables! Now facing {self.curr_component}, with back to {self.prev_component}.')
             return True
 
-        # this function requires that we only need to take a single step/move to reach the goal component. Ensure that this is possible. 
+        # Validity Check: ensure that we only need to take a single step/move to complete the requested move.
         if nxt_interactable != goal_interactable and prev_interactable != goal_interactable: # if curr_component->nxt.interactable != goal AND currcomponent->prev != goal
 
             # possible that the next component is on an adjacent edge/chamber to the vole's current location 
 
             if len(self.map.get_component_path(self.curr_component,goal_component)) == 2: 
-
-                # the goal component is not a chamber interactable, so did not fall into the first if() check. 
-                # However, there are no components that stand in between the current component and the goal component, so this is a valid move request. 
-                # self.event_manager.print_to_terminal('\n NEW LOGIC! Potentially can get rid of the other if/elif checks that follow this if statement. Hopefully falls into this everytime. \n')    
-                pass 
-
-            # extra check for scenario that current component is a reference to a chamber component
-            elif goal_prev == curr_interactable or goal_nxt == curr_interactable: # this scenario will happen when chamber interactables are added to an edge 
-                # if goal->prev == curr_component ( goal component links back to our current component )
-                # if goal->nxt == curr_component ( goal component links forward to our current component )
-                
-                # valid move requested from a chamber component -> adjacent edge component
-                # self.event_manager.print_to_terminal('Logic for checking if the current component is a referenced as a chamber component on an edge. If we always fall into both this if statement and the NEW LOGIC statement, then we can delete this if statement cause it gets covered by the first if statement. ')
+                # Valid Move Request: there are no components that stand in between the current component and the goal component
                 pass 
             else: 
-                # invalid move request 
+                # Invalid Move Request: there are 1+ components in between the vole's current component and the goal component
                 raise Exception(f'Vole{self.tag}, move_next_component) only accepts components as arguments that are directly next to the voles location: {self.curr_component}. prev={self.curr_component.prevval}, next={self.curr_component.nextval}. The goal component {goal_component} has prev={goal_component.prevval} and next={goal_component.nextval}')
                 return False
 
@@ -492,23 +490,14 @@ class SimVole:
         #
         # Check that we are able to move past the interactable that vole is currently positioned at ( this only happens for ONE interactable, the current one, each time this function gets called )
         #
-    
-
-        # If current interactable is in an UNORDERED chamber set 
-            # 
-            #  before updating location, we should check that all of the unordered interactables are passable 
-            #
-            #       for each unordered interactable, 
-            #           if is autonomous: simulate 
-            #           if not barrier: pass 
-            #           if barrier with true threshold: pass 
-            #           if barrier with false threshold: cannot pass 
+        #       for each interactable, 
+        #           if is autonomous: simulate 
+        #           if not barrier: pass 
+        #           if barrier with true threshold: pass 
+        #           if barrier with false threshold: cannot pass 
                    
         
-        #
-        # Not Barrier
-        #
-        if curr_interactable.barrier is False: 
+        if curr_interactable.barrier is False: ## Interactable is Not a Barrier, Move Passed the Interactable Freely. 
 
             if curr_interactable.autonomous: # if Autonomous --> Simulate! 
                 
@@ -518,26 +507,17 @@ class SimVole:
             # we can make move freely, update location 
             self.update_location(goal_component, nxt_edge_or_chmbr_id = nxt_edge_or_chmbr_id)
             return True
-                
 
 
-        #
-        # Barrier Interactable
-        #
-        # barrier interactables require that threshold is True. If its not, we can simulate only if the interatcable does NOT have dependents. 
-        # i.e. rfids can be simulated in only simple step and ARE simulated within this function, but doors are not. 
 
-
-        # TRUE Threshold 
-        if curr_interactable.threshold is True: 
-            # threshold is True, we can freely make move 
+        ### Interactable is a Barrier Interactable. Barrier interactables require that threshold is True. 
+        
+        if curr_interactable.threshold is True: # TRUE Threshold, can make move freely. 
             self.event_manager.print_to_terminal(f'(Simulation/Vole{self.tag}, move_next_component) the threshold condition was met for {curr_interactable}. Vole{self.tag} making the move from {self.curr_component} to {goal_component}.')
             self.update_location(goal_component, nxt_edge_or_chmbr_id = nxt_edge_or_chmbr_id)
             return True
 
-
-        # false threshold, not autonomous
-        if not curr_interactable.autonomous: # cannot simulate if not autonomous 
+        if not curr_interactable.autonomous: # false threshold, and not autonomous. cannot simulate if not autonomous 
             # DOORs without dependents will fall into this, as they are a barrier and not autonomous, meaning they must be controlled by something else. 
             self.event_manager.print_to_terminal(f'(Simulation/Vole{self.tag}, move_next_component) Movement from {self.curr_component}->{goal_component} cannot be completed because {self.curr_component} it is a barrier but not autonomous, so requires an interaction with its child interactables to operate it.')
             return False 
@@ -564,10 +544,10 @@ class SimVole:
                 self.event_manager.print_to_terminal(f'(Simulation/Vole{self.tag}, move_next_component) Movement from {self.curr_component}->{goal_component} cannot be completed because after simulating {self.curr_component} the threshold is still False.')
                 return False 
 
-
-
-
     def attempt_move( self, destination, validity_check = True ): 
+        """
+        
+        """
         ''' for vole movement into a CHABMER that is a single step/edge away from current positioning.
         Allowed Movements: 
             edge -> chamber 
