@@ -73,6 +73,7 @@ class modeABC:
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
             t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+            t.name = func.__name__
             t.start() 
             return t
         return run 
@@ -166,7 +167,7 @@ class modeABC:
                     
                     next_mode.startTime = self.startTime
 
-                    print(f'MODE W/IN A MODE: Transferring Control to {str(next_mode)} for round {idx}')
+                    # print(f'MODE W/IN A MODE: Transferring Control to {str(next_mode)} for round {idx}')
                     next_mode.current_round = idx # to keep round numbers consistent, manually set the round number. ( Otherwise round will be set back to 1 in the output file )
                     next_mode.enter(initial_enter=False) # Recursively call enter() on next mode! 
             
@@ -373,6 +374,7 @@ class modeABC:
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
             t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+            t.name = func.__name__
             t.start() 
             return t
         return run 

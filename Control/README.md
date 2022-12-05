@@ -1,16 +1,23 @@
 # Control Package
 
-Property of Donaldson Lab at the University of Colorado at Boulder
-
 ## Description
 
-    the control package contains the classes, configurations, and scripts used in running an experiment.  
+    the control package contains the classes, configurations, and scripts used in running an experiment. An experiment is built on Mode(s), where each mode contains unique logic for how a box should operate. 
 
 ## Command for Running an Experiment
 
 `python3 -m Control`
 
-# Writing Your Own Experiment
+## Quick Start Guide
+
+1. Create a Control Mode
+    - use Control/Modes/Example.py as a template for creating a control mode ( copy and paste the file contents into a new file )
+2. Setup __main__() so the new Control Mode will execute
+    - follow along with the TODO's that are commented throughout the __main__ module in order to add the new Control Mode to the experiment
+3. Run the Control Package!
+    - positioned just outside of the Control directory, run `python3 -m Control` from the terminal.
+
+# Detailed User Guide: Writing Your Own Experiment
 
 ## Configuring an Experiment with Map.json
 
@@ -105,3 +112,8 @@ It is important to specify chamber_interactable for any chamber interactable tha
     To add a new script, create a new file within the Scripts directory. 
 
     To link your new script with the rest of the program, follow the marked (TODOs) that are in the Control/__main__.py file.
+
+
+## License 
+
+Property of Donaldson Lab at the University of Colorado at Boulder

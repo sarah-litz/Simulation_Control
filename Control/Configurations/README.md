@@ -5,37 +5,30 @@
 
 *note*: For information on map class view the ReadME that is positioned in the Control directory.
 
-## Configuration File Overview ##
+## QuickStart: Configuration Files ##
+
+a configuration file is necessary for each unique interactable type that is being utilized in a box.  
 
 ### Step-By-Step: Configurations for a Newly Added Interactable ###
 
-1. If it doesn't already exist, add a new .json whose file name matches the type of the interactable. The file name should have the same name as the class name for the interactable, and should always be a '.json' file.
+1. If it doesn't already exist, add a new .json whose file name matches the type of the interactable.
+    - The file name should have the same name as the class name for the interactable, and should always be a '.json' file.
 
-2. Add specifications for a new interactable within the configuration file of that type. For details on how to do this, keep reading this document for both general examples and examples that are specific to existing interactable types.
+2. Add specifications for a new interactable within the configuration file of that type.
+    - For details on how to do this, keep reading this document for both general examples and examples that are specific to existing interactable types.
 
-3. Add to map.json in order to have the object instantiated when the experiment runs.
+3. Add to a Map configuration in order to have the object instantiated when the experiment runs.
 
 4. Add name of new interactable to other configuration files to establish any relationships it has with other interactables! i.e. When needed, add the name of the interactable as a dependent to another interactable's "dependents" field.
 
 5. If this was a brand new type of interactable (meaning that you created a new json file for this interactable), then there we must make some additions in other places within the code. Navigate to the last section of this README file for details on steps to complete this!
 
-> template .json file:
-
 ~~~json
-    
+filename: type_of_interactable.json 
+
     "Interactable_Name": 
     {
-        "id": 1,  
-        "threshold_condition": {
-            "attribute": "attribute_name", "inital_value":0, "goal_value":1,
-            "onThreshold_callback_fn":[ "**optional** list of lambda function" ], 
-            "check_threshold_with_fn": "**optional** lambda function", 
-        },
-        "hardware_specs": { 
-            "button_specs": { }, 
-            "servo_specs": { }
-        }, 
-        "dependents":["list of names of interactable that this interactable will be dependent/controlled by "]
+
     }
 ~~~
 

@@ -464,27 +464,27 @@ class Map:
         if type == 'door': 
             
             # get door w/ <id> from the door config file 
-            try: new_obj = door(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager) # instantiate door 
+            try: new_obj = door(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type) # instantiate door 
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
         elif type == 'rfid': 
 
-            try: new_obj = rfid(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], name = name, event_manager = self.event_manager) # ASK: also need to pass in rfidQ?? confused on where this comes from though. 
+            try: new_obj = rfid(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], name = name, event_manager = self.event_manager, type = type) # ASK: also need to pass in rfidQ?? confused on where this comes from though. 
             except Exception as e: raise Exception(f'there was a problem instantiating the object: {name}: {e}')
 
         elif type == 'lever': 
             
-            try: new_obj = lever(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager)
+            try: new_obj = lever(ID=objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type )
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
         elif type == 'buttonInteractable': 
             
-            try: new_obj = buttonInteractable(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager)
+            try: new_obj = buttonInteractable(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type )
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
         elif type == 'dispenser': 
 
-            try: new_obj = dispenser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager)
+            try: new_obj = dispenser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type )
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
         
             '''elif type == 'laser': 
@@ -494,12 +494,12 @@ class Map:
             try: dutycycle_definitions = data['dutycycle_definitions']
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
             
-            try: new_obj = laser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, dutycycle_definitions = dutycycle_definitions, event_manager = self.event_manager)
+            try: new_obj = laser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, dutycycle_definitions = dutycycle_definitions, event_manager = self.event_manager, type = type )
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')'''
 
         elif type == 'beam': 
             
-            try: new_obj = beam(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager)
+            try: new_obj = beam(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type )
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
         
         else: 

@@ -5,7 +5,7 @@ Date Modified: 11/28/2022
 Description: Class definition for interacting with hardware components. This module contains the abstract class definition, as well as the subclasses that are specific to a piece of hardware.
             Includes the following class definitions: 
                 Inner classes of InteractableABC: button, servo 
-                Child Classes that inherit from InteractableABC: lever, door, rfid, dispenser, buttonInteractable, beam, laser 
+                Child Classes that inherit from InteractableABC: lever, door, rfid, dispenser, buttonInteractable, beam 
 
 Property of Donaldson Lab at the University of Colorado at Boulder
 """
@@ -24,11 +24,12 @@ try:
 except Exception as e: 
     print(e)
     GPIO = None
+'''DELETE ME?? 
 try: 
     import pigpio as pigpio
 except Exception as e: 
     print(e)
-    pigpio = None
+    pigpio = None'''
 try: 
     from adafruit_servokit import ServoKit
     SERVO_KIT = ServoKit(channels=16) 
@@ -38,15 +39,16 @@ except Exception as e:
 
 class interactableABC:
 
-    def __init__(self, threshold_condition, name, event_manager):
+    def __init__(self, ID, threshold_condition, name, event_manager, type):
 
         ## Shared Among Interactables ## 
         self.event_manager = event_manager
 
         ## Object Information ## 
-        self.ID = None
+        self.ID = ID
         self.active = False # must activate an interactable to startup threads for tracking any vole interactions with the interactable
         self.name = name # name used is the one specified in the configuration files 
+        self.type = type # string representation of type of interactable
         self.isSimulation = False # simulation feature: set to True if interactable is being simulated 
         self.messagesReturnedFromSetup = '' # append to with any messages that we want to display after setup, but before activating an interactable
 
@@ -62,8 +64,8 @@ class interactableABC:
         ## Dependency Chain Information ## 
         # self.dependents = [] # if an interactable is dependent on another one, then we can place those objects in this list. example, door's may have a dependent of 1 or more levers that control the door movements. These are interactables that are dependent on a vole's actions! 
         self.parents = [] # if an interactable is a dependent for another, then the object that it is a dependent for is placed in this list. 
-        self.barrier = False # set to True if the interactable acts like a barrier to a vole, meaning we require a vole interaction of somesort everytime a vole passes by this interactable. 
-        self.autonomous = False # set to True if it is not dependent on other interactables OR on vole interactions (i.e. this will be True for RFIDs only )
+        # Derived Classes must specify attribute: barrier (boolean) # set to True if the interactable acts like a barrier to a vole, meaning we require a vole interaction of somesort everytime a vole passes by this interactable. 
+        # Derived Classes must specify attribute: autonomous (boolean) # set to True if it is not dependent on other interactables OR on vole interactions (i.e. this will be True for RFIDs only )
 
 
         ## Servo and Button Objects ( Attibutes will be Overriden in the Derived Classes if they use a Button or a Servo )
@@ -145,6 +147,7 @@ class interactableABC:
             ''' decorator function to run function on its own daemon thread '''
             def run(*k, **kw): 
                 t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+                t.name = func.__name__
                 t.start() 
                 return t
             return run 
@@ -292,6 +295,12 @@ class interactableABC:
     # ------------------------------------------------------------------------------------------------------------
     #           InteractableABC Methods 
     # ------------------------------------------------------------------------------------------------------------
+    def default_validation(self): 
+        """[summary] validation checks that are required and not specific to an interactable """
+        if not hasattr(self, 'barrier'): 
+            raise Exception(f'{self} missing required attribute: barrier (boolean)')
+        if not hasattr(self,'autonomous'): 
+            raise Exception(f'{self} missing required attribute: autonomous (boolean)')
 
     def validate_hardware_setup(self): 
         """ 
@@ -320,7 +329,9 @@ class interactableABC:
         '''
 
         if initial_activation: 
-            try: self.validate_hardware_setup() # validate that this hardware was properly setup (e.g. the button and servos ) if interactable is not being simulated
+            try: 
+                self.default_validation() #checks that required attributes were specified 
+                self.validate_hardware_setup() # validate that this hardware was properly setup (e.g. the button and servos ) if interactable is not being simulated
             except Exception as e: print(e), sys.exit(0)
 
         control_log(f"(InteractableABC.py, activate) {self.name} has been activated. starting contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
@@ -352,6 +363,7 @@ class interactableABC:
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
             t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+            t.name = func.__name__
             t.start() 
             return t
         return run 
@@ -433,12 +445,9 @@ class interactableABC:
                 self.threshold = False 
  
 class lever(interactableABC):
-    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager):
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager, type):
         # Initialize the parent class
-        super().__init__(threshold_condition, name, event_manager)
-
-        # Initialize the given properties
-        self.ID  = ID 
+        super().__init__(ID, threshold_condition, name, event_manager, type)
 
         # Current Position Tracking # 
         self.isExtended = False 
@@ -449,9 +458,10 @@ class lever(interactableABC):
         self.servoObj = self.PosServo(servo_specs = hardware_specs['servo_specs'], parentObj = self) # positional servo to control extending/retracting lever; we can control by setting angles rather than speeds
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
 
-        ## Dependency Chain values can stay as the default ones set by InteractableABC ## 
-        # self.barrier = False 
-        # self.autonomous = False
+        ## Dependency Chain Values ## 
+        self.barrier = False 
+        self.autonomous = False
+
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
     
     def __str__(self): 
@@ -591,12 +601,10 @@ class lever(interactableABC):
 class door(interactableABC):
     """[Description] This class is the unique door type class for interactable objects to be added to the Map configuration."""
 
-    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager):
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager, type):
         
-        super().__init__(threshold_condition, name, event_manager) # init the parent class 
-        
-        self.ID = ID  # init the given properties 
-        
+        super().__init__(ID, threshold_condition, name, event_manager, type) # init the parent class 
+                
 
         # Speed Tracking # 
         self.stop_speed = hardware_specs['servo_specs']['servo_stop_speed']
@@ -675,6 +683,7 @@ class door(interactableABC):
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
             t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+            t.name = func.__name__
             t.start() 
             return t
         return run 
@@ -691,9 +700,9 @@ class door(interactableABC):
         self.threshold_event_queue.put(event)
         self.event_manager.new_timestamp(event, time=time.time())
 
-
-        self.event_manager.print_to_terminal(f"{self.name} Threshold:  {self.threshold} Threshold Condition: {self.threshold_condition}")
-        self.event_manager.print_to_terminal(f'(Door(InteractableABC.py, add_new_threshold_event) {self.name} event queue: {list(self.threshold_event_queue.queue)}')
+        # Uncomment to print detailed door threshold messages: 
+        # self.event_manager.print_to_terminal(f"{self.name} Threshold:  {self.threshold} Threshold Condition: {self.threshold_condition}")
+        # self.event_manager.print_to_terminal(f'(Door(InteractableABC.py, add_new_threshold_event) {self.name} event queue: {list(self.threshold_event_queue.queue)}')
 
         # To avoid overloading a door with threshold events, we can sleep here until a state change occurs 
         while self.isOpen == state and self.active: 
@@ -716,7 +725,7 @@ class door(interactableABC):
 
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation: 
-            self.event_manager.print_to_terminal(f'(Door(InteractableABC), close()) {self.name} is being simulated. setting state to Closed and returning.')
+            # self.event_manager.print_to_terminal(f'(Door(InteractableABC), close()) {self.name} is being simulated. setting state to Closed and returning.')
             self.sim_close() 
             return 
 
@@ -754,14 +763,14 @@ class door(interactableABC):
         #  This Function Accesses Hardware => Perform Sim Check First
         if self.isSimulation: 
             # If door is being simulated, then rather than actually opening a door we can just set the state to True (representing an Open state)
-            self.event_manager.print_to_terminal(f'(Door(InteractableABC), open()) {self.name} is being simulated. Setting switch val to Open (True) and returning.')
+            # self.event_manager.print_to_terminal(f'(Door(InteractableABC), open()) {self.name} is being simulated. Setting switch val to Open (True) and returning.')
             self.sim_open()
             return 
         
         # check if door is already open
         if self.isOpen is True: 
-            control_log('(Door(InteractableABC)) {self.name} is Open')
-            self.event_manager.print_to_terminal(f'(Door(InteractableABC)) {self.name} is Open')
+            control_log('(Door(InteractableABC)) {self.name} was already Open')
+            self.event_manager.print_to_terminal(f'(Door(InteractableABC)) {self.name} was already Open')
             return 
   
         # 
@@ -797,12 +806,11 @@ class rfid(interactableABC):
     Dynamically recieves a shaed_rfidQ attribute from ModeABC. shared_rfidQ is a queue shared among all of the rfid readers and the CAN Bus. 
     """
 
-    def __init__(self, ID, threshold_condition, name, event_manager):
-        # Initialize the parent 
-        super().__init__(threshold_condition, name, event_manager)
-        self.ID = ID 
-        self.rfidQ = queue.Queue()
+    def __init__(self, ID, threshold_condition, name, event_manager, type):
 
+        super().__init__(ID, threshold_condition, name, event_manager, type)
+
+        self.rfidQ = queue.Queue()
         self.ping_history = [] # exhaustive list of all the pings that have occurred, independent of phase/mode 
 
         self.barrier = False # if rfid doesnt reach threshold, it wont prevent a voles movement
@@ -929,12 +937,10 @@ class rfid(interactableABC):
 
 class dispenser(interactableABC): 
 
-    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager): 
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager, type): 
 
         # Initialize the parent class
-        super().__init__(threshold_condition, name, event_manager)
-
-        self.ID = ID 
+        super().__init__(ID, threshold_condition, name, event_manager, type)
 
         # Movement Controls # 
         self.servoObj = self.PosServo(servo_specs = hardware_specs['servo_specs'], parentObj = self) # positional servo to control extending/retracting lever; we can control by setting angles rather than speeds
@@ -959,6 +965,7 @@ class dispenser(interactableABC):
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
             t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+            t.name = func.__name__
             t.start() 
             return t
         return run    
@@ -1094,16 +1101,16 @@ class buttonInteractable(interactableABC):
         this is pretty much just a Button object itself, except it must derive from interactableABC in order to have threshold checks that will trigger a threshold callback event ( to override a door movement )
     '''
 
-    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager ): 
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager, type ): 
          # Initialize the parent class
-        super().__init__(threshold_condition, name, event_manager)
-
-        # Initialize the given properties
-        self.ID = ID 
+        super().__init__(ID, threshold_condition, name, event_manager, type)
 
         # Button # 
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self) # button to recieve press signals thru changes in the gpio val
- 
+
+        self.barrier = False 
+        self.autonomous = False 
+
     def activate(self): 
         ''' [summary] activate button as usual, and once it is active we can begin the button object listening '''
         interactableABC.activate(self)
@@ -1141,12 +1148,9 @@ class buttonInteractable(interactableABC):
 
 class beam(interactableABC): 
 
-    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager): 
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager, type): 
 
-         # Initialize the parent class
-        super().__init__(threshold_condition, name, event_manager)
-
-        self.ID = ID 
+        super().__init__(ID, threshold_condition, name, event_manager, type)
 
         self.buttonObj = self.Button(button_specs = hardware_specs['button_specs'], parentObj = self)
 

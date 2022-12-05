@@ -8,7 +8,7 @@
             "check_threshold_with_fn": null, 
             "onThreshold_callback_fn": []
         },
-
+        "parents": [], 
         "hardware_specs": {
             "button_specs": { 
                 "button_pin": 24, 

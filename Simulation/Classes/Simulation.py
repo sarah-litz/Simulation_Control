@@ -53,6 +53,7 @@ class Simulation:
         ''' decorator function to run function on its own thread '''
         def run(*k, **kw): 
             t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+            t.name = func.__name__
             t.start() 
             return t
         return run 
@@ -190,7 +191,7 @@ class Simulation:
 
             while self.current_mode is None: # if no mode is currently active 
                 # wait for a mode to become active 
-                time.sleep(0.5)
+                time.sleep(1)
                 self.current_mode = self.get_active_mode() # update the current mode when one becomes active 
 
             # update the map to match the new current mode map; if the current map does not match the previous map, this may cause errors, so we should raise Exception explaining that a different instance of Simulation should get created to run for a different MAP instance 
@@ -208,7 +209,7 @@ class Simulation:
             t.join() 
 
             
-            print(f'BACK FROM RUNNING THE ACTIVE MODE SIM! THREAD STATE: {t.name}, {t.is_alive}')
+            # print(f'BACK FROM RUNNING THE ACTIVE MODE SIM! THREAD STATE: {t.name}, {t.is_alive}')
 
             # if the current mode is still active, wait here until it finishes so we don't run a mode's simulation more than once. 
             while self.current_mode.active: 

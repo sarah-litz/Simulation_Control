@@ -7,7 +7,8 @@
 
 [Intro: Control Package](Control/README.md)
     
-- The basics of running and writing basic experiments using the the Control Software Package. 
+- The basics of running Control Software Package
+- covers details on how to write modes to run in the Control Software 
 
 [Control Configuration Files](Control/Configurations/README.md)
 

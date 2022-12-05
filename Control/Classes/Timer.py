@@ -86,6 +86,7 @@ class EventManager:
         ''' decorator function to run function on its own daemon thread '''
         def run(*k, **kw): 
             t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+            t.name = func.__name__
             t.start() 
             return t
         return run    
@@ -138,7 +139,7 @@ class EventManager:
             item = None 
             while item is None: 
                 try: item = self.print_queue.get_nowait()
-                except queue.Empty: pass
+                except queue.Empty: time.sleep(0.2)
                 if self.stop_messages: 
                     print('EXITING THE WATCH_PRINT_QUEUE (1)')
                     return 
@@ -200,6 +201,7 @@ class EventManager:
             ''' decorator function to run function on its own daemon thread '''
             def run(*k, **kw): 
                 t = threading.Thread(target = func, args = k, kwargs=kw, daemon=True)
+                t.name = func.__name__
                 t.start() 
                 return t
             return run 

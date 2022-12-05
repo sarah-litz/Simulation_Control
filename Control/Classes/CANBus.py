@@ -85,6 +85,7 @@ class CANBus:
         # Creates notifier on its own thread and returns immediately so rfidListener can continue running
         self.active = True 
         notiThread = threading.Thread(target=self.__listen)
+        notiThread.name = 'CANBus.__listen'
         notiThread.start()
     
     def stop_listen(self): 
