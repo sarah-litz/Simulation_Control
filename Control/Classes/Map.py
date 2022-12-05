@@ -30,9 +30,8 @@ from .CANBus import CANBus
 
 class Map: 
     def __init__(self, config_directory, map_file_name = None ): 
-        ''' key is id assigned to vertex: Chamber instance'''
 
-        self.graph = {} # { chamberid: chamber instance }
+        self.graph = {} # { chamberid(int): chamber instance(self.Chamber) }
 
         self.edges = [] # list of all edge objects that have been created ( can also access thru each Chamber instance )
 
@@ -45,8 +44,8 @@ class Map:
         self.config_directory = config_directory # directory containing all of the configuration files 
 
         if map_file_name is not None: 
-            self.configure_setup(config_directory + f'/{map_file_name}')
-        else: self.configure_setup(config_directory + '/map.json') 
+            self.configure_setup(config_directory + f'/{map_file_name}') # optional arg pointing to map config file 
+        else: self.configure_setup(config_directory + '/map.json') # default map config file 
 
         self.canbus = CANBus(isserial=False)
 
@@ -1066,9 +1065,7 @@ class Map:
             if (i+1) < len(chamberIDpath): # look one chamber forward if it exists
                 e = c.connections[chamberIDpath[i+1]] # if it exists, grab nxt edge and append 
                 path.append(e) # Edge added to the final path 
-            
-            # i += 1 # Iterate to next Chamber 
-        
+                    
         # Final Check: if the goal argument was an edge, append the final edge object to the path 
         if type(goal) == self.Edge: 
             path.append(goal)

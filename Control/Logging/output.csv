@@ -1,30 +1,30 @@
 
 Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
-0,Mode_Setup,3.9,1670024485.299697,,False,Open Box
-0,sim_door1_open_Start,4.03,1670024485.424636,,False,Open Box
-0,door1_Open,4.28,1670024485.6773288,,False,Open Box
-0,sim_door1_open_Finish,6.23,1670024487.625393,2.2007570266723633,False,Open Box
-0,sim_door2_open_Start,6.33,1670024487.729007,,False,Open Box
-0,door2_Open,6.51,1670024487.8998342,,False,Open Box
-0,sim_door2_open_Finish,8.47,1670024489.861141,2.132133960723877,False,Open Box
-1,Mode_Timeout_Round_1_Start,8.86,1670024490.259118,,True,Open Box
-1,"(Vole1, move_next_component) New Move: food_trough->beam1_door1",12.33,1670024493.7215722,,True,Open Box
-1,"(Vole1, update_location) ['food_trough'] to beam1_door1",12.91,1670024494.304933,,True,Open Box
-1,"(Vole1, move_next_component) New Move: beam1_door1->door1(Open:True)",14.68,1670024496.0717928,,True,Open Box
-1,beam1_door1_beam_break,15.28,1670024496.676148,,True,Open Box
-1,beam1_door1_beam_unbroken,16.21,1670024497.602601,0.9264531135559082,True,Open Box
-1,"(Vole1, update_location) beam1_door1 to door1",18.12,1670024499.517765,,True,Open Box
-1,"(Vole1, move_next_component) New Move: door1(Open:True)->rfid1",19.56,1670024500.955851,,True,Open Box
-1,"(Vole1, update_location) door1 to rfid1",19.58,1670024500.978762,,True,Open Box
-1,"(Vole1, move_next_component) New Move: rfid1->rfid2",20.31,1670024501.703226,,True,Open Box
-1,rfid3_ping1_vole1,21.35,1670024502.7408404,,True,Open Box
-1,rfid3_ping2_vole1,22.73,1670024504.1246207,1.3837802410125732,True,Open Box
-1,"(Vole1, update_location) rfid1 to rfid2",23.18,1670024504.5716522,,True,Open Box
-1,"(Vole1, move_next_component) New Move: rfid2->rfid3",24.2,1670024505.5918279,,True,Open Box
-1,Mode_Timeout_Round_1_Finish,24.12,1670024505.512703,15.253584861755371,True,Open Box
-1,Mode_Setup,25.06,1670024506.451324,,False,Simple Box
-1,Mode_Timeout_Round_1_Start,25.42,1670024506.810173,,True,Simple Box
-1,rfid4_ping1_vole1,25.2,1670024506.5990384,,True,Simple Box
-1,rfid4_ping2_vole1,26.05,1670024507.445633,0.8465945720672607,True,Simple Box
-1,"(Vole1, update_location) rfid2 to rfid3",26.56,1670024507.95436,,True,Simple Box
-1,Mode_Timeout_Round_1_Finish,35.59,1670024516.9877791,10.177606105804443,True,Simple Box
+0,Mode_Setup,3.02,1670081902.634018,,False,Open Box
+0,sim_door1_open_Start,3.24,1670081902.8563268,,False,Open Box
+0,door1_Open,3.46,1670081903.0739672,,False,Open Box
+0,sim_door1_open_Finish,5.63,1670081905.2450109,2.388684034347534,False,Open Box
+0,sim_door2_open_Start,5.69,1670081905.307573,,False,Open Box
+0,door2_Open,5.94,1670081905.56143,,False,Open Box
+0,sim_door2_open_Finish,7.99,1670081907.61303,2.3054568767547607,False,Open Box
+1,Mode_Timeout_Round_1_Start,8.31,1670081907.926176,,True,Open Box
+1,"(Vole1, move_next_component) New Move: food_trough->beam1_door1",11.32,1670081910.941157,,True,Open Box
+1,"(Vole1, update_location) ['food_trough'] to beam1_door1",11.94,1670081911.561742,,True,Open Box
+1,"(Vole1, move_next_component) New Move: beam1_door1->door1(Open:True)",13.69,1670081913.3056169,,True,Open Box
+1,beam1_door1_beam_break,15.24,1670081914.858407,,True,Open Box
+1,beam1_door1_beam_unbroken,16.17,1670081915.788963,0.930556058883667,True,Open Box
+1,"(Vole1, update_location) beam1_door1 to door1",18.25,1670081917.864345,,True,Open Box
+1,"(Vole1, move_next_component) New Move: door1(Open:True)->rfid1",19.68,1670081919.2932549,,True,Open Box
+1,"(Vole1, update_location) door1 to rfid1",19.79,1670081919.405241,,True,Open Box
+1,"(Vole1, move_next_component) New Move: rfid1->rfid2",20.95,1670081920.563915,,True,Open Box
+1,rfid3_ping1_vole1,21.72,1670081921.3344183,,True,Open Box
+1,rfid3_ping2_vole1,22.61,1670081922.226328,0.8919095993041992,True,Open Box
+1,"(Vole1, update_location) rfid1 to rfid2",23.44,1670081923.0535839,,True,Open Box
+1,Mode_Timeout_Round_1_Finish,23.78,1670081923.3981209,15.471944808959961,True,Open Box
+1,"(Vole1, move_next_component) New Move: rfid2->rfid3",24.23,1670081923.847175,,False,Open Box
+1,Mode_Setup,25.44,1670081925.0557828,,False,Simple Box
+1,Mode_Timeout_Round_1_Start,26.12,1670081925.741247,,True,Simple Box
+1,rfid4_ping1_vole1,24.74,1670081924.354384,,True,Simple Box
+1,"(Vole1, update_location) rfid2 to rfid3",26.56,1670081926.1799932,,True,Simple Box
+1,rfid4_ping2_vole1,25.87,1670081925.4911745,1.1367905139923096,True,Simple Box
+1,Mode_Timeout_Round_1_Finish,36.84,1670081936.459879,10.718631982803345,True,Simple Box

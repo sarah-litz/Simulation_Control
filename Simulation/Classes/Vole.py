@@ -546,24 +546,24 @@ class SimVole:
 
     def attempt_move( self, destination, validity_check = True ): 
         """
-        
+        Attempts simulating a vole's movement into a BORDERING chamber (max step size is 1). <destination> must be the id of a chamber. 
+        With the goal move in mind, any interactables that control a barrier that the vole will need to pass later in the move are simulated with the hope that the barrier will have a True threshold (e.g. simulate a lever press to open a door the vole will need to eventually go through)
+        Only simulates interactables that are related to the goal movement (i.e. they are a barrier, autonomous, or have a parent that is a barrier component)
+            SETS the interactable threshold to meet their goal value by calling simulate_vole_interaction 
+            GETS the thresholds of each barrier interactable to ensure that it is True before passing
+                Allowed Movements ( these are both considered to be a step size of 1 ): 
+                    edge -> chamber 
+                    chamber -> edge -> chamber 
+        Args: 
+            destination(int) : id of chamber vole will simulate an attempted move into. destination chamber must be a single move away from the vole's current edge/chamber. 
+            validity_check (boolean) : if set to True, then checks if the move is physically valid or not before attempting the move (i.e. can execute a physically invalid movement in order to test error checking in the Control software)
+        Returns: 
+            (Boolean) : True if the vole reached destination, False otherwise. 
         """
-        ''' for vole movement into a CHABMER that is a single step/edge away from current positioning.
-        Allowed Movements: 
-            edge -> chamber 
-            chamber -> edge -> chamber 
-        destination is an integer specifying a CHAMBERID that we want to move to. The New destination Chamber must be a single move away from the vole's current edge/chamber. '''
-        
-        
-        ''' called by a Vole object 
-        attempts to executes a move. if validity_check is set to True, then we check if the move is physically valid or not.
-        SETTING the interactable's to meet their goal_value by calling simulate_vole_interaction 
-        GETTING the thresholds of each interactable and checking that it is True
-        if the threshold of any interactable is not True, then we cannot successfully make the move '''
         
         if not self.active: 
             sim_log(f'(Vole{self.tag}, attempt_move) Vole Inactive. Cannot perform the requested action.')
-            return 
+            return False 
         
 
         self.event_manager.print_to_terminal(f'(Vole{self.tag}, attempt_move) Attempting move from {self.curr_loc.edge_or_chamber}{self.curr_loc.id} -> Chamber{destination}.')
@@ -589,7 +589,7 @@ class SimVole:
 
         # compile a list of interactables we need to pass over to reach destination (include both chamber and edge interactables)
         
-        # sort thru chamber interactables, and only add the ones that are related to the goal movement (i.e. they are a barrier, a dependent related to a barrier, or is autonomous)
+        # sort thru chamber interactables, and only add the ones that are related to the goal movement (i.e. they are a barrier, autonomous, or have a parent that is a barrier component)
 
         # then, we can update the vole's location by using the interactable location info 
 
@@ -613,8 +613,6 @@ class SimVole:
             # converts to list of components
             edge = edge.get_component_list()
             reversed = False 
-
-  
 
         #
         # Position for Start of Edge Traversal 
@@ -699,42 +697,25 @@ class SimVole:
                     self.event_manager.print_to_terminal(f'Simulated Vole{self.tag} New Location is {self.curr_loc}. Component Location is between ({self.prev_component}, {self.curr_component})')
                     return True 
 
-
-
-                #
-                # Wait for Control Side Software to react to Simulation of this Interactable
-                #
-                ################################################
-                # time.sleep(0.5)  # Pause to give control side a moment to assess if there was a threshold event 
-                ################################################
-
         self.event_manager.print_to_terminal(f'(Vole.py, attempt_move) Finished iterating through the path but never reached goal. This may mean that there is an issue in the attempt_move funciton.')
         sim_log(f'(Vole.py, attempt_move) Finished iterating through the path but never reached goal. This may mean that there is an issue in the attempt_move funciton.')
         return False
-
-
-
-    def make_multichamber_move(self, goal): 
-        pass 
      
-    def random_move(self): 
-        ''' chooses a random neighboring chamber to try to move to '''
-
-
     #
     # Random Vole 
     #   
     def possible_actions(self): 
+        """ creates a list of all possible actions a vole can take given the vole's curent location 
+            reference: how to add functions to a list, where we will call the function at a later point in time: https://stackoverflow.com/questions/26881396/how-to-add-a-function-call-to-a-list
+        Args: 
+            None 
+        Returns: 
+            ( [ tuple ]) : list of tuples, where each tuple contains a function to call followed by the arguments to pass that function
+                        -> the 0th position w/in each tuple is the function name, and positions [1:] in the tuple are the arguments
+                        -> possible_actions[0][0](*possible_actions[0][1:])
+                        -> possible_actions[1][0](*possible_actions[1][1:])
+        """
         # NOTE: this function has not been updated, so before use will need fixing!! 
-
-        ''' returns a list of all possible actions a vole can take given the voles current location'''
-        # Reference on how to add functions to a list, where we will call the function at a later point in time: https://stackoverflow.com/questions/26881396/how-to-add-a-function-call-to-a-list
-        '''
-        possible_actions is a list of tuples, where each tuple contains a function to call followed by the arguments to pass that function
-        -> the 0th position w/in each tuple is the function name, and positions [1:] in the tuple are the arguments
-        -> possible_actions[0][0](*possible_actions[0][1:])
-        -> possible_actions[1][0](*possible_actions[1][1:])
-        '''
 
         actions = [ (time.sleep,5)  ]  # initialize with option to do nothing, as this action is always available, independent of the vole's current location
 
@@ -777,10 +758,9 @@ class SimVole:
         
         return actions
 
-
-
     def attempt_random_action(self): 
-        ''' calls random_action to chose an action at random (or w/ weighted probabilities), and then calls the chosen function '''
+        """ calls random_action to chose an action at random (or w/ weighted probabilities), and then executes the chosen function 
+        """
         
         if not self.active: 
             sim_log(f'(Vole{self.tag}, attempt_random_action) Vole Inactive. Cannot perform the requested action.')
@@ -793,22 +773,19 @@ class SimVole:
 
         action_fn(arg) 
 
-
-
     def random_action(self): 
-        ''' Randomly choose between interacting with an interactable or making a move or doing nothing
-            Returns the (function, arguments) of the chosen action
-        '''
-
-        '''
-        randomly choose between the following options: 
-        1. pass, i.e. vole sits still. Have vole sleep for 1<x<10 number of seconds. 
+        """ randomly chooses between the following options: 
+        1. pass, i.e. vole sits still. Have vole sleep for 1<x<10 number of seconds (where the value of x is also randomly chosen). 
         2. vole interacts w/ an interactable in its chamber (look @ self.map.graph[self.current_loc].interactables to randomly choose an interactable to interact with)
         3. vole attempts to make a move to a random chamber (look @ self.map.graph[self.current_loc].connections to randomly choose a neighboring chamber to choose to)
-        '''
+
+        Args: 
+            None 
+        Returns: 
+            ( tuple ) : tuple element containing the randomly chosen function and the arguments that will need to passed when executing the that function. ( function, arguments_for_funciton )
+        """
 
         possible_actions = self.possible_actions()
-        # self.event_manager.print_to_terminal('possible actions: ', possible_actions)
         
         # choose action from possible_actions based on their value in the current chamber's probability distribution
 
@@ -829,10 +806,6 @@ class SimVole:
             idx = random.randint(0, len(possible_actions)-1)
 
         return possible_actions[idx] # returns the ( function, arguments ) of randomly chosen action
-
-
-
-    
 
     def set_action_probability(self, action, probability): 
 
