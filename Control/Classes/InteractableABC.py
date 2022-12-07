@@ -62,10 +62,11 @@ class interactableABC:
         self.threshold_event_queue = queue.Queue() # queue for tracking anytime a threshold condition is met 
 
         ## Dependency Chain Information ## 
-        # self.dependents = [] # if an interactable is dependent on another one, then we can place those objects in this list. example, door's may have a dependent of 1 or more levers that control the door movements. These are interactables that are dependent on a vole's actions! 
         self.parents = [] # if an interactable is a dependent for another, then the object that it is a dependent for is placed in this list. 
-        # Derived Classes must specify attribute: barrier (boolean) # set to True if the interactable acts like a barrier to a vole, meaning we require a vole interaction of somesort everytime a vole passes by this interactable. 
-        # Derived Classes must specify attribute: autonomous (boolean) # set to True if it is not dependent on other interactables OR on vole interactions (i.e. this will be True for RFIDs only )
+
+        # Barrier / Autonomous: 
+        self.barrier = None # Derived Classes must specify attribute: barrier (boolean) # set to True if the interactable acts like a barrier to a vole, meaning we require a vole interaction of somesort everytime a vole passes by this interactable. 
+        self.autonomous = None # Derived Classes must specify attribute: autonomous (boolean) # set to True if it is not dependent on other interactables OR on vole interactions (i.e. this will be True for RFIDs and Beams )
 
 
         ## Servo and Button Objects ( Attibutes will be Overriden in the Derived Classes if they use a Button or a Servo )
@@ -244,8 +245,8 @@ class interactableABC:
             self.parent = parentObj
             self.pin_num = servo_specs['servo_pin']
             self.servo_type = servo_specs['servo_type']  
-            self.servo = self.__set_servo()   
             self.isSimulation = False 
+            self.servo = self.__set_servo()   
             
         def __set_servo(self): 
             """
@@ -256,7 +257,8 @@ class interactableABC:
             """
             if SERVO_KIT is None: 
                 # simulating servo kit
-                return None 
+                self.parent.messagesReturnedFromSetup += f' simulating servo.'
+                return False 
             
             try: 
                 if self.servo_type == 'positional':
@@ -269,9 +271,9 @@ class interactableABC:
             except AttributeError as e: 
                 # attribute error raised if we werent able to import SERVO_KIT and we try to access SERVO_KIT.servo 
                 control_log(f'(InteractableABC.py, Servo) {self.parent.name}: simulating servo connection. ErrMssg: {e}')
-                self.parent.messagesReturnedFromSetup(f' simulating servo. ')
+                # self.parent.messagesReturnedFromSetup += f' simulating servo. '
                 self.isSimulation = True 
-                return None
+                return False
             
     class PosServo(Servo): 
         ''' [Description] positional servo 
@@ -297,22 +299,40 @@ class interactableABC:
     # ------------------------------------------------------------------------------------------------------------
     def default_validation(self): 
         """[summary] validation checks that are required and not specific to an interactable """
-        if not hasattr(self, 'barrier'): 
-            raise Exception(f'{self} missing required attribute: barrier (boolean)')
-        if not hasattr(self,'autonomous'): 
-            raise Exception(f'{self} missing required attribute: autonomous (boolean)')
+        if self.barrier != True and self.barrier != False: 
+            raise Exception(f'{self} must override the interactableABC attribute barrier with a boolean value.')
+        if self.autonomous != True and self.autonomous != False: 
+            raise Exception(f'{self} missing must override the interactableABC attribute autonomous with a boolean value.')
 
     def validate_hardware_setup(self): 
         """ 
-        [summary] METHOD OVERRIDE REQUIRED
-        Any classes that inherit from InteractableABC must override this method. 
+        [summary] Validates that if any hardware is being used it was setup correctly. 
         If the interactable utilizes any of the Inner Classes in InteractableABC (Button or Servo), then it must validate that these objects were set up successfully. 
         Specifically, we must do this error check for every interactable that is NOT being simulated. 
             If the Button/Servos were not set up correctly, then we would run into errors once the experiment starts running. This attempts to catch those errors early. 
         However, if we are simulating the Interactable, it does not matter if button and servo were set up, in which case we can return from this validation check. 
+        
         Args: None 
         Returns: None 
         """
+        if self.isSimulation: 
+            return 
+        
+        errorMsg = []
+        if self.buttonObj != None: 
+            ''' validate Button object setup '''
+            if self.buttonObj.pressed_val < 0: 
+                errorMsg.append('buttonObj')
+        
+        if self.servoObj != None: 
+            ''' validate Servo object setup '''
+            if self.servoObj.servo is False: 
+                errorMsg.append('servoObj')
+
+        if len(errorMsg) > 0:  
+            raise Exception(f'{self} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
+
+
         if not self.isSimulation: 
             # Interactable is not being simulated, but it does not have a function to validate its hardware components. Throw error 
             raise Exception(f'(InteractableABC, validate_hardware_setup) Must override this function with checks that ensure the hardware components are properly connected. Please add this to the class definition for {self.name}')
@@ -494,25 +514,25 @@ class lever(interactableABC):
             interactableABC.activate(self, initial_activation)
             self.buttonObj.listen_for_event() # Threaded fn call 
 
-    def validate_hardware_setup(self):
+    """def validate_hardware_setup(self):
         ''' [summary] if lever is not being simulated, ensures the lever's Button and Servo objects were set up '''
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable
             return 
         else: 
             # not simulating door, check that the doors Movement Controllers (button and servo) have been properly setup 
-            if self.buttonObj.pressed_val < 0 or self.servoObj.servo is None: 
+            if self.buttonObj.pressed_val < 0 or self.servoObj.servo is False: 
                 
                 errorMsg = []
                 # problem with both button and/or servo. figure out which have problems
                 if self.buttonObj.pressed_val < 0: 
                     errorMsg.append('buttonObj')
                 
-                if self.servoObj.servo is None: 
+                if self.servoObj.servo is False: 
                     errorMsg.append('servoObj')
                 
                 raise Exception(f'(Lever, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
-            return 
+            return """
 
     def add_new_threshold_event(self): 
         """ [summary] grabs data that we care about for a lever threshold event, and adds it to the lever's threshold event queue """
@@ -661,7 +681,7 @@ class door(interactableABC):
         else: 
             self.close() 
         
-    def validate_hardware_setup(self):
+    """def validate_hardware_setup(self):
         '''[summary] Checks that the door's Button and Servo objects were successfully setup when the door is not being simulated '''
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable. 
@@ -674,10 +694,10 @@ class door(interactableABC):
                 # problem with both button and/or servo. figure out which have problems
                 if self.buttonObj.pressed_val < 0: 
                     errorMsg.append('buttonObj')              
-                if self.servoObj.servo is None: 
+                if self.servoObj.servo is False: 
                     errorMsg.append('servoObj')              
                 raise Exception(f'(Door, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
-            return 
+            return """
 
     def run_in_thread(func): 
         ''' decorator function to run function on its own daemon thread '''
@@ -817,7 +837,7 @@ class rfid(interactableABC):
         self.autonomous = True # operates independent of direct interaction with a vole or other interactales. This will ensure that vole interacts with rfids on every pass. 
         # (NOTE) do not call self.activate() from here, as the "check_for_threshold_fn", if present, gets dynamically added, and we need to ensure that this happens before we call watch_for_threshold_event()  
 
-    def validate_hardware_setup(self):
+    """def validate_hardware_setup(self):
         ''' [summary] ensures that hardware was setup correctly '''
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable
@@ -830,7 +850,7 @@ class rfid(interactableABC):
             #  (TODO) setup RFID hardware things here! 
             #
             # print('rfid hardware doesnt exist yet!')
-            return 
+            return """
 
     def sim_ping(self, vole): 
         ''' [summary] simulates an RFID ping by adding to the shared rfidQ. Only called for a simulated rfid!!'''
@@ -970,7 +990,7 @@ class dispenser(interactableABC):
             return t
         return run    
 
-    def validate_hardware_setup(self): 
+    """def validate_hardware_setup(self): 
         '''[summary] ensures that dispener's Button and Servo object were successfully setup if the dispenser is not being simulated '''
         if self.isSimulation: 
             return 
@@ -982,10 +1002,10 @@ class dispenser(interactableABC):
                 # problem with both button and/or servo. figure out which have problems
                 if self.buttonObj.pressed_val < 0: 
                     errorMsg.append('buttonObj')
-                if self.servoObj.servo is None: 
+                if self.servoObj.servo is False: 
                     errorMsg.append('servoObj')
                 raise Exception(f'(Dispenser, validate_hardware_setup) {self} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
-            return 
+            return """
 
     @property 
     def isPressed(self): 
@@ -1116,8 +1136,8 @@ class buttonInteractable(interactableABC):
         interactableABC.activate(self)
         self.buttonObj.listen_for_event()
 
-    def validate_hardware_setup(self):
-        """[summary] ensure's that the buttonInteractable's Button object was set up properly if the buttonInteractable is not being simulated """
+    """def validate_hardware_setup(self):
+        '''[summary] ensure's that the buttonInteractable's Button object was set up properly if the buttonInteractable is not being simulated '''
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable
             return 
@@ -1133,7 +1153,7 @@ class buttonInteractable(interactableABC):
                 
                 raise Exception(f'(buttonInteractable, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
 
-            return 
+            return """ 
     
     def add_new_threshold_event(self):
         '''[summary] New <button press> was added to the buttonQ. Retrieve its value and append to the threshold event queue '''
@@ -1175,7 +1195,7 @@ class beam(interactableABC):
         ''' [summary] used as a callback function set by the beam config file '''
         self.buttonObj.num_pressed = self.threshold_condition['initial_value']
 
-    def validate_hardware_setup(self):
+    """def validate_hardware_setup(self):
         ''' [summary] ensures that the beam's Button object has been set up properly if the beam is not being simulated '''
         if self.isSimulation: 
             # doesn't matter if the hardware has been setup or not if we are simulating the interactable
@@ -1187,7 +1207,7 @@ class beam(interactableABC):
                 if self.buttonObj.pressed_val < 0: 
                     errorMsg.append('buttonObj') 
                 raise Exception(f'(beam, validate_hardware_setup) {self.name} failed to setup {errorMsg} correctly. If you would like to be simulating any hardware components, please run the Simulation package instead, and ensure that simulation.json has {self} simulate set to True.')
-            return 
+            return """
     
     def activate(self): 
         ''' [summary] activates as usual, and once it is active we can begin the button object listening '''

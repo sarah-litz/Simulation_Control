@@ -1,14 +1,16 @@
 """
+Authors: Sarah Litz, Ryan Cameron
+Date Created: 1/24/2022
+Date Modified: 12/5/2022
+Property of Donaldson Lab at the University of Colorado at Boulder
 
-Example Control Modes 
-Use these control modes as a simple outline of how control modes should be defined. 
+Description: Example Control Modes: Use these control modes as a simple outline of how control modes should be defined. All classes should derive from ModeABC.
 
 Please Leave This File As Is! If using these modes as a template to create a new Control mode, please copy and paste the contents into a new file before making changes. 
 
-[Modes Classes Defined]
+[Mode Classes Defined]
     OpenBox : opens all doors during setup and returns an instance of SimpleBox from its run() method, indicating that this mode should be run. 
     SimpleBox: no logic! This is a control mode in its simplest form, and provides no extra logic for how a box will operate. The box will be in this mode until SimpleBox has finished out its <timeout> interval. 
-
 """
 
 ## (TODO) if any extra packages are needed for defining mode logic, freely place import statements here 

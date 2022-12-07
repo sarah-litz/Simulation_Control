@@ -9,4 +9,4 @@ modes is accessed by __main__ of Simulation.
 '''
 
 from Control import __main__ as controlPackage 
-modes = controlPackage.main() # retrieve list of Control Modes
+modes = controlPackage.main() # retrieve list of Control Modes 

@@ -282,11 +282,12 @@ class Simulation:
                     i.buttonObj.isSimulation = True
                     i.buttonObj.pressed_val = -1 # -1 represents a simulated button
                     i.buttonObj.isPressed = False # set to Boolean value ( as apposed to calling method if it were initially not set to be a simulation )
-                    i.messagesReturnedFromSetup += f' simulating GPIO button. '
+                    # i.messagesReturnedFromSetup += f' simulating GPIO button. '
                 if i.servoObj is not None and i.servoObj.isSimulation is False: 
+                    print(i.servoObj)
                     i.servoObj.isSimulation = True
                     i.servoObj.servo = None
-                    i.messagesReturnedFromSetup += f' simulating servo.'
+                    # i.messagesReturnedFromSetup += f' simulating servo.'
 
 
         ## add Voles ## 

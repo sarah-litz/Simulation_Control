@@ -64,10 +64,7 @@ buttonInteractables refer to the override buttons to allow for human control of 
     "open_door1_button": 
     { 
         "id":1, 
-        "dependency_chain": { 
-            "parents": [ ], 
-            "children": [ ]  
-        },  
+        "parents": [], 
         "threshold_condition": {
             "attribute":"check_threshold_with_fn", 
             "initial_value":true, "goal_value":false, 
@@ -118,8 +115,7 @@ Doors are the doors in the box! Through the door configurations, we can allow fo
     {
         "id":1, 
         "threshold_condition": { "attribute":"isOpen", "initial_value": null, "goal_value": true },
-
-        "dependents": ["lever_door1", "open_door1_button", "close_door1_button"], 
+        "parents": [], 
         "hardware_specs": {
             "button_specs": { 
                 "button_pin": 4, 

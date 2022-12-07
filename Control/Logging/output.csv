@@ -1,11 +1,9 @@
 
 Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
-0,Mode_Setup,2.62,1670265428.202394,,False,Open Box
-0,sim_door1_open_Start,2.67,1670265428.246347,,False,Open Box
-0,door1_Open,2.93,1670265428.505001,,False,Open Box
-0,sim_door1_open_Finish,4.93,1670265430.513792,2.2674450874328613,False,Open Box
-0,sim_door2_open_Start,5.02,1670265430.6007922,,False,Open Box
-0,door2_Open,5.18,1670265430.7623732,,False,Open Box
-0,sim_door2_open_Finish,7.12,1670265432.697749,2.096956729888916,False,Open Box
-1,Mode_Timeout_Round_1_Start,7.76,1670265433.33704,,True,Open Box
-1,Early_Interrupt_Caused_Exit,8.04,1670265433.624644,,True,Open Box
+0,Mode_Setup,2.39,1670374205.5725381,,False,Open Box
+0,sim_door1_open_Start,2.5,1670374205.6747699,,False,Open Box
+0,door1_Open,2.63,1670374205.803877,,False,Open Box
+0,Early_Interrupt_Caused_Exit,2.78,1670374205.9608698,,False,Open Box
+1,Mode_Setup,3.41,1670374206.591169,,False,Simple Box
+1,Mode_Timeout_Round_1_Start,3.41,1670374206.592443,,True,Simple Box
+1,Early_Interrupt_Caused_Exit,5.42,1670374208.596909,,True,Simple Box

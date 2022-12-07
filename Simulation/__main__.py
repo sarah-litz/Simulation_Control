@@ -73,7 +73,7 @@ def main():
     simulation.control_sim_pairs = CONTROL_SIM_PAIRS # give copy of dictionary to simulation for runtime creation of modes 
     for m in modes: 
         if m in simulation.simulation_func.keys(): 
-            data.append( [str(m) + f' ({str(os.path.relpath(inspect.getfile(m.__class__)))})', simulation.simulation_func[m]]) # f' {[*(f.__name__ for f in simulation.simulation_func[m])]}  ({(str(os.path.relpath(inspect.getfile(SimulationScript.__class__))))})' ])
+            data.append( [str(m) + f' ({str(os.path.relpath(inspect.getfile(m.__class__)))})', simulation.simulation_func[m]]) 
         else: 
             data.append( [str(m) + f' ({str(os.path.relpath(inspect.getfile(m.__class__)))})'] ) 
     Visuals.draw_table(data, cellwidth=80)
