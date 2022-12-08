@@ -1,0 +1,44 @@
+{
+    "chambers": [
+        {
+            "id": 1,
+            "descriptive_name": "Chamber 1",
+            "components": [
+                {"interactable_name":"lever_door1", "type":"lever"}
+            ]
+        },
+        {
+            "id": 2,
+            "descriptive_name": "Chamber 2",
+            "components": [
+                {"interactable_name":"lever_door2", "type":"lever"}
+            ]
+        },
+        {
+            "id": -1,
+            "descriptive_name": "False Chamber for Storing Override Buttons",
+            "components": [
+                { "interactable_name":"open_door1_button", "type":"buttonInteractable" }        
+            ]
+        }
+    ],
+ 
+    "edges": [
+        {
+            "start_chamber_id":1,
+            "target_chamber_id":2,
+            "id":12,
+            "type":"shared",
+            "components":[
+                { "chamber_interactable": "lever1" },
+                { "interactable_name":"door1", "type":"door" },
+                { "chamber_interactable": "lever2", "type":"lever"}
+            ]
+        }
+    ],
+ 
+    "voles": [
+        { "tag":1, "start_chamber":1, "rfid_id": "906467d63b840080"},
+        { "tag":2, "start_chamber":1, "rfid_id": null}
+     ]
+ }

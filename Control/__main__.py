@@ -14,6 +14,7 @@ from .Modes.Box_Dynamic import WaitFiveSecondsBeforeRetractOrClose, IteratorBox,
 from .Modes.Box_AirLock import Chamber1Access
 from .Modes.Testing_Software import EventManagerTests
 
+
 ### (TODO) Specify OUTPUT_CSV_FILE: filepath to where the experiment output should get written 
 OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv' # Sarah's Personal Computer 
 # OUTPUT_CSV_FILE = '/home/pi/Simulation_Control/Control/Logging/output.csv' # Raspberry Pi 
@@ -23,7 +24,7 @@ def main():
     control_log(f'\n\n\nrunning {__name__}: New Experiment! ')
 
     ### (TODO) Map Instantiation (which will also instantiate the hardware components) 
-    map = Map(cwd+'/Control/Configurations', 'map_homecage.json') # optional argument: map_file_name to specify filepath to a different map configuration file 
+    map = Map(cwd+'/Control/Configurations', 'map_operant.json') # optional argument: map_file_name to specify filepath to a different map configuration file 
     
     ### (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
     openbox = OpenBox(timeout = 15, rounds = 1, ITI = 10, map = map, output_fp = OUTPUT_CSV_FILE)

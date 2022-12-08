@@ -1,0 +1,14 @@
+{
+    "interactable_name":
+    {
+        "id":1,
+        "threshold_condition": {
+            "attribute":"checkThisAttribute",
+            "initial_value": false, "goal_value": true,
+            "check_threshold_with_fn": null,
+            "onThreshold_callback_fn": []
+        },
+        "parents": [ ],
+        "hardware_specs": { }
+    }
+ }

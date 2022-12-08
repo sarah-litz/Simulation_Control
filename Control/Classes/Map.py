@@ -486,21 +486,20 @@ class Map:
 
             try: new_obj = dispenser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type )
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
-        
-            '''elif type == 'laser': 
-            print(data.keys())
-            print('\n')
-            print(objspec)
-            try: dutycycle_definitions = data['dutycycle_definitions']
-            except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
-            
-            try: new_obj = laser(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, dutycycle_definitions = dutycycle_definitions, event_manager = self.event_manager, type = type )
-            except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')'''
+    
 
         elif type == 'beam': 
             
             try: new_obj = beam(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type )
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
+
+        # 
+        # For Adding New Interactable Types, Add the following three lines of code that reference the new interactable type.  
+        # elif type == 'object_type': 
+        #    try: new_obj = object_type(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type )
+        #    except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
+        #
+
         
         else: 
 

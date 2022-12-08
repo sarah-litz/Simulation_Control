@@ -367,7 +367,7 @@ class modeABC:
    # Running Modal Scripts 
    #   
     def setup(self): 
-        ''' any tasks for setting up box before run() gets called '''
+        ''' [REQUIRES METHOD OVERRIDE] any tasks for setting up box before run() gets called '''
         raise NameError(f'{__name__} this function should be overriden')
 
     def threader(func):
@@ -386,7 +386,7 @@ class modeABC:
         self.exit() # exit the mode upon timeout ending
 
     def run(self):
-        """This is the main method that contains the logic for the specific mode. It should be overwritten for each specific mode class that inherits this one. Because of that, if this function is not overwritten it will raise an error on its default. 
+        """[REQUIRES METHOD OVERRIDE] This is the main method that contains the logic for the specific mode. It should be overwritten for each specific mode class that inherits this one. Because of that, if this function is not overwritten it will raise an error on its default. 
         """
         # If not overwritten, this function will throw the following error
         raise NameError("This function must be overwritten with specific mode logic")

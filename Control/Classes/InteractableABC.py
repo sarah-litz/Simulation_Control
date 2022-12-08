@@ -392,7 +392,8 @@ class interactableABC:
         """ 
         [summary] METHOD OVERRIDE REQUIRED 
         append relevant data to the threshold event queue. 
-        This method needs to be overriden as different interactables require a slightly different process to accurately format the data that gets placed on the event queue. 
+        This method needs to be overriden as different interactables require a slightly different 
+            process to accurately format the data that gets placed on the event queue. 
         """
         # appends to the threshold event queue 
         raise Exception(f'must override add_new_threshold_event in class definition for {self.name}')
