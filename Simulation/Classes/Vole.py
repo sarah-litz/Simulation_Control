@@ -98,6 +98,9 @@ class SimVole:
         ''' simulates a voles interaction with a simulated or non-simulated hardware interactable. 
         runs through a series of error checks to ensure that the requested simulation is valid. 
         if valid, procedes with simulating the interaction in accordance with the values set in the simulation config file. 
+        
+        Args: 
+            interactable(interactableABC) - interactable to simulate with 
         '''
         
         if not self.active: 

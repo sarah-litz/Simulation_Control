@@ -964,7 +964,7 @@ class Map:
         if start not in self.graph.keys() or goal not in self.graph.keys(): 
             raise Exception(f'chamber {start} and/or chamber {goal} does not exist in the map, so cannot find path')
         
-        # BFS 
+        # BFS to find goal, then trace_path() to retrieve the path thru previous node tracking. 
         frontier = deque([start]) # chambers already explored 
         previous = {start: None} # keeps track of the chamber that came before current chamber 
         if start == goal: return [start]

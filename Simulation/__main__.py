@@ -33,6 +33,7 @@ from .Scripts.ThreadedVoleMovements import ThreadedMovements, ThreadedMovements_
 from .Scripts.OperantBox import Lever1_Clicks, Lever2_Clicks, LeverFood_Clicks
 from .Scripts.AirLockSimClasses import MoveTo2, MoveTo1
 from .Scripts.InteractableTests import RfidTest 
+from .Scripts.Example import SimpleScript
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
 CONTROL_SIM_PAIRS = { 

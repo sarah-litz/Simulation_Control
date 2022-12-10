@@ -21,7 +21,7 @@ from .Vole import SimVole
 
 class Simulation: 
 
-    def __init__(self, modes): 
+    def __init__(self, modes, config_filename = None): 
 
         """ Class that manages/runs the Simulation package. 
         Args: 
@@ -36,7 +36,13 @@ class Simulation:
 
         self.event_manager = self.map.event_manager # get event manager object from map 
 
-        self.configure_simulation(cwd + '/Simulation/Configurations/simulation.json') # configure sim: updates interactables w/ simulation attributes & instantiates voles 
+        if config_filename is None: 
+            
+            self.configure_simulation(cwd + '/Simulation/Configurations/simulation.json') # configure sim: updates interactables w/ simulation attributes & instantiates voles 
+
+        else: 
+
+            self.configure_simulation(cwd + '/Simulation/Configurations/' + config_filename)
 
         self.simulation_func = {} # dict for pairing a mode with a simulation function ( or list of simulation functions )
 

@@ -8,7 +8,7 @@ from .Classes.Map import Map
 
 
 ### (TODO) Import Your ModeABC Implementations here using the following syntax: from Scripts.your_file_name import mode_name_1, mode_name_2, etc.
-from .Modes.Testing_Hardware import LaserTests, Lever1, Lever2, LeverFood, DoorTests, ButtonTests, ButtonInteractableTests, LeverDoorConnectionTests, DispenserTests
+from .Modes.Testing_Hardware import Lever1, Lever2, LeverFood, DoorTests, LeverDoorConnectionTests, DispenserTests
 from .Modes.Example import OpenBox, SimpleBox
 from .Modes.Box_Dynamic import WaitFiveSecondsBeforeRetractOrClose, IteratorBox, ReactiveBox
 from .Modes.Box_AirLock import Chamber1Access
