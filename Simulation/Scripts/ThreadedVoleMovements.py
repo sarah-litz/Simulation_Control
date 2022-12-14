@@ -14,7 +14,7 @@ import concurrent.futures
 import random
 
 # Local Imports
-from ..Logging.logging_specs import sim_log
+from ..Logging.logging_specs import # sim_log
 from ..Classes.SimulationScriptABC import SimulationScriptABC
 
 

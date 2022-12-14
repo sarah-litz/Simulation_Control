@@ -19,7 +19,7 @@ import time
 
 # Local Imports 
 import Simulation 
-from .Logging.logging_specs import sim_log
+from .Logging.logging_specs import # sim_log
 from Control.Classes.Map import Map
 from Control.Classes.Timer import Visuals
 from Simulation import modes # references Simulation/__init__ file to retrieve list of modes created in Control/__main__.py
@@ -61,7 +61,7 @@ def main():
         input(f'press the enter key to continue!')
         return 
 
-    sim_log('\n\n\n\n-----------------------------Simulation Package Started------------------------------------')
+    # sim_log('\n\n\n\n-----------------------------Simulation Package Started------------------------------------')
     simulation = Simulation( modes = modes ) # Creates the Simulation Container to hold the Simulation Scripts. This should stay the same.  
 
     # this code creates a table so the User can double check all of the control mode / simulation function pairings that are set in the previous "todo" 

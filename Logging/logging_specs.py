@@ -27,7 +27,7 @@ def setup_logger(name, log_file, level=logging.DEBUG ):
 
 
 
-control_logger = setup_logger('control_logger', control_fp, level = logging.debug)
+# control_logger = setup_logger('# control_logger', control_fp, level = logging.debug)
 simulation_logger = setup_logger('simulation_logger', simulation_fp, level = logging.debug)
 
 
@@ -36,11 +36,11 @@ def debug(message):
     logging.debug(message)
 
 
-def sim_log(message): 
+def # sim_log(message): 
     simulation_logger.debug(message)
 
-def control_log(message): 
-    control_logger.debug(message)
+def # control_log(message): 
+    # control_logger.debug(message)
 
 
 

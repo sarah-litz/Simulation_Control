@@ -542,11 +542,11 @@ class Map:
         Returns:
             None
         """
-        control_log('\n\n')
+        # control_log('\n\n')
         for (n,i) in self.instantiated_interactables.items(): 
             if not i.active: 
                 i.activate()
-        control_log('\n')
+        # control_log('\n')
     
     def deactivate_interactables(self, clear_threshold_queue = True): 
         """        
@@ -558,14 +558,14 @@ class Map:
         """
         
         
-        control_log('\n')
+        # control_log('\n')
 
         for (n,i) in self.instantiated_interactables.items(): 
             i.deactivate()
         if clear_threshold_queue: 
             self.reset_interactables() # empties the interactables threshold queue
         
-        control_log('\n')
+        # control_log('\n')
 
     
     #
@@ -588,7 +588,7 @@ class Map:
             None : if this function successfully returns, then the edge components are valid. If there are invalid components, an exception will be raised and the Map class will not finish getting created. 
         """
 
-        control_log(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
+        # control_log(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
         # print(f'(Map.py, validate_chmbr_interactable) validating configurations for edge{new_edge.id}')
 
         chmbr_interactable_names = [] # Type Conversion: convert all_edge_components from [Component Type] => [Interactable's String Name] 
@@ -1104,14 +1104,14 @@ class Map:
             ([Interactable]) : ordered list of INTERACTABLES that represent a path of all components a vole will pass when traveling from start_component -> goal_component.
         '''
         
-        control_log(f'(Map, get_component_path) {start_component}->{goal_component}')
+        # control_log(f'(Map, get_component_path) {start_component}->{goal_component}')
             
         # Error Check: Incorrect Argument Type 
         if type(start_component) is not self.Edge.Component and type(start_component) is not self.Chamber.ComponentSet: 
-            control_log(f'(Map, get_component_path) arguments must be of type Component, but recieved start_component of type {type(start_component)} and goal_component of type {type(goal_component)}')
+            # control_log(f'(Map, get_component_path) arguments must be of type Component, but recieved start_component of type {type(start_component)} and goal_component of type {type(goal_component)}')
             raise Exception(f'(Map, get_component_path) arguments must be of type Component, but recieved start_component of type {type(start_component)} and goal_component of type {type(goal_component)}')
         elif type(goal_component) is not self.Edge.Component and type(goal_component) is not self.Chamber.ComponentSet: 
-            control_log(f'(Map, get_component_path) arguments must be of type Component, but recieved start_component of type {type(start_component)} and goal_component of type {type(goal_component)}')
+            # control_log(f'(Map, get_component_path) arguments must be of type Component, but recieved start_component of type {type(start_component)} and goal_component of type {type(goal_component)}')
             raise Exception(f'(Map, get_component_path) arguments must be of type Component, but recieved start_component of type {type(start_component)} and goal_component of type {type(goal_component)}')
 
 
@@ -1397,6 +1397,9 @@ class Map:
                 '''
                 self.interactableSet = interactableSet
             def remove(self, interactable): 
+                '''
+                [summary] removes an interactable from the unordered interactable set
+                '''
                 self.interactableSet.remove(interactable)
         
         def _set_unordered_component(self): 
@@ -1509,7 +1512,7 @@ class Map:
                 None
                 
             '''
-            control_log(f'(Map.py, set_as_ordered) Edge referencing a chamber object! Setting {interactable.name} as an ordered component in {edge.id}')
+            # control_log(f'(Map.py, set_as_ordered) Edge referencing a chamber object! Setting {interactable.name} as an ordered component in {edge.id}')
             
             self.unorderedSet.remove(interactable)
             self.orderedSet.append(interactable)
@@ -1983,7 +1986,6 @@ class Map:
 
         # ensure vole does not already exist 
         if self.get_vole(tag) is not None: 
-            sim_log(f'vole with tag {tag} already exists')
             print(f'you are trying to create a vole with the tag {tag} twice')
             input(f'Would you like to skip the creating of this vole and continue running the experiment? If no, the experiment will stop running immediately. Please enter: "y" or "n". ')
             if 'y': return 
@@ -1991,7 +1993,7 @@ class Map:
 
         # ensure vole with same rfid_id does not already exist 
         if rfid_id is not None and self.get_vole_by_rfid_id(rfid_id) is not None: 
-            sim_log(f'vole with rfid_id {rfid_id} already exists')
+            # sim_log(f'vole with rfid_id {rfid_id} already exists')
             print(f'you are trying to create a vole with the rfid_id {rfid_id} twice')
             inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
             if inp == 'y': return 
@@ -2000,7 +2002,7 @@ class Map:
         # ensure that start_chamber exists in map
         chmbr = self.get_chamber(start_chamber) 
         if chmbr is None: 
-            control_log(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
+            # control_log(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
             print(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
             print(f'existing chambers: ', self.graph.keys())
             while chmbr is None: 

@@ -21,7 +21,7 @@ OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulatio
 
 
 def main(): 
-    control_log(f'\n\n\nrunning {__name__}: New Experiment! ')
+    # control_log(f'\n\n\nrunning {__name__}: New Experiment! ')
 
     ### (TODO) Map Instantiation (which will also instantiate the hardware components) 
     map = Map(cwd+'/Control/Configurations', 'map_operant.json') # optional argument: map_file_name to specify filepath to a different map configuration file 

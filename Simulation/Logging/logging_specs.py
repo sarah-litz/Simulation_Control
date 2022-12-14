@@ -1,6 +1,6 @@
 
 # To Use These Specifications, place this import statement at top of file: 
-# from .Logging.logging_specs import sim_log
+# from .Logging.logging_specs import # sim_log
 
 
 import logging
@@ -39,10 +39,10 @@ def debug(message):
     logging.debug(message)
 
 
-def sim_log(message): 
+def # sim_log(message): 
     simulation_logger.debug(message)
 
-def vole_log(message): 
+def # vole_log(message): 
     volepath_logger.debug(message)
     simulation_logger.debug(message)
 

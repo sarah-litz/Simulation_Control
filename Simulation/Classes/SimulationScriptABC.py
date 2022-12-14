@@ -12,8 +12,8 @@ Property of Donaldson Lab at the University of Colorado at Boulder
     
 # Local Imports 
 from code import interact
-from Logging.logging_specs import sim_log
-from Simulation.Logging.logging_specs import vole_log, clear_log
+from Logging.logging_specs import # sim_log
+from Simulation.Logging.logging_specs import # vole_log, clear_log
 from .Vole import SimVole
 
 # Standard Lib Imports 

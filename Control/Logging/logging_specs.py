@@ -1,6 +1,6 @@
 
 # To Use These Specifications, place this import statement at top of file: 
-# from .Logging.loggingspecs import control_log
+# from .Logging.loggingspecs import # control_log
 
 
 import logging
@@ -28,7 +28,7 @@ def setup_logger(name, log_file, level=logging.DEBUG):
     return logger
 
 
-control_logger = setup_logger('control_logger', control_fp, level = logging.debug)
+# control_logger = setup_logger('# control_logger', control_fp, level = logging.debug)
 script_logger = setup_logger('script_logger', script_fp, level = logging.debug)
 
 
@@ -37,8 +37,8 @@ def debug(message):
     logging.debug(message)
 
 
-def control_log(message): 
-    control_logger.debug(message)
+def # control_log(message): 
+    # control_logger.debug(message)
 
 
 def script_log(message): 

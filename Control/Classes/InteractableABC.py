@@ -123,7 +123,7 @@ class interactableABC:
                 (-1 | 0 | 1) : (0 or 1) value returned represents the "pressed" value of the button. If button is getting simulated, a -1 is returned.
             """
             if self.parent.isSimulation: 
-                control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection.')
+                # control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection.')
                 self.parent.messagesReturnedFromSetup += f'simulating gpio connection. '
                 return -1
 
@@ -139,7 +139,7 @@ class interactableABC:
             
             except Exception as e: 
                 # attribute error raised 
-                control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
+                # control_log(f'(InteractableABC.py, Button) {self.parent.name}: simulating gpio connection. ErrMssg: {e}')
                 self.parent.messagesReturnedFromSetup += f' simulating GPIO button. '
                 self.isSimulation = True
                 return -1
@@ -168,7 +168,7 @@ class interactableABC:
                 self.num_pressed += 1 
                 self.buttonQ.put(f'press#{self.num_pressed}') # add press to parents buttonQ
                 # print(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}, buttonQ = {list(self.buttonQ.queue)}')
-                control_log(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}')
+                # control_log(f'(InteractableABC, Button.listen_for_event) {self.parent} Button Object was Pressed. num_pressed = {self.num_pressed}')
                 
             #
             # Sim Check; this function accesses gpio library. If button is being simulated, call the simulation version of this function and return. 
@@ -177,7 +177,7 @@ class interactableABC:
 
                 # If button is being simulated, then we care about changes to isPressed. If isPressed == True, then increment presses
                 # print(f'(InteractableABC, Button, listen_for_event) Button for {self.parent} is being simulated. Simulated Button doesnt listen for event.')  
-                control_log(f'(InteractableABC, Button, listen_for_event) Button for {self.parent} is being simulated. Simulated Button doesnt listen for an event. {self.parent} will be listening for its own threshold event so will still pick up on simulated button presses.')  
+                # control_log(f'(InteractableABC, Button, listen_for_event) Button for {self.parent} is being simulated. Simulated Button doesnt listen for an event. {self.parent} will be listening for its own threshold event so will still pick up on simulated button presses.')  
                 return             
 
             #
@@ -270,7 +270,7 @@ class interactableABC:
 
             except AttributeError as e: 
                 # attribute error raised if we werent able to import SERVO_KIT and we try to access SERVO_KIT.servo 
-                control_log(f'(InteractableABC.py, Servo) {self.parent.name}: simulating servo connection. ErrMssg: {e}')
+                # control_log(f'(InteractableABC.py, Servo) {self.parent.name}: simulating servo connection. ErrMssg: {e}')
                 # self.parent.messagesReturnedFromSetup += f' simulating servo. '
                 self.isSimulation = True 
                 return False
@@ -354,7 +354,7 @@ class interactableABC:
                 self.validate_hardware_setup() # validate that this hardware was properly setup (e.g. the button and servos ) if interactable is not being simulated
             except Exception as e: print(e), sys.exit(0)
 
-        control_log(f"(InteractableABC.py, activate) {self.name} has been activated. starting contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
+        # control_log(f"(InteractableABC.py, activate) {self.name} has been activated. starting contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
         
         self.threshold = False # "resets" the interactable's threshold value so it'll check for a new threshold occurence
         self.active = True 
@@ -373,7 +373,7 @@ class interactableABC:
             self.stop() # stops things that could be left running
 
         self.event_manager.print_to_terminal(f"(InteractableABC.py, deactivate) {self.name} has been deactivated. Final contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")        
-        control_log(f"(InteractableABC.py, deactivate) {self.name} has been deactivated. Final contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
+        # control_log(f"(InteractableABC.py, deactivate) {self.name} has been deactivated. Final contents of the threshold_event_queue are: {list(self.threshold_event_queue.queue)}")
     
     def reset(self): 
         '''[summary] empties the interactable's threshold event queue '''
@@ -419,7 +419,7 @@ class interactableABC:
             threshold_attr_name = self.threshold_condition["attribute"]
             attribute = getattr(self, threshold_attr_name) # get object specified by the attribute name
 
-            # control_log(f"(InteractableABC.py, watch_for_threshold_event) {self.name}: Threshold Name: {threshold_attr_name}, Threshold Attribute Obj: {attribute}")
+            # # control_log(f"(InteractableABC.py, watch_for_threshold_event) {self.name}: Threshold Name: {threshold_attr_name}, Threshold Attribute Obj: {attribute}")
             
             # check for attributes that may have been added dynamically 
             if hasattr(self, 'check_threshold_with_fn'): # the attribute check_threshold_with_fn is pointing to a function that we need to execute 
@@ -429,7 +429,7 @@ class interactableABC:
             # Check for a Threshold Event by comparing the current threshold value with the goal value 
             if attribute == self.threshold_condition['goal_value']: # Threshold Event: interactable has met its threshold condition
                 
-                control_log(f'(InteractableABC.py, watch_for_threshold_event) {self} Threshold Event Detected!')
+                # control_log(f'(InteractableABC.py, watch_for_threshold_event) {self} Threshold Event Detected!')
                 event_bool = True 
 
 
@@ -453,11 +453,11 @@ class interactableABC:
                             for callbackfn in callbackfn_lst: 
                                 # print(f'(InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: ', "parents:[", *(p.name+' ' for p in self.parents) , "]  callbackfn: ", callbackfn)
                                 parent_names = {*(p.name+' ' for p in self.parents)}
-                                control_log(f' (InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: parents:[ {parent_names}  ]  callbackfn: , {callbackfn} ')
+                                # control_log(f' (InteractableABC, watch_for_threshold_event) calling onThreshold_callback_fn for {self.name}: parents:[ {parent_names}  ]  callbackfn: , {callbackfn} ')
                                 callbackfn = eval(callbackfn)
 
                     self.event_manager.print_to_terminal(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
-                    control_log(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
+                    # control_log(f"(InteractableABC.py, watch_for_threshold_event) Threshold Event for {self.name}. Event queue: {list(self.threshold_event_queue.queue)}")
                 else: 
                     # not active, don't record the threshold event 
                     pass 
@@ -550,7 +550,7 @@ class lever(interactableABC):
     #@threader
     def extend(self):
         """ [summary] extends the lever and activates (activation triggers the tracking for lever presses reaching its threshold value) """
-        control_log(f'(InteractableABC, Lever.extend) extending {self.name} ')
+        # control_log(f'(InteractableABC, Lever.extend) extending {self.name} ')
         self.activate(initial_activation=False)
 
         if self.isExtended: 
@@ -588,7 +588,7 @@ class lever(interactableABC):
     #@threader
     def retract(self):
         """[summary] retracts lever and deactivates (deactivation stops the thread that is waiting for threshold events)"""
-        control_log(f'(InteractableABC, Lever.retract) retracting {self.name} ')
+        # control_log(f'(InteractableABC, Lever.retract) retracting {self.name} ')
 
         if not self.isExtended: 
             self.event_manager.print_to_terminal(f'(InteractableABC, Lever.retract) {self.name} already retracted.')
@@ -740,7 +740,7 @@ class door(interactableABC):
         # check if the door is already closed 
         if self.isOpen is False: 
             # door is already closed 
-            control_log('(Door(InteractableABC)) {self.name} was already Closed')
+            # control_log('(Door(InteractableABC)) {self.name} was already Closed')
             self.event_manager.print_to_terminal(f'(Door(InteractableABC)) {self.name} was already Closed')
             return 
 
@@ -772,7 +772,7 @@ class door(interactableABC):
         self.stop() # stop door movement 
         t = time.time()
         self.event_manager.new_timestamp(f'{self}_close_Failure', time=t, duration = t - ts_start.time)
-        control_log(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
+        # control_log(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
         self.event_manager.print_to_terminal(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
         return 
         # raise Exception(f'(Door(InteractableABC), close() ) There was a problem closing {self.name}')
@@ -790,7 +790,7 @@ class door(interactableABC):
         
         # check if door is already open
         if self.isOpen is True: 
-            control_log('(Door(InteractableABC)) {self.name} was already Open')
+            # control_log('(Door(InteractableABC)) {self.name} was already Open')
             self.event_manager.print_to_terminal(f'(Door(InteractableABC)) {self.name} was already Open')
             return 
   
@@ -811,7 +811,7 @@ class door(interactableABC):
             # successful 
             return 
         else:
-            control_log(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
+            # control_log(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
             self.event_manager.print_to_terminal(f'(Door(InteractableABC), open() ) There was a problem opening {self.name}')
             
     def stop(self): 
@@ -1033,14 +1033,14 @@ class dispenser(interactableABC):
     def sim_dispense(self): 
         ''' [summary] Simulation Use Only: simulates a pellet dispense by calling sim_press '''
         self.event_manager.print_to_terminal('(InteractableABC, dispenser.sim_dispense()) (simulated) Pellet Dispensed! ')
-        control_log(f'(InteractableABC, dispenser.sim_dispense()) (simualted) Pellet Dispensed! setting the isPressed value to True to simulate that a pellet was dispensed.  Monitoring for a pellet retrieval from {self}!')
+        # control_log(f'(InteractableABC, dispenser.sim_dispense()) (simualted) Pellet Dispensed! setting the isPressed value to True to simulate that a pellet was dispensed.  Monitoring for a pellet retrieval from {self}!')
         self.sim_press() # simulates a dispense by setting button object to a pressed state 
         return 
     
     def sim_vole_retrieval(self): 
         ''' [summary] Simulation Use Only: simulates a pellet being retrieved from the trough by calling sim_unpress '''
         self.event_manager.print_to_terminal('(InteractableABC, dispenser.sim_vole_retrieval) Pellet Retrieved!')
-        control_log(f'(InteractableABC, dispenser.sim_vole_retrieval) Pellet Retrieved! Stopped monitoring for a pellet retrieval.')
+        # control_log(f'(InteractableABC, dispenser.sim_vole_retrieval) Pellet Retrieved! Stopped monitoring for a pellet retrieval.')
         self.sim_unpress() # simulates a retrieval by setting button object to an unpressed state 
         return 
 
@@ -1055,7 +1055,7 @@ class dispenser(interactableABC):
             self.event_manager.new_timestamp(f'{self.name}_pellet_retrieved', time = time.time())
             self.monitor_for_retrieval = False # reset since we recorded a single pellet retrieval.
         else: 
-            control_log(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
+            # control_log(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
             self.event_manager.print_to_terminal(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
 
         # To avoid overloading a food trough sensor with threshold events for when the food trough is empty, we can sleep here until a state change occurs 
@@ -1080,7 +1080,7 @@ class dispenser(interactableABC):
         if self.isPressed is True:    
 
             self.event_manager.print_to_terminal('(InteractableABC, dispenser) Already a pellet in trough; previous pellet not retrieved')
-            control_log(f'(InteractableABC, dispenser.dispense()) Already a pellet in trough; Previous pellet not retrieved.')
+            # control_log(f'(InteractableABC, dispenser.dispense()) Already a pellet in trough; Previous pellet not retrieved.')
             self.monitor_for_retrieval = True 
             return 
 
@@ -1105,14 +1105,14 @@ class dispenser(interactableABC):
                 self.stop() 
                 self.monitor_for_retrieval = True 
                 self.event_manager.print_to_terminal(f'(InteractableABC, Dispenser) {self}: Pellet Dispensed!')
-                control_log(f'(InteractableABC, Dispenser) {self}: Pellet Dispensed!')
+                # control_log(f'(InteractableABC, Dispenser) {self}: Pellet Dispensed!')
                 return  
             time.sleep(0.005) 
         
         # On Failure: Stop dispenser and notify user.
         self.stop()
         self.event_manager.print_to_terminal(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
-        control_log(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
+        # control_log(f'(InteractableABC, Dispenser) {self}: A problem was encountered -- Pellet Dispensing Unsuccessful')
         return 
 
 class buttonInteractable(interactableABC):

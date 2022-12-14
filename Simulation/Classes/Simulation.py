@@ -81,7 +81,7 @@ class Simulation:
             # while not in timeout portion of mode, loop 
             time.sleep(0.5)
 
-        sim_log(f'(Simulation.py, run_active_mode_sim) The current mode ({current_mode}) entered in timeout. Checking for if a simulation should be run. ')
+        # sim_log(f'(Simulation.py, run_active_mode_sim) The current mode ({current_mode}) entered in timeout. Checking for if a simulation should be run. ')
 
         #
         # Check for if simulation function exists for the current mode 
@@ -97,17 +97,17 @@ class Simulation:
             else: 
 
                 # do nothing loop until current mode is inactive 
-                sim_log(f'(Simulation.py, run_sim) No simulation function for {type(current_mode)}.')
+                # sim_log(f'(Simulation.py, run_sim) No simulation function for {type(current_mode)}.')
                 print(f'(Simulation.py, run_sim) No simulation function for {type(current_mode)}.')      
                 while current_mode.active: 
                     time.sleep(0.5)
                 return 
 
    
-        sim_log(f'(Simulation.py, run_sim) {current_mode} is paired with the simulation function:  {self.simulation_func[current_mode]}') # {[*(f.__name__ for f in self.simulation_func[current_mode])]}')
+        # sim_log(f'(Simulation.py, run_sim) {current_mode} is paired with the simulation function:  {self.simulation_func[current_mode]}') # {[*(f.__name__ for f in self.simulation_func[current_mode])]}')
 
         # print(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
-        vole_log(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
+        # vole_log(f'(Simulation.py, run_sim) Running Simulation: {self.simulation_func[current_mode]}')
 
 
         # Activate Voles 
@@ -145,7 +145,7 @@ class Simulation:
             if sim_thread.is_alive(): 
                 # sim_thread.join(5) # see if simulation will stop running on its own     
                 self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended with simulation still running.')
-                sim_log(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended with simulation still running.')
+                # sim_log(f'(Simulation.py, run_sim) Control Mode <{current_mode}> ended with simulation still running.')
                 
             if not current_mode.active: 
                 self.map.event_manager.print_to_terminal(f'(Simulation.py, run_sim) Control Mode ended, final simulation function that ran was {sim}.') #  ( Full List of Functions set to run: {[fn.__name__ for fn in sim_fn_list]} )')
@@ -179,7 +179,7 @@ class Simulation:
         self.map.print_dependency_chain()
         self.map.draw_map(voles = self.voles)
         
-        sim_log('(Simulation.py, run_sim) Daemon Thread for getting the active mode, and running the specified simulation while active mode is in its timeout period.')
+        # sim_log('(Simulation.py, run_sim) Daemon Thread for getting the active mode, and running the specified simulation while active mode is in its timeout period.')
 
 
                        
@@ -208,7 +208,7 @@ class Simulation:
                 raise Exception(f'Modes Have Different Maps! The control modes that are running have different maps. Please create unique instances of the Simulation class for every unique Map instance that the Control Modes is running to avoid errors. Not running the simulation for this mode.')
 
 
-            sim_log(f'NEW MODE: (Simulation.py, run_sim) Simulation Updating for Control Entering a New Mode: {(self.current_mode)}')
+            # sim_log(f'NEW MODE: (Simulation.py, run_sim) Simulation Updating for Control Entering a New Mode: {(self.current_mode)}')
 
             t = self.run_active_mode_sim(self.current_mode)
             t.name = 'run_active_mode_sim'
@@ -245,7 +245,7 @@ class Simulation:
             None 
         '''
 
-        sim_log(f"(Simulation.py, configure_simulation) reading/parsing the file {config_filepath}")
+        # sim_log(f"(Simulation.py, configure_simulation) reading/parsing the file {config_filepath}")
 
 
         # opening JSON file 
@@ -278,7 +278,7 @@ class Simulation:
             if not set: # Simulation.json missing a config specification
                 # no configurations for interactable i in simulation.json. Default isSimulation to True and print to screen to let user know.
                 i.messagesReturnedFromSetup+=f'[simulation.json did not contain the interactable {name}. Defaults to True]'
-                sim_log(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
+                # sim_log(f'simulation.json did not contain the interactable {name}. sim defaults to True, so this interactable will be simulated as the simulation runs.')
                 i.isSimulation = True 
             
             ''' if an object is set to be a Simulation, then automatically will set any Button and Servo Objects that it uses to be a simulation also. '''
@@ -341,7 +341,7 @@ class Simulation:
 
         # ensure vole does not already exist 
         if self.get_vole(tag) is not None: 
-            sim_log(f'vole with tag {tag} already exists')
+            # sim_log(f'vole with tag {tag} already exists')
             print(f'you are trying to create a vole with the tag {tag} twice')
             inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
             if inp == 'y': return 
@@ -350,7 +350,7 @@ class Simulation:
         
         # ensure vole with same rfid_id does not already exist 
         if rfid_id is not None and self.get_vole_by_rfid_id(rfid_id) is not None: 
-            sim_log(f'vole with rfid_id {rfid_id} already exists')
+            # sim_log(f'vole with rfid_id {rfid_id} already exists')
             print(f'you are trying to create a vole with the rfid_id {rfid_id} twice')
             inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
             if inp == 'y': return 
@@ -360,7 +360,7 @@ class Simulation:
         # ensure that start_chamber exists in map
         chmbr = self.map.get_chamber(start_chamber) 
         if chmbr is None: 
-            sim_log(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
+            # sim_log(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
             print(f'trying to place vole {tag} in a nonexistent chamber #{start_chamber}.')
             print(f'existing chambers: ', self.map.graph.keys())
             while chmbr is None: 
@@ -385,7 +385,7 @@ class Simulation:
         '''
         vole = self.get_vole(tag)
         if not vole: 
-            sim_log(f'attempting to remove vole {tag} which does not exist, so cannot be removed')
+            # sim_log(f'attempting to remove vole {tag} which does not exist, so cannot be removed')
             return 
         else: 
             self.voles.remove(vole)    

@@ -7,7 +7,7 @@ from Control.Classes.InteractableABC import rfid
 from ..Classes.Map import Map
 from ..Classes.ModeABC import modeABC
 
-from ..Logging.logging_specs import script_log, control_log
+from ..Logging.logging_specs import script_log, # control_log
 
 '''
 Home Cage's Airlock Logic 
