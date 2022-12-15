@@ -388,7 +388,7 @@ class Map:
             None
         """
 
-        row1 = ['Interactable', 'is Simulation?', 'Returned Messages During Setup (reference Logging Files for error specifics)']
+        row1 = ['Interactable', 'is Simulation?', 'Returned Messages During Setup']
         data = [ row1 ] 
         for i_name in self.instantiated_interactables.keys(): 
             data.append( [i_name, self.instantiated_interactables[i_name].isSimulation, self.instantiated_interactables[i_name].messagesReturnedFromSetup ] )
@@ -542,11 +542,9 @@ class Map:
         Returns:
             None
         """
-        # control_log('\n\n')
         for (n,i) in self.instantiated_interactables.items(): 
             if not i.active: 
                 i.activate()
-        # control_log('\n')
     
     def deactivate_interactables(self, clear_threshold_queue = True): 
         """        
@@ -557,15 +555,11 @@ class Map:
             None
         """
         
-        
-        # control_log('\n')
-
         for (n,i) in self.instantiated_interactables.items(): 
             i.deactivate()
         if clear_threshold_queue: 
             self.reset_interactables() # empties the interactables threshold queue
         
-        # control_log('\n')
 
     
     #
@@ -711,13 +705,6 @@ class Map:
 
                 # assign the interactable to a chamber object
                 new_c.new_interactable( new_i )
-                
-            '''except Exception as e: 
-                    print(f"Ran into an issue when trying to instantiate the interactable object: {i['interactable_name']}")
-                    print('Error Message: ', e)
-                    print(f'would you like to continue running the experiment without instantiating this interactable? If yes, I wont be aware of any interactions a vole may have with it. If no, I will exit the experiment immediately.')
-                    ans = input('input (y/n) \n')
-                    if ans == 'n': exit() '''
         
         # Iterate thru edges list to make connections between the chambers 
         print('Adding Interactabes to Edges.....')
@@ -746,7 +733,7 @@ class Map:
                             raise Exception(f'(Map.py, configure_setup) chamber_interactable is trying to reference a nonexistent interactable {i["chamber_interactable"]}. KeyError: {e}')
                         
                         # edge case: reference to an edge interactable (can only reference a chamber interactable)
-                        if i.edge_or_chamber == 'edge': raise Exception(f'(Map.py, configure_setup) invalid chamber_interactable: cannot reference {i.name} as a chamber_interactable, because it is on an edge interactable (edge{i.edge_or_chamber_id})')
+                        if i.edge_or_chamber == 'edge': raise Exception(f'(Map.py, configure_setup) invalid chamber_interactable: cannot reference {i.name} as a chamber_interactable, because it is on an edge (edge{i.edge_or_chamber_id})')
 
                         # edge case: reference to a chamber that does not touch the current edge 
                         if i.edge_or_chamber_id != new_edge.v1 and i.edge_or_chamber_id != new_edge.v2: raise Exception(f'(Map.py, configure_setup) invalid chamber_interactable: {i.name} is in chamber{i.edge_or_chamber_id} which is not connected to edge{new_edge.id}: {new_edge}') 

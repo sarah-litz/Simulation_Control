@@ -19,7 +19,7 @@ import time
 
 # Local Imports 
 import Simulation 
-from .Logging.logging_specs import # sim_log
+from .Logging.logging_specs import sim_log
 from Control.Classes.Map import Map
 from Control.Classes.Timer import Visuals
 from Simulation import modes # references Simulation/__init__ file to retrieve list of modes created in Control/__main__.py

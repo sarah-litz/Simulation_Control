@@ -16,7 +16,7 @@ import os
 import time
 
 # Local Imports
-from ..Logging.logging_specs import # sim_log
+from ..Logging.logging_specs import sim_log
 from ..Classes.SimulationScriptABC import SimulationScriptABC
 
 

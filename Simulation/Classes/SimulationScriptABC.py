@@ -12,12 +12,13 @@ Property of Donaldson Lab at the University of Colorado at Boulder
     
 # Local Imports 
 from code import interact
-from Logging.logging_specs import # sim_log
-from Simulation.Logging.logging_specs import # vole_log, clear_log
+from Logging.logging_specs import sim_log
+from Simulation.Logging.logging_specs import vole_log, clear_log
 from .Vole import SimVole
 
 # Standard Lib Imports 
 import threading, time, json, inspect, random, sys
+from abc import abstractmethod
 import os
 cwd = os.getcwd() 
 
@@ -32,7 +33,8 @@ class SimulationScriptABC:
         self.mode = mode # the mode that this simulation script is paired with  
         self.map = self.mode.map 
         self.event_manager = self.map.event_manager
-        
+    
+    @abstractmethod
     def run(self): 
         ''' override with logic '''
         raise NameError("This function must be overwritten with specific mode logic")
