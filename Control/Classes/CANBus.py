@@ -50,7 +50,7 @@ class CANBus:
         """
 
         if can is None or serial is None: 
-            print('cannot setup CAN Bus without the can and serial module')
+            # print('cannot setup CAN Bus without the can and serial module')
             return True 
 
         print('initializing can bus')

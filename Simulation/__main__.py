@@ -43,7 +43,7 @@ CONTROL_SIM_PAIRS = {
     "Chamber1Access": MoveTo2, 
     "Edge12Access": MoveTo2, 
     "Chamber2Access": MoveTo1, 
-    # "OpenBox": RfidTest
+    "OpenBox": RfidTest
 }
 
 ###### END OF REQUIRED USER TODOs

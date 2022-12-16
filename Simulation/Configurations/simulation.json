@@ -2,7 +2,7 @@
 
     "interactables": [
         
-        { "name":"door1", "simulate":true, "simulate_with_fn": "lambda self, vole: self.sim_open()" }, 
+        { "name":"door1", "simulate":true, "simulate_with_fn": "lambda self, vole: self.sim_oen()" }, 
         { "name":"door2", "simulate":true, "simulate_with_fn": "lambda self, vole: self.sim_open()" }, 
 
         {"name":"rfid1", "simulate":true, "simulate_with_fn": "lambda self, vole: self.sim_ping(vole)"}, 

@@ -1,9 +1,7 @@
 
 Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
-0,Mode_Setup,2.39,1670374205.5725381,,False,Open Box
-0,sim_door1_open_Start,2.5,1670374205.6747699,,False,Open Box
-0,door1_Open,2.63,1670374205.803877,,False,Open Box
-0,Early_Interrupt_Caused_Exit,2.78,1670374205.9608698,,False,Open Box
-1,Mode_Setup,3.41,1670374206.591169,,False,Simple Box
-1,Mode_Timeout_Round_1_Start,3.41,1670374206.592443,,True,Simple Box
-1,Early_Interrupt_Caused_Exit,5.42,1670374208.596909,,True,Simple Box
+0,Mode_Setup,0.67,1671215136.369144,,False,Start: Both Voles In Chamber 1
+1,Mode_Timeout_Round_1_Start,0.84,1671215136.533998,,True,Start: Both Voles In Chamber 1
+1,"(Vole1, move_next_component) New Move: door1(Open:True)->None",1.55,1671215137.2442932,,True,Start: Both Voles In Chamber 1
+1,"(Vole1, update_location) door1 to None",1.61,1671215137.306412,,True,Start: Both Voles In Chamber 1
+1,Mode_Timeout_Round_1_Finish,61.15,1671215196.849382,60.31538391113281,True,Start: Both Voles In Chamber 1

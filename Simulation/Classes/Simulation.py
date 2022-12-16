@@ -28,7 +28,7 @@ class Simulation:
             modes ([ModeABC]) : an ordered list of control modes that will run 
         """
         
-        print(f'\nSimulation Created: {self}')
+        print(f'\n Simulation Created: {self}')
                 
         self.map = modes[0].map # default to the map of the first mode in the list. We will update map to the active modes map throughout experiemnt. 
 
@@ -159,7 +159,7 @@ class Simulation:
                 v.active = False 
 
             sim_thread.join()
-            print(f'RETURNING FROM RUN_ACTIVE_MODE_SIM(). Sim Thread {sim_thread.name} // isAlive:', sim_thread.is_alive())
+            # print(f'RETURNING FROM RUN_ACTIVE_MODE_SIM(). Sim Thread {sim_thread.name} // isAlive:', sim_thread.is_alive())
         
         return sim_thread
         
@@ -290,7 +290,6 @@ class Simulation:
                     i.buttonObj.isPressed = False # set to Boolean value ( as apposed to calling method if it were initially not set to be a simulation )
                     # i.messagesReturnedFromSetup += f' simulating GPIO button. '
                 if i.servoObj is not None and i.servoObj.isSimulation is False: 
-                    print(i.servoObj)
                     i.servoObj.isSimulation = True
                     i.servoObj.servo = None
                     # i.messagesReturnedFromSetup += f' simulating servo.'

@@ -133,7 +133,6 @@ class EventManager:
     @run_in_thread
     def watch_print_queue(self): 
         ''' grabs from print queue and prints to terminal at a time where it won't conflict with other statements '''
-        print('STARTING THE WATCH PRINT QUEUE')
         
         while not self.stop_messages: 
             item = None 
