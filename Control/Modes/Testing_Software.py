@@ -10,7 +10,7 @@ import queue
 import importlib
 from tkinter import Button
 
-from ..Classes.Timer import EventManager
+from ..Classes.EventManager import EventManager
 from ..Classes.Map import Map
 from ..Classes.ModeABC import modeABC
 

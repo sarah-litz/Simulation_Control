@@ -20,12 +20,12 @@ import threading
 import sys
 
 # Local Imports 
-from .Timer import Visuals, PRINTING_MUTEX
+from .EventManager import EventManager, PRINTING_MUTEX
 from Logging.logging_specs import control_log, sim_log
 from .ModeABC import modeABC 
 from . import InteractableABC
 from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser, beam
-from .Timer import EventManager 
+from .EventManager import EventManager 
 from .CANBus import CANBus 
 
 class Map: 
@@ -392,7 +392,7 @@ class Map:
         data = [ row1 ] 
         for i_name in self.instantiated_interactables.keys(): 
             data.append( [i_name, self.instantiated_interactables[i_name].isSimulation, self.instantiated_interactables[i_name].messagesReturnedFromSetup ] )
-        Visuals.draw_table(data, cellwidth=20)
+        EventManager.draw_table(data, cellwidth=20)
     
     def print_dependency_chain(self): 
         """        
@@ -409,7 +409,7 @@ class Map:
             # dnames = ','.join([d.name for d in self.instantiated_interactables[i_name].dependents]) # makes list of names and converts list to string 
             pnames = ','.join([p.name for p in self.instantiated_interactables[i_name].parents]) 
             data.append( [i_name, pnames] )
-        Visuals.draw_table(data, cellwidth=40)
+        EventManager.draw_table(data, cellwidth=40)
         
 
 
@@ -1459,7 +1459,7 @@ class Map:
                 return [ele for ele in reversed(component_list)]
 
         def __str__(self): 
-            return 'Chamber: ' + str(self.id) + ', adjacent: ' + str([x for x in self.connections]) + ', interactables: ' + str([i.name for i in self.allChamberInteractables])
+            return 'Chamber: ' + str(self.id) + ', connected to: ' + str([x for x in self.connections]) + ', interactables: ' + str([i.name for i in self.allChamberInteractables])
         
         def __iter__(self): 
             # Edge Referenced Components -> Unordered Components -> More Edge Referenced Components
@@ -1835,6 +1835,7 @@ class Map:
             self.type = type 
             self.edge_or_chamber = 'edge'
             self.headval = None # points to first component in linked list
+            self.action_probability_dist = None # probabilities are optional; must be added after all interacables and chamber connections have been added. can be added thru function 'add_action_probabilities'
 
         def __str__(self): 
             interactables = [c.interactable.name for c in self] # list of the interactable object's Names -- (concatenation of type+ID)

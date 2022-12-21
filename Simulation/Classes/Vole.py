@@ -14,7 +14,6 @@ import time, random
 
 # Local Imports 
 from ..Logging.logging_specs import sim_log, vole_log
-from Control.Classes.Timer import Visuals
 
 
 class SimVole: 
@@ -725,41 +724,44 @@ class SimVole:
 
         
         if self.curr_component is not None: 
-            # add "interact w/ current component" option 
-            actions.append( (self.simulate_vole_interactable_interaction, self.curr_component ))
+            # Add Interactable Interaction Options
+            try: 
+                # Unordered Set in a Chamber; add options to interact w/ any of these interactables
+                for i in self.curr_component.interactableSet: 
+                    actions.append( (self.simulate_vole_interactable_interaction, i ))
+                # Add 
+
+            except AttributeError: 
+                # Ordered Component ; add option to interact w/ this interactable
+                actions.append( (self.simulate_vole_interactable_interaction, self.curr_component.interactable ))        
         
-        else: # current component is None. 
+        ''' else: # current component is None. 
             
             if self.prev_component is None: # Current Edge or Chamber is Empty. 
-                
-                # add surrounding locations as options to move to
-                
-                if self.curr_loc.edge_or_chamber == 'chamber': 
-                    # add surrounding edges and neighboring chambers
-                    for (c,e) in self.curr_loc.connections.items(): 
-                        actions.append( self.attempt_move, e ) # attempt moving into edge
-
-                else: # current location is an edge 
-                    # attempt moving into either chamber that the edge connects
-                    actions.append(self.attempt_move, self.curr_loc.v1)
-                    actions.append(self.attempt_move, self.curr_loc.v2)
-            
+                pass 
             else: 
                 # prev component specified. We are at the end of a locations component list. We can either choose to turn around by navigating back to prev_component, or we can move forward into next chamber/edge 
-
-                actions.append((self.move_next_component() ))
-
-        # if we are currently in a chamber, add all possible moves to surrounding components
+                actions.append((self.move_next_component(self.prev_component))) # Adds option for vole to turn around! 
+        '''
         
+        if self.curr_loc.edge_or_chamber == 'chamber': 
+            # In Chamber
+            # add all move to interactable options
+            for i in self.curr_loc.allChamberInteractables: 
+                actions.append( (self.move_to_interactable, i) )
 
-        # add all possible "move chamber" options 
-        for adj_chmbr_id in self.map.graph[self.curr_loc].connections.keys(): # for all of the current chamber's neighboring chambers
-            actions.append( (self.attempt_move, adj_chmbr_id) ) # add to list of possible moves 
-        
-        # add all possible "interact w/in chamber interactables" options
-        for interactable in self.map.graph[self.curr_loc].interactables: # for all of the interactables in the current chamber
-            actions.append( (self.simulate_vole_interactable_interaction, interactable) )
-        
+            # add all possible "move chamber" options 
+            for c_id in self.curr_loc.connections.keys(): # for all of the current chamber's neighboring chambers
+                actions.append( (self.attempt_move, c_id) ) # add adjacent chambers to list of possible moves 
+        else: 
+            # In Edge
+            # add all move to interactable options 
+            for c in self.curr_loc: 
+                actions.append( (self.attempt_move, c.interactable) )
+            # add all possible chambers to move into 
+            actions.append( (self.attempt_move, self.curr_loc.v1) )
+            actions.append( (self.attempt_move, self.curr_loc.v2) )
+
         return actions
 
     def attempt_random_action(self): 
@@ -793,7 +795,7 @@ class SimVole:
         
         # choose action from possible_actions based on their value in the current chamber's probability distribution
 
-        action_probability = self.map.graph[self.curr_loc].action_probability_dist
+        action_probability = self.curr_loc.action_probability_dist
         if action_probability is not None: 
             # User has set probabilities for the actions, make decision based on this. 
             self.event_manager.print_to_terminal('action probability:', action_probability)

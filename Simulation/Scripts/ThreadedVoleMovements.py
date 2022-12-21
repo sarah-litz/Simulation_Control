@@ -79,8 +79,6 @@ class ThreadedMovements_ThreeVoles(SimulationScriptABC):
         vole2 = self.map.get_vole(2)
         vole3 = self.map.get_vole(3)
 
-        
-
         # 
         # LEAVING OFF HERE:: figure out a way to automate the idea that a vole is running on its own thread?! 
         # probably add a wrapper that gets called when certain vole methods get called 

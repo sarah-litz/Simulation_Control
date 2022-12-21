@@ -21,7 +21,7 @@ import time
 import Simulation 
 from .Logging.logging_specs import sim_log
 from Control.Classes.Map import Map
-from Control.Classes.Timer import Visuals
+from Control.Classes.EventManager import EventManager
 from Simulation import modes # references Simulation/__init__ file to retrieve list of modes created in Control/__main__.py
 from .Classes.Simulation import Simulation
 
@@ -34,16 +34,19 @@ from .Scripts.OperantBox import Lever1_Clicks, Lever2_Clicks, LeverFood_Clicks
 from .Scripts.AirLockSimClasses import MoveTo2, MoveTo1
 from .Scripts.InteractableTests import RfidTest 
 from .Scripts.Example import SimpleScript
+from .Scripts.RandomVoleMovements import RandomVoleMovements
 
 # (TODO) Pair Each Mode with Simulation Function that should get run when the mode starts running.
 CONTROL_SIM_PAIRS = { 
+    # "Mode_ClassName": Simulation_Script_ClassName
     "Lever1": Lever1_Clicks, 
     "Lever2": Lever2_Clicks, 
     "LeverFood": LeverFood_Clicks, 
     "Chamber1Access": MoveTo2, 
     "Edge12Access": MoveTo2, 
     "Chamber2Access": MoveTo1, 
-    "OpenBox": RfidTest
+    "OpenBox": RfidTest, 
+    "SimpleBox": RandomVoleMovements,  
 }
 
 ###### END OF REQUIRED USER TODOs
@@ -77,7 +80,7 @@ def main():
             data.append( [str(m) + f' ({str(os.path.relpath(inspect.getfile(m.__class__)))})', simulation.simulation_func[m]]) 
         else: 
             data.append( [str(m) + f' ({str(os.path.relpath(inspect.getfile(m.__class__)))})'] ) 
-    Visuals.draw_table(data, cellwidth=80)
+    EventManager.draw_table(data, cellwidth=80)
     input_before_continue('')
 
 

@@ -14,7 +14,8 @@ Property of Donaldson Lab at the University of Colorado at Boulder
 import time, random, sys, queue, threading
 
 # Third Party Imports 
-from cgitb import reset
+from abc import abstractmethod, ABCMeta
+
 
 # Local Imports 
 from Logging.logging_specs import control_log
@@ -37,7 +38,7 @@ except Exception as e:
     print(e)
     SERVO_KIT = None
 
-class interactableABC:
+class interactableABC(metaclass = ABCMeta):
 
     def __init__(self, ID, threshold_condition, name, event_manager, type):
 
@@ -388,6 +389,7 @@ class interactableABC:
             return t
         return run 
 
+    @abstractmethod
     def add_new_threshold_event(self): 
         """ 
         [summary] METHOD OVERRIDE REQUIRED 
@@ -1039,6 +1041,8 @@ class dispenser(interactableABC):
     
     def sim_vole_retrieval(self): 
         ''' [summary] Simulation Use Only: simulates a pellet being retrieved from the trough by calling sim_unpress '''
+        if self.isPelletRetrieved: 
+            return # No Pellet in trough to retrieve!
         self.event_manager.print_to_terminal('(InteractableABC, dispenser.sim_vole_retrieval) Pellet Retrieved!')
         # control_log(f'(InteractableABC, dispenser.sim_vole_retrieval) Pellet Retrieved! Stopped monitoring for a pellet retrieval.')
         self.sim_unpress() # simulates a retrieval by setting button object to an unpressed state 
@@ -1055,8 +1059,9 @@ class dispenser(interactableABC):
             self.event_manager.new_timestamp(f'{self.name}_pellet_retrieved', time = time.time())
             self.monitor_for_retrieval = False # reset since we recorded a single pellet retrieval.
         else: 
+            pass 
             # control_log(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
-            self.event_manager.print_to_terminal(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
+            # self.event_manager.print_to_terminal(f'(InteratableABC.py, {self}, add_new_threshold_event) not monitoring for retrieval at the moment')
 
         # To avoid overloading a food trough sensor with threshold events for when the food trough is empty, we can sleep here until a state change occurs 
         while not self.monitor_for_retrieval and self.active: 

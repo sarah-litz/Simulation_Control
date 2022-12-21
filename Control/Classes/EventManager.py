@@ -3,9 +3,8 @@
 Authors: Sarah Litz, Ryan Cameron
 Date Created: 1/24/2022
 Date Modified: 12/1/2022
-Description: Timer contains the class definitions for EventManager and Visuals 
+Description: EventManager contains the class definitions for EventManager 
             EventManager class recieves printing and output file write requests from different threads and executes these in a thread-safe way. 
-            Visuals provides a method for printing tables in the terminal. 
 
 Property of Donaldson Lab at the University of Colorado at Boulder
 """
@@ -80,7 +79,6 @@ class EventManager:
             csv_writer = csv.writer(file, delimiter = ',')
             csv_writer.writerow(spacer)
             csv_writer.writerow(header)
-            print('done output file setup')
             return 
     def run_in_thread(func): 
         ''' decorator function to run function on its own daemon thread '''
@@ -158,6 +156,7 @@ class EventManager:
             with TIMESTAMP_EVENT_MUTEX: 
                 for i in item: 
                     print(i)
+    
     #
     # Event Creation 
     # 
@@ -181,7 +180,6 @@ class EventManager:
     def new_countdown(self, event_description, duration, primary_countdown = False, create_start_and_end_timestamps = True): 
         # creates a new Countdown object and adds to priority queue, where the event that will finish the soonest has the highest priority/will be printed to the screen.
         return self.Countdown(event_description, duration, mode = self.mode, new_timestamp = self.new_timestamp, checkEventManagerActive = self.isActive, start_time = None, primary_countdown = primary_countdown, create_timestamps=create_start_and_end_timestamps)
-
     class Timestamp:
         ''' Specific/Instantaneous Event Occurrence'''
         def __init__( self, mode, round_num, event_description, mode_start_time, inTimeout, time = time.time(), duration = None): 
@@ -215,8 +213,7 @@ class EventManager:
             with TIMESTAMP_EVENT_MUTEX: 
                 print(self)
             
-            return 
-            
+            return            
     class Countdown: 
         ''' event that occurs over a measurable period of time '''
         def __init__(self, event_description, duration, mode, new_timestamp, checkEventManagerActive, start_time = None, primary_countdown = False, create_timestamps = True): 
@@ -281,7 +278,9 @@ class EventManager:
                             return True
             return False 
 
-class Visuals: 
+    #
+    # Visuals
+    # 
     def draw_table(data=[], cellwidth = 12): 
         for i, d in enumerate(data):
             line = '|'.join(str(x).ljust(cellwidth) for x in d)

@@ -1,7 +1,12 @@
 
 Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
-0,Mode_Setup,0.67,1671215136.369144,,False,Start: Both Voles In Chamber 1
-1,Mode_Timeout_Round_1_Start,0.84,1671215136.533998,,True,Start: Both Voles In Chamber 1
-1,"(Vole1, move_next_component) New Move: door1(Open:True)->None",1.55,1671215137.2442932,,True,Start: Both Voles In Chamber 1
-1,"(Vole1, update_location) door1 to None",1.61,1671215137.306412,,True,Start: Both Voles In Chamber 1
-1,Mode_Timeout_Round_1_Finish,61.15,1671215196.849382,60.31538391113281,True,Start: Both Voles In Chamber 1
+0,Mode_Setup,1.46,1671643054.8782039,,False,Simple Box
+1,Mode_Timeout_Round_1_Start,1.83,1671643055.247788,,True,Simple Box
+1,"(Vole1, move_next_component) New Move: food_trough->beam1_door1",9.63,1671643063.0502248,,True,Simple Box
+1,"(Vole1, update_location) ['food_trough'] to beam1_door1",9.91,1671643063.3289769,,True,Simple Box
+1,"(Vole1, move_next_component) New Move: beam1_door1->door1(Open:False)",10.01,1671643063.427545,,True,Simple Box
+1,beam1_door1_beam_break,10.29,1671643063.70895,,True,Simple Box
+1,beam1_door1_beam_unbroken,11.08,1671643064.499548,0.7905979156494141,True,Simple Box
+1,"(Vole1, update_location) beam1_door1 to door1",13.2,1671643066.6211798,,True,Simple Box
+1,"(Vole1, move_next_component) New Move: door1(Open:False)->rfid1",13.46,1671643066.880057,,True,Simple Box
+1,Mode_Timeout_Round_1_Finish,17.44,1671643070.863632,15.615844011306763,True,Simple Box

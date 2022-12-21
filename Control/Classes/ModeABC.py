@@ -18,7 +18,8 @@ import signal
 import sys
 
 # Third Party Imports 
-from posixpath import split
+from abc import abstractmethod, ABCMeta
+
 
 # Local Imports
 from .InteractableABC import rfid
@@ -26,7 +27,7 @@ from Logging.logging_specs import control_log
 
 
 
-class modeABC:
+class modeABC(metaclass = ABCMeta):
     """[Description] This is the base class, each mode will be an obstantiation of this class. (Mode Implementation can be found in the Modes Directory)"""
 
     def __init__(self, timeout = None, rounds = None, ITI = None, map = None, output_fp = None, startTime = time.time()): 
@@ -251,7 +252,6 @@ class modeABC:
         If a simulation is running, ensures the simulation script exits. 
         Deactivates interactables and the event manager. 
         """
-        print(f"{self} finished its Timeout Period and is now Exiting")
         self.inTimeout = False # Should cause simulation to exit 
         self.active = False 
 
@@ -366,6 +366,7 @@ class modeABC:
    #
    # Running Modal Scripts 
    #   
+    @abstractmethod
     def setup(self): 
         ''' [REQUIRES METHOD OVERRIDE] any tasks for setting up box before run() gets called '''
         raise NameError(f'{__name__} this function should be overriden')
@@ -385,6 +386,7 @@ class modeABC:
         self.event_manager.new_countdown(event_description = f"Mode_Timeout_Round_{self.current_round}", duration = self.timeout, primary_countdown = True)
         self.exit() # exit the mode upon timeout ending
 
+    @abstractmethod
     def run(self):
         """[REQUIRES METHOD OVERRIDE] This is the main method that contains the logic for the specific mode. It should be overwritten for each specific mode class that inherits this one. Because of that, if this function is not overwritten it will raise an error on its default. 
         """

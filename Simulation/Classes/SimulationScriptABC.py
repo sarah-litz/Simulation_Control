@@ -18,12 +18,12 @@ from .Vole import SimVole
 
 # Standard Lib Imports 
 import threading, time, json, inspect, random, sys
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 import os
 cwd = os.getcwd() 
 
 
-class SimulationScriptABC: 
+class SimulationScriptABC(metaclass=ABCMeta): 
 
     def __init__(self, mode):
         """
@@ -37,6 +37,7 @@ class SimulationScriptABC:
     @abstractmethod
     def run(self): 
         ''' override with logic '''
+        return 
         raise NameError("This function must be overwritten with specific mode logic")
     
     
