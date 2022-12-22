@@ -502,7 +502,6 @@ class lever(interactableABC):
 
     def reset_press_count(self): 
         ''' [summary] sets self.buttonObj.num_pressed to start from the initial value '''
-        print('RESETTING BUTTON OBJECT NUM PRESSED')
         self.buttonObj.num_pressed = self.threshold_condition['initial_value'] 
 
     def set_press_count(self, count): 

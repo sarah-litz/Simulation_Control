@@ -9,8 +9,8 @@
         {"name":"rfid2", "simulate":true, "simulate_with_fn": "lambda self, vole: [self.shared_rfidQ.put((vole, self.ID, (time.time() + ( i - random.random() )))) for i in range (1,3)]" }, 
 
         {"name":"lever_food", "simulate":true, "simulate_with_fn":"lambda self, vole: self.set_press_count( self.threshold_condition['goal_value'] )"}, 
-        {"name":"lever_door1", "simulate":true},
-        {"name":"lever_door2", "simulate":true}, 
+        {"name":"lever_door1", "simulate":true, "simulate_with_fn":"lambda self, vole: self.set_press_count( self.threshold_condition['goal_value'] )"},
+        {"name":"lever_door2", "simulate":true, "simulate_with_fn":"lambda self, vole: self.set_press_count( self.threshold_condition['goal_value'] )"}, 
                 
         {"name":"open_door1_button", "simulate":true}, 
         {"name":"close_door1_button", "simulate":true}, 

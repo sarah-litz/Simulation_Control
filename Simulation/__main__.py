@@ -46,7 +46,7 @@ CONTROL_SIM_PAIRS = {
     "Edge12Access": MoveTo2, 
     "Chamber2Access": MoveTo1, 
     "OpenBox": RfidTest, 
-    "SimpleBox": RandomVoleMovements,  
+    "SimpleBox": RandomVoleMovements
 }
 
 ###### END OF REQUIRED USER TODOs

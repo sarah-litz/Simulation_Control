@@ -38,8 +38,6 @@
                 { "interactable_name":"beam1_door1", "type":"beam" }, 
                 { "interactable_name":"door1", "type":"door" }, 
                 { "interactable_name":"rfid1", "type":"rfid" }, 
-                { "interactable_name":"rfid2", "type":"rfid" }, 
-                { "interactable_name":"rfid3", "type":"rfid" }, 
                 { "interactable_name":"door2", "type":"door" }, 
                 { "interactable_name":"beam2_door2", "type":"beam" }
             ]
