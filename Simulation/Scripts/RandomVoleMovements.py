@@ -24,8 +24,8 @@ class RandomVoleMovements(SimulationScriptABC):
         vole1 = self.map.get_vole(tag=1)
 
         ## Set likelihood of vole sleeping to 100% 
-        vole1.set_action_probability((vole1.attempt_move,3), 75)
-        vole1.set_action_probability((vole1.attempt_move, 2), 15)
+        vole1.set_action_probability((vole1.attempt_move,8), 75)
+        vole1.set_action_probability((time.sleep, 2), 1)
 
         for _ in range(0,5): 
             print('new random......\n\n\n\n')

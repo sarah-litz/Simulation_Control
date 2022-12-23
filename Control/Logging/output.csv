@@ -1,18 +1,14 @@
 
 Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
-0,Mode_Setup,0.94,1671818952.34048,,False,Simple Box
-1,Mode_Timeout_Round_1_Start,1.05,1671818952.448181,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_door2(isExtended:False)",2.08,1671818953.4789288,,True,Simple Box
-1,"(Vole1, update_location) ['lever_food', 'food_trough'] to lever_door2",2.22,1671818953.611634,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: lever_door2(isExtended:False)->beam2_door2",2.42,1671818953.8182132,,True,Simple Box
-1,"(Vole1, update_location) lever_door2 to beam2_door2",2.47,1671818953.863734,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: beam2_door2->door2(Open:False)",2.61,1671818954.0091891,,True,Simple Box
-1,beam2_door2_beam_break,2.96,1671818954.357598,,True,Simple Box
-1,beam2_door2_beam_unbroken,3.73,1671818955.125959,0.7683608531951904,True,Simple Box
-1,"(Vole1, update_location) beam2_door2 to door2",5.73,1671818957.1216052,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: door2(Open:False)->None",5.79,1671818957.180716,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: door2(Open:False)->None",6.01,1671818957.4096608,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: door2(Open:False)->None",6.54,1671818957.9317179,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: door2(Open:False)->None",6.66,1671818958.057666,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: door2(Open:False)->None",6.79,1671818958.180992,,True,Simple Box
-1,Mode_Timeout_Round_1_Finish,16.32,1671818967.7149749,15.266793966293335,True,Simple Box
+0,Mode_Setup,0.57,1671819967.6230688,,False,Simple Box
+1,Mode_Timeout_Round_1_Start,0.8,1671819967.85024,,True,Simple Box
+1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_door1(isExtended:False)",1.64,1671819968.6891038,,True,Simple Box
+1,"(Vole1, update_location) ['lever_food', 'food_trough'] to lever_door1",1.7,1671819968.7532248,,True,Simple Box
+1,"(Vole1, move_next_component) New Move: lever_door1(isExtended:False)->beam1_door1",2.08,1671819969.1331682,,True,Simple Box
+1,"(Vole1, update_location) lever_door1 to beam1_door1",2.14,1671819969.192929,,True,Simple Box
+1,"(Vole1, move_next_component) New Move: beam1_door1->door1(Open:False)",2.43,1671819969.480386,,True,Simple Box
+1,beam1_door1_beam_break,2.5,1671819969.5503628,,True,Simple Box
+1,beam1_door1_beam_unbroken,3.52,1671819970.569945,1.0195822715759277,True,Simple Box
+1,"(Vole1, update_location) beam1_door1 to door1",5.51,1671819972.560087,,True,Simple Box
+1,"(Vole1, move_next_component) New Move: door1(Open:False)->None",5.77,1671819972.815286,,True,Simple Box
+1,Early_Interrupt_Caused_Exit,9.21,1671819976.260842,,True,Simple Box
