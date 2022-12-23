@@ -12,6 +12,7 @@ Example Simulation Scripts; Use these simulation scripts as a simple outline of 
 ## (TODO) if any extra packages are needed for defining mode logic, freely place import statements here 
 from ..Classes.SimulationScriptABC import SimulationScriptABC  
 ##
+import time
 
 class RandomVoleMovements(SimulationScriptABC): 
 
@@ -20,8 +21,12 @@ class RandomVoleMovements(SimulationScriptABC):
     def run(self): 
 
         """ Write Simulation Logic Here! """
-        
         vole1 = self.map.get_vole(tag=1)
+
+        ## Set likelihood of vole sleeping to 100% 
+        vole1.set_action_probability((vole1.attempt_move,3), 75)
+        vole1.set_action_probability((vole1.attempt_move, 2), 15)
+
         for _ in range(0,5): 
             print('new random......\n\n\n\n')
             vole1.attempt_random_action()

@@ -46,6 +46,8 @@ class SimVole:
         try: self.curr_component = self.curr_loc.unorderedComponent # current interactable the vole is closest to ( when in a chamber, this can be a list of Unordered interactables! Vole is free to simulate with any of them )
         except AttributeError: self.curr_component = None # (interactable1, interactable2)
 
+        self.action_probability_dist = {} # Can assign probabilities to a certain action that the vole takes 
+
         print(f'{self} starting in {self.curr_loc.edge_or_chamber}{self.curr_loc.id}, positioned between interactables: {self.prev_component}, {self.curr_component}')
         # vole_log(f'{self} starting in {self.curr_loc.edge_or_chamber}{self.curr_loc.id}, positioned between interactables: {self.prev_component}, {self.curr_component}')
 
@@ -522,7 +524,7 @@ class SimVole:
 
         if not curr_interactable.autonomous: # false threshold, and not autonomous. cannot simulate if not autonomous 
             # DOORs without dependents will fall into this, as they are a barrier and not autonomous, meaning they must be controlled by something else. 
-            self.event_manager.print_to_terminal(f'(Simulation/Vole{self.tag}, move_next_component) Movement from {self.curr_component}->{goal_component} cannot be completed because {self.curr_component} it is a barrier but not autonomous, so requires an interaction with its child interactables to operate it.')
+            self.event_manager.print_to_terminal(f'(Simulation/Vole{self.tag}, move_next_component) Movement from {self.curr_component}->{goal_component} cannot be completed because {self.curr_component} is a barrier but not autonomous, so requires an interaction with its child interactables to operate it.')
             return False 
         
 
@@ -674,7 +676,9 @@ class SimVole:
                 # vole should pass the interactable it just simulated. 
                 # 
                 if i+1 < len(edge): 
-                    self.move_next_component(edge[i+1]) # completed sim for the interactable at edge[i], so move past it.
+                    success = self.move_next_component(edge[i+1]) # completed sim for the interactable at edge[i], so move past it.
+                    if success is False: 
+                        return 
                 else: 
                     # On the Final Component on the edge: edge[i]
                     # In order to move past this component, we need to grab the first component from our goal (next) chamber. 
@@ -690,7 +694,9 @@ class SimVole:
                     
 
                     # If that chamber is empty, then we can just manually update the voles location to exist in that chamber. 
-                    self.move_next_component(nxt_component, nxt_edge_or_chmbr_id = destination)
+                    success = self.move_next_component(nxt_component, nxt_edge_or_chmbr_id = destination)
+                    if success is False: 
+                        return 
 
                 
                 # Goal Check After Every Move! # 
@@ -793,31 +799,45 @@ class SimVole:
 
         possible_actions = self.possible_actions()
         
-        # choose action from possible_actions based on their value in the current chamber's probability distribution
+        # initialize to a uniform distribution 
+        p = 1/len(possible_actions)
+        p_dist = {} # the probability distribution for the vole's current state. Updates every function call as the vole changes states. 
+        for a in possible_actions:
+            p_dist[a] = p 
 
-        action_probability = self.curr_loc.action_probability_dist
-        if action_probability is not None: 
-            # User has set probabilities for the actions, make decision based on this. 
-            self.event_manager.print_to_terminal('action probability:', action_probability)
-            pd = [] # list to contain probabilities in same order of actionobject_probability
-            for a in possible_actions: 
-                # retrieve each possible actions corresponding probability, and append to an ordered lsit 
-                pd.append(action_probability[a])
-            
-            idx = random.choices( [i for i in range(0,len(possible_actions)-1)], weights = pd, k = 1 )
-
+        ## Check if any of the possible actions were assigned a probability in the vole's action probability distribution. If so, update the probability in p_dist
+        for a in possible_actions: 
+            if a in self.action_probability_dist.keys(): 
+                p_dist[a] = self.action_probability_dist[a]
         
-        else: 
-            # no probabilities have been set, make decision where every possible action has an equal decision of being chosen
-            idx = random.randint(0, len(possible_actions)-1)
+        # Normalize the Probabilities 
+        sum_p = sum(p_dist.values())
+        norm_p = {key: value/sum_p for key,value in p_dist.items()} # Divide each probability by sum of probabilties to normalize! 
+            
+        print(norm_p)
+        # Use norm_p to choose an action based on assigned probabilities 
+        action = random.choices( list(norm_p.keys()), weights =list(norm_p.values()), k = 1 )[0] # [0] takes the action from the tuple 
 
-        return possible_actions[idx] # returns the ( function, arguments ) of randomly chosen action
+        return action # returns the ( function, arguments ) tuple of the randomly chosen action
 
     def set_action_probability(self, action, probability): 
 
         ''' adjust the probability of Vole taking a certain action, where vole either sleeps, interacts w/ interactables, or moves chambers
         automatically adjusts the probability of the other actions accordingly 
         e.g. if we increase probability of action=sleep to 10%, then we will auto-adjust the probability of action and interactable to 45% each. 
+
+        Args: 
+            action(tuple) : tuple where the first element is the function and the second element is the argument that will be passed to that function 
+            probability(int) : value that probability of the action being chosen will get set to 
+        
+        Returns: 
+            None 
         '''
+
+        self.action_probability_dist[action] = probability
+
+        
+
+
         
     

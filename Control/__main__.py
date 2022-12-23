@@ -33,7 +33,7 @@ def main():
     airlockBox = Chamber1Access(timeout = 60, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
 
     ### (TODO) Update the list <modes> with each of the scripts you may want to run ( can be conditionally ran as well )
-    modes = [ lever1, simplebox, openbox, airlockBox ] # the specified modes will run in the order that they are placed in the list 
+    modes = [ simplebox, openbox, airlockBox ] # the specified modes will run in the order that they are placed in the list 
 
 
     #### END OF REQUIRED USER TODOs
