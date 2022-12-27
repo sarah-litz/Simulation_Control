@@ -24,7 +24,7 @@ from .EventManager import EventManager, PRINTING_MUTEX
 from Logging.logging_specs import control_log, sim_log
 from .ModeABC import modeABC 
 from . import InteractableABC
-from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser, beam
+from .InteractableABC import lever, door, rfid, buttonInteractable, dispenser, beam, template
 from .EventManager import EventManager 
 from .CANBus import CANBus 
 
@@ -493,6 +493,9 @@ class Map:
             try: new_obj = beam(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type )
             except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
 
+        elif type == 'template': 
+            try: new_obj = template(ID = objspec['id'], threshold_condition = objspec['threshold_condition'], hardware_specs = objspec['hardware_specs'], name = name, event_manager = self.event_manager, type = type )
+            except Exception as e: raise Exception(f'there was a problem instantiating the object {name}: {e}')
         # 
         # For Adding New Interactable Types, Add the following three lines of code that reference the new interactable type.  
         # elif type == 'object_type': 

@@ -1,14 +1,25 @@
 
 Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
-0,Mode_Setup,0.57,1671819967.6230688,,False,Simple Box
-1,Mode_Timeout_Round_1_Start,0.8,1671819967.85024,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_door1(isExtended:False)",1.64,1671819968.6891038,,True,Simple Box
-1,"(Vole1, update_location) ['lever_food', 'food_trough'] to lever_door1",1.7,1671819968.7532248,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: lever_door1(isExtended:False)->beam1_door1",2.08,1671819969.1331682,,True,Simple Box
-1,"(Vole1, update_location) lever_door1 to beam1_door1",2.14,1671819969.192929,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: beam1_door1->door1(Open:False)",2.43,1671819969.480386,,True,Simple Box
-1,beam1_door1_beam_break,2.5,1671819969.5503628,,True,Simple Box
-1,beam1_door1_beam_unbroken,3.52,1671819970.569945,1.0195822715759277,True,Simple Box
-1,"(Vole1, update_location) beam1_door1 to door1",5.51,1671819972.560087,,True,Simple Box
-1,"(Vole1, move_next_component) New Move: door1(Open:False)->None",5.77,1671819972.815286,,True,Simple Box
-1,Early_Interrupt_Caused_Exit,9.21,1671819976.260842,,True,Simple Box
+0,Mode_Setup,0.72,1672161442.888937,,False,Lever Tests: Lever 1
+1,Mode_Timeout_Round_1_Start,0.89,1672161443.05428,,True,Lever Tests: Lever 1
+1,lever_door1(isExtended:True)_Extend,1.02,1672161443.186773,,True,Lever Tests: Lever 1
+1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->template1",1.84,1672161444.0012538,,True,Lever Tests: Lever 1
+1,"(Vole1, update_location) ['lever_food', 'food_trough'] to template1",1.86,1672161444.030283,,True,Lever Tests: Lever 1
+1,"(Vole1, move_next_component) New Move: template1->lever_door1(isExtended:True)",2.41,1672161444.576545,,True,Lever Tests: Lever 1
+1,"(Vole1, update_location) template1 to lever_door1",4.5,1672161446.6668642,,True,Lever Tests: Lever 1
+1,lever_door1(isExtended:True)_1_Presses,4.83,1672161446.999171,,True,Lever Tests: Lever 1
+1,sim_door1_open_Start,4.94,1672161447.105974,,True,Lever Tests: Lever 1
+1,door1_Open,4.98,1672161447.144534,,True,Lever Tests: Lever 1
+1,sim_door1_open_Finish,7.07,1672161449.240161,2.1341869831085205,True,Lever Tests: Lever 1
+1,lever_door1(isExtended:False)_Retract,11.09,1672161453.256654,,True,Lever Tests: Lever 1
+1,Mode_Timeout_Round_1_Finish,21.1,1672161463.262654,20.2083740234375,True,Lever Tests: Lever 1
+1,Mode_Setup,21.63,1672161463.7937112,,False,Lever Tests: Food Lever
+1,Mode_Timeout_Round_1_Start,21.85,1672161464.0184698,,True,Lever Tests: Food Lever
+1,lever_food(isExtended:True)_Extend,22.19,1672161464.352273,,True,Lever Tests: Food Lever
+1,"(Vole1, move_next_component) New Move: lever_door1(isExtended:False)->template1",22.42,1672161464.589953,,True,Lever Tests: Food Lever
+1,"(Vole1, update_location) lever_door1 to template1",22.64,1672161464.801512,,True,Lever Tests: Food Lever
+1,"(Vole1, move_next_component) New Move: template1->lever_food(isExtended:True)",23.09,1672161465.2605288,,True,Lever Tests: Food Lever
+1,"(Vole1, update_location) template1 to ['lever_food', 'food_trough']",25.41,1672161467.574938,,True,Lever Tests: Food Lever
+1,lever_food(isExtended:True)_1_Presses,25.96,1672161468.126208,,True,Lever Tests: Food Lever
+1,lever_food(isExtended:False)_Retract,32.36,1672161474.5276842,,True,Lever Tests: Food Lever
+1,Mode_Timeout_Round_1_Finish,42.82,1672161484.985667,20.96719717979431,True,Lever Tests: Food Lever

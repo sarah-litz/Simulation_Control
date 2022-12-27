@@ -466,7 +466,21 @@ class interactableABC(metaclass = ABCMeta):
             else: 
                 # no threshold event, ensure that threshold is False 
                 self.threshold = False 
- 
+
+class template(interactableABC): 
+    def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager, type):
+        # Initialize the parent class
+        super().__init__(ID, threshold_condition, name, event_manager, type)
+        self.barrier = False 
+        self.autonomous = True
+
+    def add_new_threshold_event(self):
+        self.threshold_event_queue.put(f'{self}: Threshold True')
+    
+    def reset_attribute(self): 
+        # resets threshold attr to its initial value 
+        setattr(self, self.threshold_condition['attribute'], self.threshold_condition['initial_value']) 
+
 class lever(interactableABC):
     def __init__(self, ID, threshold_condition, hardware_specs, name, event_manager, type):
         # Initialize the parent class

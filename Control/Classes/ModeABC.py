@@ -116,12 +116,12 @@ class modeABC(metaclass = ABCMeta):
             
             else:
                               
-                ### This Mode was Created at Runtime  
+                ### This Mode was Created at Runtime (i.e. is an inner mode) 
                                      
                 print(f'\nInner mode entered: {self}') # print to console 
                 # control_log(f'Inner Mode Entered: {self}')
 
-                rounds = 1
+                rounds = 1 # All inner modes run for 1 round. 
 
                 self.event_manager.activate(new_mode = self, initial_enter=False) # Start Tracking for Mode Events 
             

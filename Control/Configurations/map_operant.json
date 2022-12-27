@@ -5,6 +5,7 @@
             "descriptive_name": "Main Chamber", 
             "components": [
                 { "interactable_name":"lever_door1", "type":"lever"}, 
+                { "interactable_name":"template1", "type":"template"}, 
                 { "interactable_name":"lever_food", "type":"lever"}, 
                 { "interactable_name":"food_trough", "type":"dispenser"},
                 { "interactable_name":"lever_door2", "type":"lever" }
@@ -46,6 +47,7 @@
             "type":"shared", 
             "components":[
                 { "chamber_interactable": "lever_door1" },
+                { "chamber_interactable": "template1" }, 
                 { "interactable_name":"beam1_door1", "type":"beam"}, 
                 { "interactable_name":"door1", "type":"door" }
             ]
