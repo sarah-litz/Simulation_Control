@@ -15,7 +15,7 @@ class Lever1(modeABC):
     '''
     description: extends and retracts lever 1
     '''
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp=None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 

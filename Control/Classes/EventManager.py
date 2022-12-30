@@ -72,7 +72,9 @@ class EventManager:
     # CSV Output File
     # 
     def setup_output_file(self): 
-        with open(self.output_fp, 'w') as file:  # w - mode start at the BEGINNING of a file, so will overwrite any existing contents if the file already existed.
+        with open(self.output_fp, 'w+') as file:  
+            # w  mode start at the BEGINNING of a file, so will overwrite any existing contents if the file already existed.
+            # w+ mode will append to file. Creates file if it does not already exist. 
             spacer = []
             title = [f'Control Mode', str(self.mode), type(self.mode)]
             header = ['Round', 'Event', 'Modal Time', 'Time', 'Duration', 'In Timeout?', 'Mode Name']

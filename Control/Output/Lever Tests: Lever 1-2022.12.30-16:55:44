@@ -1,0 +1,12 @@
+
+Round,Event,Modal Time,Time,Duration,In Timeout?,Mode Name
+0,Mode_Setup,0.71,1672444548.512683,,False,Lever Tests: Lever 1
+1,Mode_Timeout_Round_1_Start,0.81,1672444548.6140969,,True,Lever Tests: Lever 1
+1,lever_door1(isExtended:True)_Extend,1.05,1672444548.854042,,True,Lever Tests: Lever 1
+1,"(Vole1, move_next_component) New Move: lever_food(isExtended:False)->lever_door1(isExtended:True)",1.87,1672444549.676668,,True,Lever Tests: Lever 1
+1,"(Vole1, update_location) ['lever_food', 'food_trough'] to lever_door1",1.97,1672444549.768961,,True,Lever Tests: Lever 1
+1,lever_door1(isExtended:True)_1_Presses,2.35,1672444550.150051,,True,Lever Tests: Lever 1
+1,sim_door1_open_Start,2.43,1672444550.232382,,True,Lever Tests: Lever 1
+1,door1_Open,2.44,1672444550.244822,,True,Lever Tests: Lever 1
+1,sim_door1_open_Finish,4.6,1672444552.406508,2.174125909805298,True,Lever Tests: Lever 1
+1,Early_Interrupt_Caused_Exit,11.21,1672444559.016735,,True,Lever Tests: Lever 1

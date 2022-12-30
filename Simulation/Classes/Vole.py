@@ -781,7 +781,7 @@ class SimVole:
         (action_fn, arg) = self.random_action() 
             
         # sim_log(f'(Vole{self.tag}, attempt_random_action) Vole{self.tag} attempting: {action_fn.__name__} (arg: {arg}) ')
-        self.event_manager.print_to_terminal(f'(Vole{self.tag}, attempt_random_action) Vole{self.tag} attempting: {action_fn.__name__} (arg: {arg}) ')
+        # self.event_manager.print_to_terminal(f'(Vole{self.tag}, attempt_random_action) Vole{self.tag} attempting: {action_fn.__name__} (arg: {arg}) ')
 
         action_fn(arg) 
 

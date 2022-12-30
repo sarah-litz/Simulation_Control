@@ -27,7 +27,7 @@ def main():
     map = Map(cwd+'/Control/Configurations', 'map_operant.json') # optional argument: map_file_name to specify filepath to a different map configuration file 
     
     ### (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
-    lever1 = Lever1(timeout = 20, rounds = 1, ITI = 10, map = map, output_fp = OUTPUT_CSV_FILE)
+    lever1 = Lever1(timeout = 20, rounds = 2, ITI = 10, map = map)
     simplebox = SimpleBox(timeout = 15, rounds = 1, ITI = 10, map = map, output_fp = OUTPUT_CSV_FILE)
     openbox = OpenBox(timeout = 15, rounds = 1, ITI = 10, map = map, output_fp = OUTPUT_CSV_FILE)
     airlockBox = Chamber1Access(timeout = 60, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
