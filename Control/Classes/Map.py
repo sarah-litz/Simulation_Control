@@ -1984,9 +1984,10 @@ class Map:
         # ensure vole does not already exist 
         if self.get_vole(tag) is not None: 
             print(f'you are trying to create a vole with the tag {tag} twice')
-            input(f'Would you like to skip the creating of this vole and continue running the experiment? If no, the experiment will stop running immediately. Please enter: "y" or "n". ')
-            if 'y': return 
-            if 'n': exit() 
+            inp = input(f'Would you like to skip the creating of this vole and continue running the experiment? If no, the experiment will stop running immediately. Please enter: "y" or "n". ')
+            if inp is 'y': return 
+            if inp is 'n': sys.exit(0)
+            else: sys.exit(0) 
 
         # ensure vole with same rfid_id does not already exist 
         if rfid_id is not None and self.get_vole_by_rfid_id(rfid_id) is not None: 
@@ -1994,7 +1995,7 @@ class Map:
             print(f'you are trying to create a vole with the rfid_id {rfid_id} twice')
             inp = input(f'Would you like to skip the creating of this vole and continue running the simulation? If no, the simulation and experiment will stop running immediately. Please enter: "y" or "n". ')
             if inp == 'y': return 
-            if inp == 'n': sys.exit(0)
+            elif inp == 'n': sys.exit(0)
             else: sys.exit(0)            
         # ensure that start_chamber exists in map
         chmbr = self.get_chamber(start_chamber) 

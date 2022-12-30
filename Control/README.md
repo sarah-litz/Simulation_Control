@@ -1,119 +1,18 @@
 # Control Package
 
-## Description
-
-    the control package contains the classes, configurations, and scripts used in running an experiment. An experiment is built on Mode(s), where each mode contains unique logic for how a box should operate. 
-
-## Command for Running an Experiment
-
-`python3 -m Control`
-
 ## Quick Start Guide
 
 1. Create a Control Mode
-    - use Control/Modes/Example.py as a template for creating a control mode ( copy and paste the file contents into a new file )
+   - use Control/Modes/Example.py as a template for creating a control mode ( copy and paste the file contents into a new file )
 2. Setup __main__() so the new Control Mode will execute
-    - follow along with the TODO's that are commented throughout the __main__ module in order to add the new Control Mode to the experiment
+   - follow along with the TODO's that are commented throughout the __main__ module in order to add the new Control Mode to the experiment
 3. Run the Control Package!
-    - positioned just outside of the Control directory, run `python3 -m Control` from the terminal.
+   - positioned just outside of the Control directory, run `python3 -m Control` from the terminal.
 
-# Detailed User Guide: Writing Your Own Experiment
+## Documenation
 
-## Configuring an Experiment with Map.json
+*link control package documentation here*
 
-    A file in Configurations directory should contain an entry for every interactable that you plan to add to the Map class. The map.json file is where ordering/layout of the different hardware interactables is defined. In order to ensure that all interactables are instantiated by the control software, make sure that it gets referenced somewhere in the Map class. 
-
-    The only configuration file that is technically required is "map.json". If any components are specified within map.json, then it is required that we have configuration files for objects of that interactable type. These config files should be .json files, and get added to the same directory that map.json sits in. Ensure that the name of the file matches the "type" field for the object in map.json.
-
-## Component Dependency Chain
-
-The terms specified below are 4 attributes assigned to every Interactable that classifies an interactables behavior. The attributes "dependents" and "parents" are lists that get added based on the information provided in map.json. The attributes "barrier" and "autonomous" are booleans that default to Fales, but can/should be specified as True for specific interactables when it applies.
-
-**parents**
-: list containing the "parent" interactables belonging to the current interactable. Parents are the interacatables that the current interactable can control. If an interactable has no parent, then we have reached the "top" of this dependency chain.
-
-~~~json
-{
-    "door1":
-    {
-        "id":1,
-        "threshold_condition": { "attribute":"isOpen", "initial_value": null, "goal_value": true },
-        "parents": []
-    }
-}
-~~~
-
-~~~json 
-    "lever_door1": 
-    {
-        "threshold_condition": { 
-            "attribute": "pressed", 
-            "initial_value":0, "goal_value": 4,
-            "onThreshold_callback_fn": "list(map(lambda p: p.open(), self.parents))", 
-            "parents": ["door1"]
-        }    
-    }
-~~~
-
-    As we can see, the threshold condition for lever_door1 has an attribute "onThreshold_callback_fn" which gets called when lever_door1 meets its threshold_condition. We can see, that this onThreshold_callback_fn is further defining the lever's relationship with its parent interactable, door1, by specifying the callback function that calls open() on door1. 
-
-**barrier** (boolean)
-: defaults to False. Set to True if the interactable is a barrier to a voles movements. (This is set to True for Doors, since each time a vole passes a Door we need to check that the door is Open.)
-
-**autonomous** (boolean)
-: defaults to False. Set to True if the interactable is not dependent on other interactables or on a vole interaction. This will basically just be an interactable that gets simulated every single time a vole passes it (This is set to True for RFIDs). 
-
-
-## Adding Interactables to the Map
-
-### Chamber Components
-
-Components that exist in a chamber should be specified in the components list of a chamber. The ordering of interactables in a chamber are assumed to not be important. If ordering is important, chamber interactables can be referenced along an edge in order to specify a specific order that a vole would pass/interact with each of these interactables in.
-
-~~~json
-{
-    "components": [
-        { "interactable_name":"lever_food", "type":"lever"},
-        { "interactable_name":"lever_door1", "type":"lever"}
-    ] 
-}
-~~~
-
-
-### Edge Components
-
-The list of edge components can be made up of { interactable_name , type } dictionaries for interactables that actually live in this edge. We can also specify { chamber_interactable } for any interactable that actually exists in a bordering chamber.
-
-> Chamber Interactables on an Edge
-
-It is important to specify chamber_interactable for any chamber interactable that plays a role in a voles movements. Conversely, the only interactables that we should not place on an edge as a chamber_interactable are interactables that do not have any relationships with other interactables (i.e. no parent or dependent interactables), and are also NOT autonomous, meaning a vole would have to make a conscious decision to choose to interact with it.
-
-~~~json
-{
-    "components":[
-        { "chamber_interactable": "lever_food"},
-        { "chamber_interactable": "lever_door1"},
-
-        { "interactable_name":"rfid1", "type":"rfid" }, 
-        { "interactable_name":"door1", "type":"door" },
-
-        { "interactable_name":"lever_door2", "type":"lever" }, 
-        { "interactable_name":"door2", "type":"door" },
-        { "interactable_name":"rfid2", "type":"rfid" }
-
-    ]
-} 
-~~~
-
-
-## Writing an Experiment Script
-
-    Scripts are written by creating subclasses of ModeABC. A single experiment can be made up of as many ModeABC subclasses as needed, where each subclass/mode represents a portion of the experiment with slightly different constraints than the other modes. 
-    To add a new script, create a new file within the Scripts directory. 
-
-    To link your new script with the rest of the program, follow the marked (TODOs) that are in the Control/__main__.py file.
-
-
-## License 
+## License
 
 Property of Donaldson Lab at the University of Colorado at Boulder

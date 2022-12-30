@@ -1,29 +1,10 @@
 # Classes
 
-## InteractableABC
-
-### Accounting for a Simulated Interactable
-
-    interactable.isSimulation(): Boolean
-
-This function returns True if the interactable is being simulated, False otherwise.
-
-These "simulation checks" should be called in any method that accesses hardware components. In doing so, we can write simple logic for what to do if the interactable is being simulated.
-
-For example, within a door's open() function we write:
-
-    if door.isSimulation() is True: 
-        # simulation is running, set new switch state and return 
-        door.buttonObj = True 
-        return 
-    else: 
-        # door hardware is present, continue with normal execution...
-
 ## Map Class
 
     Map class represents the physical layout of the box, and has access to all of the physical (or simulated) objects that control the box. Map class packages up all of the hardware objects into a single object that can be accessed by a Control Mode or a Simulation Script. 
 
-    all maps are made up of a series of Vertices and Edges, where the Vertices are represented by the Chamber class and the Edges are represented by the Edge class. 
+    <aps are made up of a series of Vertices and Edges, where the Vertices are represented by the Chamber class and the Edges are represented by the Edge class. 
 
 #### Example: Operant Map
 
@@ -59,5 +40,14 @@ flowchart LR
     Chamber1 --- Edge12 --- Chamber2
 ```
 
+## InteractableABC
+
+    The abstract class that all other interactables inherit from.
 
 ## ModeABC
+
+    The abstract class that all mode scripts inherit from.
+
+## EventManager
+
+    Class for recording event data and performing thread safe printing.
