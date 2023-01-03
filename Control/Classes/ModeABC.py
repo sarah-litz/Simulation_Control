@@ -106,8 +106,7 @@ class modeABC(metaclass = ABCMeta):
         second = current_time.second
 
         # Print the date and time
-        of = cwd + '/Control/Output/' + (f"{self}-{year}.{month}.{day}-{hour}:{minute}:{second}")
-        print(of)
+        of = cwd + '/Control/Output/' + (f"{self}-{year}.{month}.{day}-{hour}:{minute}:{second}.csv")
         return of
 
 

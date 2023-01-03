@@ -43,7 +43,7 @@ class Lever2(modeABC):
     '''
     description: extends and retracts lever 2
     '''
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
@@ -62,7 +62,7 @@ class LeverFood(modeABC):
     '''
     description: extends and retracts food lever 
     '''
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
@@ -84,7 +84,7 @@ class DoorTests(modeABC):
     [description] opens and closes every door. 
     """
     
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
@@ -118,7 +118,7 @@ class LeverDoorConnectionTests(modeABC):
     
     """
     
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
@@ -169,7 +169,7 @@ class DispenserTests(modeABC):
     this mode is used for testing basic functional of the food dipenser throughout its code building process!
     '''
 
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
     
     def __str__(self): 

@@ -10,7 +10,7 @@ from ..Logging.logging_specs import script_log, control_log
 
 
 class WaitFiveSecondsBeforeRetractOrClose(modeABC): 
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
     
     def __str__(self): 
@@ -55,7 +55,7 @@ class IteratorBox(modeABC):
     Description: 
         << operant map. Each time a lever gets pressed we increment the goal number of presses >>
     '''
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
@@ -111,7 +111,7 @@ class ReactiveBox(modeABC):
         -> will only retract a lever once a vole has pressed it the required number of times.
         -> will only close a door once a vole has passed thru that door ( as picked up by the rfid readers )
     """
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 

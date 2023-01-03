@@ -29,7 +29,7 @@ from Logging.logging_specs import control_log
 
 class EventManagerTests(modeABC): 
 
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 

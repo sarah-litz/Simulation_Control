@@ -22,7 +22,7 @@ class SimpleBox(modeABC):
     '''
     Description: No Logic! Box will operate as defined in the map configuration file. This mode will exit after <timeout> completes. 
     '''
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
@@ -41,7 +41,7 @@ class OpenBox(modeABC):
     Description: 
         Open Box provides free movement to vole(s); opens all doors in its setup() function. 
     """
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp=None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 

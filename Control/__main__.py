@@ -15,10 +15,6 @@ from .Modes.Box_AirLock import Chamber1Access
 from .Modes.Testing_Software import EventManagerTests
 
 
-### (TODO) Specify OUTPUT_CSV_FILE: filepath to where the experiment output should get written 
-OUTPUT_CSV_FILE = '/Users/sarahlitz/Desktop/Projects/Donaldson Lab/RPI_Simulation_Control/Simulation_Control/Control/Logging/output.csv' # Sarah's Personal Computer 
-# OUTPUT_CSV_FILE = '/home/pi/Simulation_Control/Control/Logging/output.csv' # Raspberry Pi 
-
 
 def main(): 
     # control_log(f'\n\n\nrunning {__name__}: New Experiment! ')
@@ -28,9 +24,9 @@ def main():
     
     ### (TODO) instantiate the modes that you want to run -- this should use the classes that you imported in the first "todo"
     lever1 = Lever1(timeout = 20, rounds = 2, ITI = 10, map = map)
-    simplebox = SimpleBox(timeout = 15, rounds = 1, ITI = 10, map = map, output_fp = OUTPUT_CSV_FILE)
-    openbox = OpenBox(timeout = 15, rounds = 1, ITI = 10, map = map, output_fp = OUTPUT_CSV_FILE)
-    airlockBox = Chamber1Access(timeout = 60, rounds = 1, ITI = 30, map = map, output_fp = OUTPUT_CSV_FILE)
+    simplebox = SimpleBox(timeout = 15, rounds = 1, ITI = 10, map = map)
+    openbox = OpenBox(timeout = 15, rounds = 1, ITI = 10, map = map)
+    airlockBox = Chamber1Access(timeout = 60, rounds = 1, ITI = 30, map = map)
 
     ### (TODO) Update the list <modes> with each of the scripts you may want to run ( can be conditionally ran as well )
     modes = [ lever1, simplebox, openbox, airlockBox ] # the specified modes will run in the order that they are placed in the list 

@@ -1,5 +1,11 @@
 ''' These Tests should not be run with the Simulation Package '''
 
+import time 
+
+from ..Classes.InteractableABC import door, lever
+from ..Classes.ModeABC import modeABC
+ 
+
 class LeverTest_Control(modeABC):
     
     """
@@ -9,7 +15,7 @@ class LeverTest_Control(modeABC):
         
     """
 
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 
@@ -53,7 +59,7 @@ class DoorTests_Control(modeABC):
         DOOR TESTING
     """
     
-    def __init__(self, timeout, rounds, ITI, map, output_fp):
+    def __init__(self, timeout, rounds, ITI, map, output_fp = None):
         super().__init__(timeout, rounds, ITI, map, output_fp)
 
     def __str__(self): 

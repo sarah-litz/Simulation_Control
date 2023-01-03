@@ -763,7 +763,7 @@ class SimVole:
             # In Edge
             # add all move to interactable options 
             for c in self.curr_loc: 
-                actions.append( (self.attempt_move, c.interactable) )
+                actions.append( (self.move_to_interactable, c.interactable) )
             # add all possible chambers to move into 
             actions.append( (self.attempt_move, self.curr_loc.v1) )
             actions.append( (self.attempt_move, self.curr_loc.v2) )
